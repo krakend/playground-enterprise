@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en-us">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="generator" content="Hugo 0.67.1">
+
+    <title>Enterprise Demo - KrakenD API Gateway</title>
+    <meta name="description" content="KrakenD API Gateway for Enterprise">
+
+    <meta itemprop="name" content="Enterprise Demo - KrakenD API Gateway">
+    <meta itemprop="description" content="KrakenD API Gateway for Enterprise">
+    <meta itemprop="image" content="https://www.krakend.io/images/logo.png">
+
+    <meta property="og:title" content="Enterprise Demo">
+    <meta property="og:image" content="https://www.krakend.io/images/logo.png">
+
+    <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+    <link rel="stylesheet" href="https://www.krakend.io/dist/styles.css">
+    <link rel="icon" type="image/png" href="https://www.krakend.io/favicon/favicon-196x196.png" sizes="196x196">
+    <link rel="icon" type="image/png" href="https://www.krakend.io/favicon/favicon-96x96.png" sizes="96x96">
+    <link rel="icon" type="image/png" href="https://www.krakend.io/favicon/favicon-32x32.png" sizes="32x32">
+    <link rel="icon" type="image/png" href="https://www.krakend.io/favicon/favicon-16x16.png" sizes="16x16">
+    <link rel="icon" type="image/png" href="https://www.krakend.io/favicon/favicon-128.png" sizes="128x128">
+    <style>
+        .page-content .card .card-body .card-text,
+        .feature-block .description {
+            color: black;
+        }
+    </style>
+</head>
+
+<body class="krakend">
+
+    <div class="top-bar">
+        <div class="container my-2">
+            <nav class="navbar navbar-expand-lg navbar-light">
+                <a class="navbar-brand" href="https://www.krakend.io/" title="Home">
+                    <img class="mr-4" src="https://www.krakend.io/images/logo.png" alt="" width="180">
+                </a>
+                <div class="collapse navbar-collapse" id="navbarMenu">
+
+                </div>
+
+                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarMenu"
+                    aria-controls="navbarMenu" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+            </nav>
+        </div>
+    </div>
+    <div class="hero">
+
+        <div class="banner">
+            <div class="">
+                <div class="container">
+                    <h1>On-prem ecosystem demo</h1>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="page-enterprise">
+
+
+
+            <div class="container page-content">
+
+                <div class="row mb-3">
+                    <div class="col-md-3 col-sm-6">
+                        <div class="card even">
+                            <img src="jaeger.png" class="card-img-top img-fluid p-3" alt="logo">
+                            <div class="card-body">
+                                <h5 class="card-title">
+                                    <a href="http://localhost:16686">Tracing Dashboard</a>
+                                </h5>
+                                <p class="card-text">Jaeger collects traces and shows the complete funnel from user request to the impact in the backend</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-sm-6">
+                        <div class="card">
+                            <img src="kibana.png" class="card-img-top img-fluid" alt="logo">
+                            <div class="card-body">
+                                <h5 class="card-title">
+                                    <a href="http://localhost:5601">Logging</a>
+                                </h5>
+                                <p class="card-text">Kibana stores KrakenD logs and allows analysis</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-sm-6">
+                        <div class="card even">
+                            <img src="grafana.png" class="card-img-top img-fluid" alt="logo">
+                            <div class="card-body">
+                                <h5 class="card-title">
+                                    <a href="http://localhost:4000">Monitoring & metrics</a>
+                                </h5>
+                                <p class="card-text">Grafana Monitoring shows the usage of KrakenD and reveals low-level metrics.</p>
+                                <p class="card-text">Use <code>admin</code> as temporary user and password. And then go to <code>Dashboards</code> > <code>Manage</code> to see the KrakenD dashboard</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-sm-6">
+                        <div class="card">
+                            <img src="openapi.png" class="card-img-top img-fluid p-3" alt="logo">
+                            <div class="card-body">
+                                
+
+                                <h5 class="card-title">
+                                    <a href="https://petstore.swagger.io/?url=http://localhost:8080/demo/swagger.json">Documentation</a>
+                                </h5>
+                                <p class="card-text">OpenAPI/Swagger documentation can be generated with <code>krakend generate openapi</code></p>
+                                <pre>docker run -v "$PWD/config/krakend/:/etc/krakend/" 052351007912.dkr.ecr.us-east-1.amazonaws.com/krakend-ee:1.3.0 generate openapi -c krakend.json -o /etc/krakend/demo/swagger.json
+                                </pre>
+                            </div>
+                        </div>
+                    </div>
+                    </div>
+                    <div class="row mb-3">
+                    <div class="col-md-3 col-sm-6">
+                        <div class="card">
+                            <img src="postman.png" class="card-img-top img-fluid p-3" alt="logo">
+                            <div class="card-body">
+                                
+
+                                <h5 class="card-title">
+                                    Postman
+                                </h5>
+                                <p class="card-text">OpenAPI/Swagger documentation can be generated with <code>krakend generate openapi</code></p>
+                                <pre>docker run -v "$PWD/config/krakend/:/etc/krakend/" 052351007912.dkr.ecr.us-east-1.amazonaws.com/krakend-ee:1.3.0 generate postman -c krakend.json -o /etc/krakend/demo/postman.json
+
+                                </pre>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-sm-6">
+                        <div class="card even">
+                            <img src="keycloak.png" class="card-img-top img-fluid p-3" alt="logo">
+                            <div class="card-body">
+                                <h5 class="card-title">
+                                    <a href="http://localhost:9090">Identity Providers</a>
+                                </h5>
+                                <p class="card-text">Keycloak and many other identity providers can be integrated with KrakenD</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-sm-6">
+                        <div class="card even">
+                            <img src="apikey.png" class="card-img-top img-fluid p-3" alt="logo">
+                            <div class="card-body">
+                                <h5 class="card-title">
+                                    API-Key
+                                        authentication
+                                </h5>
+                                <p class="card-text">The API key authentication enables a Role-Based Access Control
+                                    (RBAC) mechanism by reading the Authorization header of incoming requests.</p>
+                                <pre>curl -iG -H 'Authorization: Bearer 58427514-be32-0b52-b7c6-d01fada30497' http://localhost:8080/api-key</pre>
+                            </div>
+                        </div>
+                    </div>
+
+
+                </div>
+            </div>
+
+            <div class="container page-content">
+                <div class="container title">
+                    <h2>Other Enterprise features</h2>
+                </div>
+                <div class="row mb-3">
+                    
+                    <div class="col-md-3 col-sm-6">
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title">
+                                    <a href="https://www.krakend.io/docs/enterprise/authentication/api-keys/#using-basic-authentication">Basic Authentication</a>
+                                </h5>
+                                <p class="card-text">Protect the access to selected endpoints using basic username and
+                                    password credentials.</a>
+                                    or video conferencing meetings.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-sm-6">
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title">
+                                    <a href="https://www.krakend.io/docs/enterprise/endpoints/virtual-hosts/">Virtual Hosts</a>
+                                </h5>
+                                <p class="card-text">Run different configurations of KrakenD endpoints per host
+                                    accessing the server.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-sm-6">
+                        <div class="card even">
+                            <div class="card-body">
+                                <h5 class="card-title">
+                                    <a href="https://www.krakend.io/docs/enterprise/websockets/">WebSockets integration</a>
+                                </h5>
+                                <p class="card-text">Communications using the WebSocket Protocol (RFC-6455) to enable two-way communication between a client to a backend host through the API gateway.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-sm-6">
+                        <div class="card even">
+                            <div class="card-body">
+                                <h5 class="card-title">
+                                    <a href="https://www.krakend.io/docs/enterprise/endpoints/wildcard/">Wildcards</a>
+                                </h5>
+                                <p class="card-text">URLs starting with known patterns are forwarded to a common endpoint, without needing to declare all possible routes.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-3 col-sm-6">
+                        <div class="card even">
+                            <div class="card-body">
+                                <h5 class="card-title">
+                                    <a href="https://www.krakend.io/docs/enterprise/endpoints/geoip/">GeoIP integration</a>
+                                </h5>
+                                <p class="card-text">Load Maxmind’s GeoIP2 City database (payment and free versions) and
+                                    enrich all KrakenD calls to your backends with geo data.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3 col-sm-6">
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title">
+                                    <a href="https://www.krakend.io/docs/enterprise/endpoints/global-rate-limit/">Global rate limit</a>
+                                </h5>
+                                <p class="card-text">Enable a Redis database store to centralize all KrakenD node rate-limit counters.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-sm-6">
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title">
+                                    <a href="https://www.krakend.io/docs/enterprise/endpoints/serve-static-content/">Static content</a>
+                                </h5>
+                                <p class="card-text">Serve static content to your users, such as JS, CSS or images, or let KrakenD consume static content as part of its backend interaction.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-sm-6">
+                        <div class="card even">
+                            <div class="card-body">
+                                <h5 class="card-title">
+                                    <a href="https://www.krakend.io/docs/enterprise/endpoints/wildcard/">Multiple Identity Providers</a>
+                                </h5>
+                                <p class="card-text">KrakenD validates tokens issued by multiple Identity Providers..</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-3 col-sm-6">
+                        <div class="card even">
+                            <div class="card-body">
+                                <h5 class="card-title">
+                                    <a href="https://www.krakend.io/docs/enterprise/endpoints/openapi/">OpenAPI / Swagger + Inspector</a>
+                                </h5>
+                                <p class="card-text">Automatic generation of API documentation and inspection of backend interaction through KrakenD Studio</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-sm-6">
+                        <div class="card even">
+                            <div class="card-body">
+                                <h5 class="card-title">
+                                    <a href="https://www.krakend.io/docs/enterprise/commands/openapi/">OpenAPI CLI</a>
+                                </h5>
+                                <p class="card-text">Automatic generation of API documentation via command line command. For CI/CD.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-sm-6">
+                        <div class="card even">
+                            <div class="card-body">
+                                <h5 class="card-title">
+                                    <a href="https://www.krakend.io/docs/enterprise/commands/postman/">Postman collections</a>
+                                </h5>
+                                <p class="card-text">Automatic generation of Postman collections.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-sm-6">
+                        <div class="card even">
+                            <div class="card-body">
+                                <h5 class="card-title">
+                                    <a href="https://www.krakend.io/docs/enterprise/endpoints/url-rewrite/">URL Rewrite</a>
+                                </h5>
+                                <p class="card-text">Declare a dictionary of additional URLs that map to existing endpoints.</p>
+                            </div>
+                        </div>
+                    </div>
+                   
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-3 col-sm-6">
+                        <div class="card even">
+                            <div class="card-body">
+                                <h5 class="card-title">
+                                    <a href="https://www.krakend.io/docs/enterprise/commands/config2dot/">Config to png image</a>
+                                </h5>
+                                <p class="card-text">A generated image of the configuration might help you understand better the running configuration.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-sm-6">
+                        <div class="card even">
+                            <div class="card-body">
+                                <h5 class="card-title">
+                                    <a href="https://www.krakend.io/docs/enterprise/backends/client-redirect/">Client redirects</a>
+                                </h5>
+                                <p class="card-text">Avoid following redirects of the backends and let the end-user do
+                                    it instead.</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                </div>
+            </div>
+
+
+            <section class="feature-block zebra">
+                <div class="container title">
+                    <h2>KrakenD Studio</h2>
+                    <p>Documentation for the development tool KrakenD Studio</strong>
+                    <p>
+                    <p><a class="btn btn-primary btn-lg btn-circle" href="KrakenD Studio.pdf"
+                            role="button">
+                            <i class="fa fa-download"></i>
+                            KrakenD Studio documentation (PDF)
+                        </a></p>
+                </div>
+            </section>
+
+            
+
+
+            <section class="feature-block">
+                <div class="container title">
+                    <h4>Questions?</h4>
+                    <a href="mailto:support@krakend.io?subject=Enterprise-docs" class="btn btn-primary btn-circle">
+                        Ask support
+                    </a>
+                </div>
+            </section>
+
+
+        </div>
+    </div>
+
+    <footer class="footer">&nbsp;</footer>
+</body>
+
+</html>
