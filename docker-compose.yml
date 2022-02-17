@@ -60,11 +60,6 @@ services:
     volumes:
       - ./config/krakend:/etc/krakend
     command: ["run", "-c", "krakend.json", "--accept-eula", "-d"]
-    environment:
-      - FC_ENABLE=1
-      - FC_SETTINGS=/etc/krakend/settings
-      - FC_PARTIALS=/etc/krakend/partials
-      - FC_TEMPLATES=/etc/krakend/templates
     ports:
       - "1234:1234"
       - "8080:8080"

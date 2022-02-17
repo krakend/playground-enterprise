@@ -325,58 +325,6 @@
       }
     },
     {
-      "@comment": "Feature: Authorization based on JWT with custom implementation",
-      "endpoint": "/private/custom",
-      "backend": [
-        {
-          "url_pattern": "/user/1.json"
-        }
-      ],
-      "extra_config": {
-        "github.com/devopsfaith/krakend-jose/validator": {
-          "alg": "HS256",
-          "audience": ["http://api.example.com"],
-          "roles_key": "roles",
-          "issuer": "https://krakend.io",
-          "roles": ["role_a", "role_c"],
-          "jwk-url": "http://fake_api:8080/jwk/symmetric.json",
-          "disable_jwk_security": true
-        },
-        "github_com/devopsfaith/krakend-swagger": {
-          "summary": "Some information behind JWT authentication protection (Custom)",
-          "description": "This endpoint uses JWT authentication with a custom implementation",
-          "tags": [
-            "Authentication"
-          ]
-        }
-      }
-    },
-    {
-      "@comment": "Feature: Token generation for custom implementation of authentication",
-      "endpoint": "/token",
-      "backend": [
-        {
-          "url_pattern": "/token.json"
-        }
-      ],
-      "extra_config": {
-        "github.com/devopsfaith/krakend-jose/signer": {
-          "alg": "HS256",
-          "kid": "sim2",
-          "keys-to-sign": ["access_token", "refresh_token"],
-          "jwk-url": "http://fake_api:8080/jwk/symmetric.json",
-          "disable_jwk_security": true
-        },
-        "github_com/devopsfaith/krakend-swagger": {
-          "summary": "Token generation for jwt authentication custom implementation",
-          "description": "This endpoint uses generates a token for jwt authentication custom implementation",
-          "tags": [
-            "Authentication"
-          ]
-        }
-      }
-    },
-    {
       "@comment": "Feature: Authorization based on API Keys",
       "endpoint": "/api-key",
       "backend": [
@@ -436,58 +384,6 @@
           }
         }
       }
-    },
-    {
-      "endpoint": "/no-params",
-      "backend": [
-        {
-          "host": [
-            "http://localhost:8080"
-          ],
-          "url_pattern": "/__debug/no-params"
-        }
-      ]
-    },
-    {
-      "endpoint": "/query-params",
-      "querystring_params": [
-        "a",
-        "b"
-      ],
-      "backend": [
-        {
-          "host": [
-            "http://localhost:8080"
-          ],
-          "url_pattern": "/__debug/query-params"
-        }
-      ]
-    },
-    {
-      "endpoint": "/url-params/{param}",
-      "backend": [
-        {
-          "host": [
-            "http://localhost:8080"
-          ],
-          "url_pattern": "/__debug/url-params?p={param}"
-        }
-      ]
-    },
-    {
-      "endpoint": "/mix-params/{param}",
-      "querystring_params": [
-        "a",
-        "b"
-      ],
-      "backend": [
-        {
-          "host": [
-            "http://localhost:8080"
-          ],
-          "url_pattern": "/__debug/mix-params?p={param}"
-        }
-      ]
     }
   ],
   "extra_config": {

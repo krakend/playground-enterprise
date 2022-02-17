@@ -1,0 +1,91 @@
+{
+  "github_com/devopsfaith/krakend/transport/http/server/handler": {
+      "name": [
+        "krakend-static-live"
+      ],
+      "krakend-static-live": {
+        "prefix": "/demo/",
+        "path": "/etc/krakend/demo/"
+      }
+    },
+    "github_com/devopsfaith/krakend-swagger": {
+      "fraction": 1,
+      "version": "1",
+      "contact-name": "John Doe",
+      "contact-email": "contact@example.com",
+      "license-name": "MIT",
+      "license-url": "https://opensource.org/licenses/MIT"
+    },
+    "github_com/devopsfaith/krakend-cors": {
+      "allow_origins": [
+        "*"
+      ],
+      "allow_methods": [
+        "POST",
+        "GET"
+      ],
+      "allow_headers": [
+        "Origin",
+        "Authorization",
+        "Content-Type"
+      ],
+      "expose_headers": [
+        "Content-Length"
+      ],
+      "max_age": "12h"
+    },
+    "github_com/devopsfaith/krakend-gelf": {
+      "address": "logstash:12201"
+    },
+    "github_com/devopsfaith/krakend-gologging": {
+      "level": "DEBUG",
+      "prefix": "[KRAKEND]",
+      "syslog": false,
+      "stdout": true
+    },
+    "github_com/devopsfaith/krakend-metrics": {
+      "collection_time": "60s",
+      "listen_address": ":8090"
+    },
+    "github_com/letgoapp/krakend-influx": {
+      "address": "http://influxdb:8086",
+      "ttl": "25s",
+      "buffer_size": 0,
+      "username": "krakend-dev",
+      "password": "pas5w0rd"
+    },
+    "github_com/devopsfaith/krakend-opencensus": {
+      "sample_rate": 100,
+      "reporting_period": 1,
+      "enabled_layers": {
+        "backend": true,
+        "router": true
+      },
+      "exporters": {
+        "jaeger": {
+          "endpoint": "http://jaeger:14268/api/traces",
+          "serviceName": "krakend"
+        }
+      }
+    },
+    "github_com/devopsfaith/krakend-apikeys": {
+      "keys": [
+        {
+          "key": "4d2c61e1-34c4-e96c-9456-15bd983c5019",
+          "roles": [
+            "role1",
+            "role2"
+          ],
+          "@description": "ACME Inc."
+        },
+        {
+          "key": "58427514-be32-0b52-b7c6-d01fada30497",
+          "roles": [
+            "admin",
+            "user"
+          ],
+          "@description": "Administrators Inc."
+        }
+      ]
+    }
+}

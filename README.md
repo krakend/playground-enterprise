@@ -97,6 +97,10 @@ Fire up your browser, curl, postman, httpie or anything else you like to interac
 - JWT revoker: [http://localhost:9000](http://localhost:9000)
 - Web: [http://localhost:3000](http://localhost:3000)
 
+| 💡 Bonus track - Flexible configuration |
+| --- |
+| We've added an example of [flexible configuration](https://www.krakend.io/docs/configuration/flexible-config/), so you can view how it works in practice. <br><br> Apart from the default config file, `krakend.json`, you will find a `krakend-flexible-config.tmpl`, that include some code snippets, invoke a template using variables, and show some basic logic (iterations & conditions). <br><br> When working with flexible configuration you can optionally ask KrakenD to save the "compiled" output to a file. We've added a command `make compile-flexible-config` so you can see in a quick and easy way how KrakenD builds the final configuration file based on the existing templates.<br><br>Internally KrakenD's flexible configuration uses [Golang templating syntax](https://pkg.go.dev/text/template#hdr-Examples). | 
+
 ## Editing the API Gateway endpoints
 To add or remove endpoints, edit the file `krakend/krakend.json`. The easiest way to do it is by **dragging this file to the [KrakenD Designer](https://designer.krakend.io/)** and download the edited file. To reflect the changes restart with `make restart`.
 
