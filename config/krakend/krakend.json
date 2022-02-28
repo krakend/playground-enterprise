@@ -295,6 +295,15 @@
       }
     },
     {
+      "@comment": "A public endpoint that requires no authentication",
+      "endpoint": "/public",
+      "backend": [
+        {
+          "url_pattern": "/hotels/1.json"
+        }
+      ]
+    },
+    {
       "@comment": "Feature: Authorization based on JWT with Auth0",
       "endpoint": "/private/auth0",
       "backend": [
