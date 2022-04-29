@@ -1,6 +1,7 @@
 {
   "name": "KrakenD Enterprise API Gateway",
-  "version": 2,
+  "$id": "https://www.krakend.io/schema/v3.json",
+"version": 3,
   "host": [
     "http://fake_api:8080"
   ],
@@ -48,7 +49,7 @@
         }
       ],
       "extra_config": {
-        "github_com/devopsfaith/krakend-swagger": {
+        "documentation/openapi": {
           "summary": "Merges two calls from github and serves under a single endpoint",
           "description": "This endpoint fetches in parallel the user information and the repository information from Githuib and returns it together. Non interesting fields are removed.",
           "tags": [
@@ -68,7 +69,7 @@
           "url_pattern": "/api/v3/coins/markets?vs_currency={currency}&ids=bitcoin%2Cethereum&order=market_cap_desc&per_page=100&page=1&sparkline=false",
           "encoding": "safejson",
           "extra_config": {
-            "github.com/devopsfaith/krakend/proxy": {
+            "proxy": {
               "flatmap_filter": [
                 {
                   "type": "move",
@@ -110,7 +111,7 @@
             "https://api.coingecko.com"
           ],
           "url_pattern": "/api/v3/global",
-          "whitelist": [
+          "allow": [
             "total_market_cap.btc",
             "total_market_cap.eth",
             "total_volume.btc",
@@ -124,7 +125,7 @@
         }
       ],
       "extra_config": {
-        "github_com/devopsfaith/krakend-swagger": {
+        "documentation/openapi": {
           "summary": "Get crypto capitalization data for a given currency",
           "description": "This endpoint fetches crypto capitalization data from Coingecko for a given currency.",
           "tags": [
@@ -149,7 +150,7 @@
         }
       ],
       "extra_config": {
-        "github_com/devopsfaith/krakend-swagger": {
+        "documentation/openapi": {
           "summary": "Get crypto market information with a single call",
           "description": "This endpoint fetches crypto market information from Coingecko using a single non-concurrent call.",
           "tags": [
@@ -175,7 +176,7 @@
         }
       ],
       "extra_config": {
-        "github_com/devopsfaith/krakend-swagger": {
+        "documentation/openapi": {
           "summary": "Get crypto market information with 3 concurrent calls",
           "description": "This endpoint fetches crypto market information from Coingecko using 3 concurrent calls.",
           "tags": [
@@ -198,7 +199,7 @@
             "tLanguage": "languages"
           },
           "extra_config": {
-            "github.com/devopsfaith/krakend-martian": {
+            "modifier/martian": {
               "body.Modifier": {
                 "scope": ["request"],
                 "contentType": "text/xml; charset=utf-8",
@@ -213,21 +214,21 @@
     {
       "@comment": "Feature: Wildcard to our fake API, open",
       "endpoint": "/__wildcard/fake-api",
-      "headers_to_pass": [
+      "input_headers": [
         "X-Krakend-Wildcard"
       ],
       "backend": [
         {
           "url_pattern": "/",
           "extra_config": {
-            "github.com/devopsfaith/krakend/transport/http/client/executor": {
-              "name": "krakend-wildcard"
+            "plugin/http-client": {
+              "name": "wildcard"
             }
           }
         }
       ],
       "extra_config": {
-        "github_com/devopsfaith/krakend-swagger": {
+        "documentation/openapi": {
           "summary": "Calls to internal service with wildcard",
           "description": "This endpoint will send all requests to a designed backend including everything after the /fake-api path",
           "tags": [
@@ -239,21 +240,21 @@
     {
       "@comment": "Feature: Wildcard to our fake API, protected with Basic Auth",
       "endpoint": "/__wildcard/fake-api-auth",
-      "headers_to_pass": [
+      "input_headers": [
         "X-Krakend-Wildcard"
       ],
       "backend": [
         {
           "url_pattern": "/",
           "extra_config": {
-            "github.com/devopsfaith/krakend/transport/http/client/executor": {
-              "name": "krakend-wildcard"
+            "plugin/http-client": {
+              "name": "wildcard"
             }
           }
         }
       ],
       "extra_config": {
-        "github_com/devopsfaith/krakend-swagger": {
+        "documentation/openapi": {
           "summary": "Calls to internal service with wildcard, adding auth",
           "description": "This endpoint will send all requests to a designed backend including everything after the /fake-api-auth path, adding Basic Authentication",
           "tags": [
@@ -265,7 +266,7 @@
     {
       "@comment": "Feature: Wildcard with geofencing - Allow visits only from Spain",
       "endpoint": "/__wildcard/fake-api-geofence",
-      "headers_to_pass": [
+      "input_headers": [
         "X-Krakend-Wildcard",
         "X-Geoip"
       ],
@@ -273,19 +274,19 @@
         {
           "url_pattern": "/",
           "extra_config": {
-            "github.com/devopsfaith/krakend/transport/http/client/executor": {
-              "name": "krakend-wildcard"
+            "plugin/http-client": {
+              "name": "wildcard"
             }
           }
         }
       ],
       "extra_config": {
-        "github.com/devopsfaith/krakend-cel": [
+        "validation/cel": [
           {
             "check_expr": "req_headers['X-Geoip'][0].matches('\"IsoCode\":\"ES\"')"
           }
         ],
-        "github_com/devopsfaith/krakend-swagger": {
+        "documentation/openapi": {
           "summary": "Calls to internal service with wildcard, using geofencing",
           "description": "This endpoint will send all requests to a designed backend including everything after the /fake-api-geofence path, adding geofencing (allowing calls only from Spain)",
           "tags": [
@@ -312,7 +313,7 @@
         }
       ],
       "extra_config": {
-        "github.com/devopsfaith/krakend-jose/validator": {
+        "auth/validator": {
           "alg": "RS256",
           "audience": [
             "http://api.example.com"
@@ -322,9 +323,9 @@
             "user",
             "admin"
           ],
-          "jwk-url": "https://albert-test.auth0.com/.well-known/jwks.json"
+          "jwk_url": "https://albert-test.auth0.com/.well-known/jwks.json"
         },
-        "github_com/devopsfaith/krakend-swagger": {
+        "documentation/openapi": {
           "summary": "Some information behind JWT authentication protection (Auth0)",
           "description": "This endpoint uses JWT authentication with Auth0",
           "tags": [
@@ -345,12 +346,12 @@
         }
       ],
       "extra_config": {
-        "github_com/devopsfaith/krakend-apikeys": {
+        "auth/api-keys": {
           "roles": [
             "admin"
           ]
         },
-        "github_com/devopsfaith/krakend-swagger": {
+        "documentation/openapi": {
           "summary": "Some information behind API-Keys authentication protection",
           "description": "This endpoint uses API-Key authentication",
           "tags": [
@@ -376,7 +377,7 @@
       "output_encoding": "json",
       "backend": [{"host": ["http://unexistent_backend"], "url_pattern": "/"}],
       "extra_config": {
-        "github.com/devopsfaith/krakend/proxy": {
+        "proxy": {
           "static": {
             "data": {
               "an_integer": 123,
@@ -396,25 +397,25 @@
     }
   ],
   "extra_config": {
-    "github_com/devopsfaith/krakend/transport/http/server/handler": {
+    "plugin/http-server": {
       "name": [
-        "krakend-static-live",
-        "krakend-basic-auth",
-        "krakend-wildcard",
-        "krakend-geoip",
+        "static-filesystem",
+        "basic-auth",
+        "wildcard",
+        "geoip",
         "url-rewrite"
       ],
-      "krakend-static-live": {
+      "static-filesystem": {
         "prefix": "/demo/",
         "path": "/etc/krakend/demo/"
       },
-      "krakend-basic-auth": {
+      "basic-auth": {
         "htpasswd_path": "/etc/krakend/.htpasswd",
         "endpoints": [
           "/__wildcard/fake-api-auth"
         ]
       },
-      "krakend-wildcard": {
+      "wildcard": {
         "endpoints": {
           "/__wildcard/fake-api": [
             "/fake-api"
@@ -427,7 +428,7 @@
           ]
         }
       },
-      "krakend-geoip": {
+      "geoip": {
         "citydb_path": "/etc/krakend/geoip/GeoLite2-City.mmdb"
       },
       "url-rewrite": {
@@ -446,15 +447,15 @@
         ]
       }
     },
-    "github_com/devopsfaith/krakend-swagger": {
+    "documentation/openapi": {
       "fraction": 1,
       "version": "1",
-      "contact-name": "John Doe",
-      "contact-email": "contact@example.com",
-      "license-name": "MIT",
-      "license-url": "https://opensource.org/licenses/MIT"
+      "contact_name": "John Doe",
+      "contact_email": "contact@example.com",
+      "license_name": "MIT",
+      "license_url": "https://opensource.org/licenses/MIT"
     },
-    "github_com/devopsfaith/krakend-cors": {
+    "security/cors": {
       "allow_origins": [
         "*"
       ],
@@ -472,27 +473,27 @@
       ],
       "max_age": "12h"
     },
-    "github_com/devopsfaith/krakend-gelf": {
+    "telemetry/gelf": {
       "address": "logstash:12201"
     },
-    "github_com/devopsfaith/krakend-gologging": {
+    "telemetry/logging": {
       "level": "DEBUG",
       "prefix": "[KRAKEND]",
       "syslog": false,
       "stdout": true
     },
-    "github_com/devopsfaith/krakend-metrics": {
+    "telemetry/metrics": {
       "collection_time": "60s",
       "listen_address": ":8090"
     },
-    "github_com/letgoapp/krakend-influx": {
+    "telemetry/influx": {
       "address": "http://influxdb:8086",
       "ttl": "25s",
       "buffer_size": 0,
       "username": "krakend-dev",
       "password": "pas5w0rd"
     },
-    "github_com/devopsfaith/krakend-opencensus": {
+    "telemetry/opencensus": {
       "sample_rate": 100,
       "reporting_period": 1,
       "enabled_layers": {
@@ -506,7 +507,7 @@
         }
       }
     },
-    "github_com/devopsfaith/krakend-apikeys": {
+    "auth/api-keys": {
       "keys": [
         {
           "key": "4d2c61e1-34c4-e96c-9456-15bd983c5019",
@@ -526,13 +527,13 @@
         }
       ]
     },
-    "github_com/devopsfaith/bloomfilter": {
+    "auth/revoker": {
       "N": 10000000,
       "P": 0.0000001,
-      "HashName": "optimal",
+      "hash_name": "optimal",
       "TTL": 1500,
       "port": 1234,
-      "TokenKeys": ["jti"]
+      "token_keys": ["jti"]
     }
   }
 }

@@ -1,6 +1,6 @@
 {
    "endpoint": "/admin/users",
-  {{  include "headers_to_pass.tmpl"}},
+  {{  include "input_headers.tmpl"}},
    "backend": [
    {
      "url_pattern": "/users",
@@ -11,17 +11,17 @@
    }
    ],
    "extra_config": {
-     "github.com/devopsfaith/krakend-jose/validator": {
+     "auth/validator": {
        "alg": "RS256",
-       "jwk-url": "{{ .env.security }}"
+       "jwk_url": "{{ .env.security }}"
      }
    }
  },
  {
    "endpoint": "/admin/devices",
    "output_encoding": "json",
-   "querystring_params":["*"],
- {{  include "headers_to_pass.tmpl"}},
+   "input_query_strings":["*"],
+ {{  include "input_headers.tmpl"}},
    "backend": [
    {
      "url_pattern": "/devices",
@@ -33,9 +33,9 @@
    }
    ],
    "extra_config": {
-     "github.com/devopsfaith/krakend-jose/validator": {
+     "auth/validator": {
        "alg": "RS256",
-       "jwk-url": "{{ .env.security }}"
+       "jwk_url": "{{ .env.security }}"
      }
    }
  }

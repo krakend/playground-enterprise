@@ -1,22 +1,22 @@
 {
-  "github_com/devopsfaith/krakend/transport/http/server/handler": {
+  "plugin/http-server": {
       "name": [
-        "krakend-static-live"
+        "static-filesystem"
       ],
-      "krakend-static-live": {
+      "static-filesystem": {
         "prefix": "/demo/",
         "path": "/etc/krakend/demo/"
       }
     },
-    "github_com/devopsfaith/krakend-swagger": {
+    "documentation/openapi": {
       "fraction": 1,
       "version": "1",
-      "contact-name": "John Doe",
-      "contact-email": "contact@example.com",
-      "license-name": "MIT",
-      "license-url": "https://opensource.org/licenses/MIT"
+      "contact_name": "John Doe",
+      "contact_email": "contact@example.com",
+      "license_name": "MIT",
+      "license_url": "https://opensource.org/licenses/MIT"
     },
-    "github_com/devopsfaith/krakend-cors": {
+    "security/cors": {
       "allow_origins": [
         "*"
       ],
@@ -34,27 +34,27 @@
       ],
       "max_age": "12h"
     },
-    "github_com/devopsfaith/krakend-gelf": {
+    "telemetry/gelf": {
       "address": "logstash:12201"
     },
-    "github_com/devopsfaith/krakend-gologging": {
+    "telemetry/logging": {
       "level": "DEBUG",
       "prefix": "[KRAKEND]",
       "syslog": false,
       "stdout": true
     },
-    "github_com/devopsfaith/krakend-metrics": {
+    "telemetry/metrics": {
       "collection_time": "60s",
       "listen_address": ":8090"
     },
-    "github_com/letgoapp/krakend-influx": {
+    "telemetry/influx": {
       "address": "http://influxdb:8086",
       "ttl": "25s",
       "buffer_size": 0,
       "username": "krakend-dev",
       "password": "pas5w0rd"
     },
-    "github_com/devopsfaith/krakend-opencensus": {
+    "telemetry/opencensus": {
       "sample_rate": 100,
       "reporting_period": 1,
       "enabled_layers": {
@@ -68,7 +68,7 @@
         }
       }
     },
-    "github_com/devopsfaith/krakend-apikeys": {
+    "auth/api-keys": {
       "keys": [
         {
           "key": "4d2c61e1-34c4-e96c-9456-15bd983c5019",
