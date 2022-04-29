@@ -2,19 +2,20 @@
 
 # KrakenD Enterprise Playground
 
- | _Note:_ **This playground require a valid KrakenD Enterprise license file placed in `/config/krakend/LICENSE`.** |
+ | _Note:_ **This playground requires a valid KrakenD Enterprise license file copied under `./config/krakend/LICENSE`.** |
 | --- |
 
 · _[Request a KrakenD EE demo or a trial license »](https://www.krakend.io/enterprise/#contact-sales)_ \
 · _See the [open-source edition of a similar environment »](https://github.com/devopsfaith/krakend-playground)_
 
-The KrakenD Enterprise Playground is a demonstration environment that puts together the necessary pieces to get you started with our API Gateway, using some example use cases.
+The KrakenD Enterprise Playground is a demonstration environment that puts together the necessary pieces to get you started with our API Gateway, using example use-cases.
 
-As KrakenD is an API gateway, we have added:
-- some internal and third-party services that feeds the gateway
-- several authentication / authorization examples, including JWT token based authentication with Auth0 integration and a jkt token revoker, API-Key based authentication and Basic Authentication. 
-- some static assets that will be served by embeded KrakenD Static Server
-- some example integrations with Grafana+Influx (metrics), ELK (log storing and visualization) and Jaeger (tracing).
+As KrakenD is an API gateway, we have added surrounding services:
+
+- Internal and third-party services that feed the gateway
+- Authentication/authorization examples, including JWT token-based authentication with Auth0 integration, a JWT token revoker, API-Key-based authentication, and basic authentication.
+- Static assets to test the by KrakenD Static Server based on disk content
+- Integrations with Grafana+Influx (metrics), ELK (log storing and visualization), and Jaeger (tracing).
 
 ![KrakenD Docker compose](composer-env.png)
 
@@ -22,28 +23,24 @@ As KrakenD is an API gateway, we have added:
 The docker-compose.yml includes the following services:
 
 ### The API Gateway!
-An instance of KrakenD with several endpoints. Its configuration is available at `config/krakend/krakend.json`, including some descriptive comments on every endpoint.
+On port `8080` you have an instance of KrakenD Enterprise with several endpoints. Its configuration is available at `config/krakend/krakend.json`, including descriptive `@comments` for each endpoint.
 
-Runs on [http://localhost:8080](http://localhost:8080) \
-Running on [http://localhost:8080/demo/](http://localhost:8080/demo/) you'll find a [static website served by KrakenD](https://www.krakend.io/docs/enterprise/endpoints/serve-static-content/) itself.
+See [http://localhost:8080/demo/](http://localhost:8080/demo/) where you'll find a [static website served by KrakenD](https://www.krakend.io/docs/enterprise/endpoints/serve-static-content/) itself.
 
 ### Fake API
-A simple API that provides raw data to the gateway. You can add or remove data any time by adding XML, JSON or RSS files in the `data` folder.
+On port `8000` you have a simple API that provides raw data to the gateway. You can add or remove data by adding XML, JSON, or RSS files in the `data` folder.
 
-Runs on [http://localhost:8000](http://localhost:8000)
+See [http://localhost:8000](http://localhost:8000)
 
 ### Metrics, logs & tracing
-A Jaeger dashboard shows the traces of the activity you generate.
-Runs on [http://localhost:16686](http://localhost:16686)
+Request several endpoints and then open any of the metrics included in this demo:
 
-A Kibana dashboard shows the logs registered by Logstash and persisted in Elasticsearch.
-Kibana runs on [http://localhost:5601](http://localhost:5601)
-
-A Grafana dashboard shows the metrics registered at InfluxDB
-Grafana runs on [http://localhost:4000](http://localhost:4000)
+- A **Jaeger** dashboard shows the traces of the activity you generate on [http://localhost:16686](http://localhost:16686)
+- A **Kibana** dashboard shows the logs registered by Logstash and persisted in Elasticsearch. Kibana runs on [http://localhost:5601](http://localhost:5601)
+- A **Grafana** dashboard shows the metrics provided by InfluxDB. Grafana runs on [http://localhost:4000](http://localhost:4000)
 
 ### The JWT revoker
-A simple implementation of a JWT rovoker using the KrakenD remote bloomfilter client.
+A simple implementation of a JWT revoker using the KrakenD remote bloomfilter client.
 
 Runs on [http://localhost:9000](http://localhost:9000)
 
@@ -52,7 +49,7 @@ This consumer of the API gateway is a simple Express JS application that interac
 
 The client is a Single Page Application using [Auth0](https://auth0.com) to generate JWT tokens.
 
-**You don't need to install any npm locally**, the docker image will download and install the dependencies in the container for you.
+**You don't need to install any npm locally**; the docker image will download and install the dependencies in the container.
 
 Runs on [http://localhost:3000](http://localhost:3000)
 
@@ -65,8 +62,7 @@ Create a new SPA application in [Auth0](https://manage.auth0.com/) and fill the 
     var AUTH0_DOMAIN='AUTH0_DOMAIN';
     var AUTH0_AUDIENCE = 'AUTH0_AUDIENCE';
 
-This must be done before starting the docker-compose.
-If you have started docker-compose before setting these variables, you need to build the image again with `docker-compose build web`.
+**You must do this before starting the docker-compose.** If you have started docker-compose before setting these variables, you need to build the image again with `docker-compose build web`.
 
 ### Running the playground
 
@@ -86,7 +82,7 @@ To shut down the complete stack, removing all the volumes
 ```
 
 ## Play!
-Fire up your browser, curl, postman, httpie or anything else you like to interact with any of the published services.
+Fire up your browser, curl, postman, httpie, or anything else you like to interact with any of the published services.
 
 - Demo static website: [http://localhost:8080/demo/](http://localhost:8080/demo/)
 - Fake API: [http://localhost:8000](http://localhost:8000)
@@ -99,12 +95,12 @@ Fire up your browser, curl, postman, httpie or anything else you like to interac
 
 | 💡 Bonus track - Flexible configuration |
 | --- |
-| We've added an example of [flexible configuration](https://www.krakend.io/docs/configuration/flexible-config/), so you can view how it works in practice. <br><br> Apart from the default config file, `krakend.json`, you will find a `krakend-flexible-config.tmpl`, that include some code snippets, invoke a template using variables, and show some basic logic (iterations & conditions). <br><br> When working with flexible configuration you can optionally ask KrakenD to save the "compiled" output to a file. We've added a command `make compile-flexible-config` so you can see in a quick and easy way how KrakenD builds the final configuration file based on the existing templates.<br><br>Internally KrakenD's flexible configuration uses [Golang templating syntax](https://pkg.go.dev/text/template#hdr-Examples). | 
+| We've added an example of [flexible configuration](https://www.krakend.io/docs/configuration/flexible-config/), so you can view how it works in practice. <br><br> Apart from the default config file, `krakend.json`, you will find a `krakend-flexible-config.tmpl`, that includes some code snippets, invokes a template using variables, and show some basic logic (iterations & conditions). <br><br> When working with the flexible configuration, you can optionally ask KrakenD to save the "compiled" output to a file. We've added a command `make compile-flexible-config` so you can see quickly and easily how KrakenD builds the final configuration file based on the existing templates.<br><br>Internally KrakenD's flexible configuration uses [Golang templating syntax](https://pkg.go.dev/text/template#hdr-Examples). |
 
 ## Editing the API Gateway endpoints
-To add or remove endpoints, edit the file `krakend/krakend.json`. The easiest way to do it is by **dragging this file to the [KrakenD Designer](https://designer.krakend.io/)** and download the edited file. To reflect the changes restart with `make restart`.
+To add or remove endpoints, edit the file `krakend/krakend.json`. The easiest way to do it is by **dragging this file to the [KrakenD Designer](https://designer.krakend.io/)** and downloading the edited file. Then, to reflect the changes, restart with `make restart`.
 
-To change the data in the static server (simulating your backend API) edit, add or delete files in the **`data/`** folder.
+To change the data in the static server (simulating your backend API), edit, add or delete files in the **`data/`** folder.
 
 The following endpoints are worth noticing:
 
@@ -112,14 +108,14 @@ The following endpoints are worth noticing:
 - **Concurrent requests**: `/market/concurrent`: Using [concurrent requests](https://www.krakend.io/docs/endpoints/concurrent-requests/) to gather data from Coingecko API
 - **Wildcards**: `/fake-api/{*}`: Expose information from internal service at fake api using wildcard
 - **Basic authentication**: `/fake-api-auth/{*}`: Expose information from internal service at fake api using wildcard and adding Basic Authentication
-- **Geolocation / Geofencing**: `/fake-api-geofence/{*}`: Expose information from internal service at fake api using wildcard and appying geofencing (only accesible ) \
-  _Note: to use geofencing, you should download a [Maxmind GeoIP City database](https://dev.maxmind.com/geoip/geolite2-free-geolocation-data?lang=en) (commercial or free) on store on `config/krakend/geoip/`_
+- **Geolocation / Geofencing**: `/fake-api-geofence/{*}`: Expose information from internal service at fake API using wildcard and applying geofencing (only accessible ) \
+  _Note: to use geofencing, you should download a [Maxmind GeoIP City database](https://dev.maxmind.com/geoip/geolite2-free-geolocation-data?lang=en) (commercial or free) and store it on `config/krakend/geoip/`_
 - **Authentication**: `/private/auth0`: Protects and endpoint validating JWT tokens issued by Auth0
 
 You will find more examples with comments in `config/krakend/krakend.json`
 
 ---
 
-If you have any questions or doubt, you can find our support resources at [https://www.krakend.io/support/](https://www.krakend.io/support/)
+If you have any questions or doubts, you can find our support resources at [https://www.krakend.io/support/](https://www.krakend.io/support/)
 
 **Interested in a demo or a trial license of KrakenD Enterprise?** [Write us »](https://www.krakend.io/enterprise/#contact-sales)
