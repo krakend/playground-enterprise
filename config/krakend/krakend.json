@@ -1,7 +1,7 @@
 {
-  "name": "KrakenD Enterprise API Gateway",
   "$id": "https://www.krakend.io/schema/v3.json",
-"version": 3,
+  "version": 3,
+  "name": "KrakenD Enterprise API Gateway",
   "host": [
     "http://fake_api:8080"
   ],

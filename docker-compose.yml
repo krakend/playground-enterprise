@@ -56,7 +56,7 @@ services:
     ports:
       - "8000:8080"
   krakend:
-    image: 052351007912.dkr.ecr.us-east-1.amazonaws.com/krakend-ee:1.3.0
+    image: 052351007912.dkr.ecr.us-east-1.amazonaws.com/krakend-ee:2.0.0
     volumes:
       - ./config/krakend:/etc/krakend
     command: ["run", "-c", "krakend.json", "--accept-eula", "-d"]
