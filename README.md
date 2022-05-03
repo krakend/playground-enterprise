@@ -2,9 +2,10 @@
 
 # KrakenD Enterprise Playground
 
- | _Note:_ **This playground requires a valid KrakenD Enterprise license file copied under `./config/krakend/LICENSE`.** |
+ | _Note:_ **This playground requires a valid KrakenD Enterprise license file copied under `./config/krakend/LICENSE` to use Enterprise functionality.** |
 | --- |
 
+· _Without a LICENSE all Enterprise features will be disabled_
 · _[Request a KrakenD EE demo or a trial license »](https://www.krakend.io/enterprise/#contact-sales)_ \
 · _See the [open-source edition of a similar environment »](https://github.com/devopsfaith/krakend-playground)_
 
@@ -114,6 +115,12 @@ The following endpoints are worth noticing:
 
 You will find more examples with comments in `config/krakend/krakend.json`
 
+## Integration tests
+You can run the integration tests defined under the folder `config/krakend/specs/` by executing the following once the server is ready:
+
+    $ docker-compose run krakend e2e
+
+To add more tests, add more files in the folder following the syntax of the existing files.
 ---
 
 If you have any questions or doubts, you can find our support resources at [https://www.krakend.io/support/](https://www.krakend.io/support/)

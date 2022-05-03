@@ -1,0 +1,14 @@
+{
+	"@comment": "Makes sure that a valid API Key can consume content",
+    "in": {
+        "method": "GET",
+        "url": "http://localhost:8080/api-key",
+        "header": {
+            "Authorization": "Bearer SOME-INVALID-KEY"
+        }
+    },
+    "out": {
+        "status_code": 401,
+        "body": ""
+    }
+}

@@ -1,0 +1,19 @@
+{
+	"@comment": "Makes sure that the wildcard endpoint gets data directly from backend",
+    "in": {
+        "method": "GET",
+        "url": "http://localhost:8080/fake-api/hotels/1.json"
+    },
+    "out": {
+        "status_code": 200,
+        "body": {
+            "hotel_id": 1,
+            "name": "Hotel California",
+            "destination_id": 1
+          },
+        "header": {
+            "content-type": ["application/json; charset=utf-8"],
+            "Cache-Control": [""]
+        }
+    }
+}

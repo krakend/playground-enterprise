@@ -1,0 +1,20 @@
+{
+	"@comment": "Makes sure that a valid API Key can consume content",
+    "in": {
+        "method": "GET",
+        "url": "http://localhost:8080/api-key",
+        "header": {
+            "Authorization": "Bearer 58427514-be32-0b52-b7c6-d01fada30497"
+        }
+    },
+    "out": {
+        "status_code": 200,
+        "body": {
+            "message": "pong"
+          },
+        "header": {
+            "content-type": ["application/json; charset=utf-8"],
+            "Cache-Control": [""]
+        }
+    }
+}
