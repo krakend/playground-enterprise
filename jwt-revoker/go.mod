@@ -3,7 +3,7 @@ module jwt-revoker
 go 1.12
 
 require (
-	github.com/devopsfaith/bloomfilter v0.0.0-20190317200532-4687d0b9aa2a
+	github.com/krakendio/bloomfilter v0.0.0-20190317200532-4687d0b9aa2a
 	github.com/tmthrgd/atomics v0.0.0-20190303111459-35961d894d96 // indirect
 	github.com/tmthrgd/go-bitset v0.0.0-20190303105531-b20fba2c981e // indirect
 	github.com/tmthrgd/go-bitwise v0.0.0-20190303101421-46d1dc0ba014 // indirect

@@ -7,7 +7,7 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/devopsfaith/bloomfilter/rpc/client"
+	"github.com/krakendio/bloomfilter/rpc/client"
 )
 
 func main() {
@@ -83,7 +83,7 @@ const indexPageContent = `
 		</form>
     </div>
   </div>
-    
+
 
   </div>
   </body>

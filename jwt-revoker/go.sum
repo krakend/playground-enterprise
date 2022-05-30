@@ -1,5 +1,5 @@
-github.com/devopsfaith/bloomfilter v0.0.0-20190317200532-4687d0b9aa2a h1:qkMmhLugQNFqVCX2dciZUOPShzadLJ+ntHKZsCptY3Q=
-github.com/devopsfaith/bloomfilter v0.0.0-20190317200532-4687d0b9aa2a/go.mod h1:tbSDll/pfEfe0SF8GkyT1z3jYyAtXw+wDFSQy7172gk=
+github.com/krakendio/bloomfilter v0.0.0-20190317200532-4687d0b9aa2a h1:qkMmhLugQNFqVCX2dciZUOPShzadLJ+ntHKZsCptY3Q=
+github.com/krakendio/bloomfilter v0.0.0-20190317200532-4687d0b9aa2a/go.mod h1:tbSDll/pfEfe0SF8GkyT1z3jYyAtXw+wDFSQy7172gk=
 github.com/tmthrgd/atomics v0.0.0-20190303111459-35961d894d96 h1:Jpe7oREw3nVLUgGwpmpEqj6+CZyGmlRDi24n0/DDMnA=
 github.com/tmthrgd/atomics v0.0.0-20190303111459-35961d894d96/go.mod h1:J2+dTgaX/1g3PkyL6sLBglBWfaLmAp5bQbRhSfKw9XI=
 github.com/tmthrgd/go-bitset v0.0.0-20190303105531-b20fba2c981e h1:xA4Ox5jfxXcyt2wx99ARBbKTVm+90GDKQ6cFUi4XgFY=
