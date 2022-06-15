@@ -60,6 +60,7 @@ services:
     volumes:
       - ./config/krakend:/etc/krakend
     command: ["run", "-c", "krakend.json", "--accept-eula", "-d"]
+    restart: always
     ports:
       - "1234:1234"
       - "8080:8080"
@@ -72,5 +73,6 @@ services:
       context: ./jwt-revoker
     ports:
       - "9000:8080"
+    restart: always
     depends_on:
       - krakend
