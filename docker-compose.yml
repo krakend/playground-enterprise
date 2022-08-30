@@ -56,7 +56,9 @@ services:
     ports:
       - "8000:8080"
   krakend:
-    image: 052351007912.dkr.ecr.us-east-1.amazonaws.com/krakend-ee:2.0.0
+    # The :watch image restarts the service automatically when the configuration files change.
+    # Do not use this image in production, it's meant to speed up your testing and development.
+    image: 052351007912.dkr.ecr.us-east-1.amazonaws.com/krakend-ee:watch
     volumes:
       - ./config/krakend:/etc/krakend
     command: ["run", "-c", "krakend.json", "--accept-eula", "-d"]
