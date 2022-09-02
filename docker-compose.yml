@@ -1,12 +1,27 @@
 version: "3"
 services:
-  jaeger:
-    image: jaegertracing/all-in-one:latest
+  krakend_ee:
+    # The :watch image restarts the service automatically when the configuration files change.
+    # Do not use this image in production, it's meant to speed up your testing and development.
+    image: 052351007912.dkr.ecr.us-east-1.amazonaws.com/krakend-ee:watch
+    volumes:
+      - ./config/krakend:/etc/krakend
+    command: ["run", "-c", "krakend.json", "--accept-eula", "-d"]
+    restart: always
     ports:
-      - "14268:14268"
-      - "16686:16686"
+      - "1234:1234"
+      - "8080:8080"
+      - "8090:8090"
+  grafana:
+    image: grafana/grafana:9.1.2
+    ports:
+      - "4000:3000"
+    volumes:
+      - "./config/grafana/datasources/all.yml:/etc/grafana/provisioning/datasources/all.yml"
+      - "./config/grafana/dashboards/all.yml:/etc/grafana/provisioning/dashboards/all.yml"
+      - "./config/grafana/krakend:/var/lib/grafana/dashboards/krakend"
   influxdb:
-    image: influxdb:1.8.5
+    image: influxdb:1.8
     environment:
       - "INFLUXDB_DB=krakend"
       - "INFLUXDB_USER=krakend-dev"
@@ -15,6 +30,11 @@ services:
       - "INFLUXDB_ADMIN_PASSWORD=supersecretpassword"
     ports:
       - "8086:8086"
+  jaeger:
+    image: jaegertracing/all-in-one:1
+    ports:
+      - "14268:14268"
+      - "16686:16686"
   elasticsearch:
     image: elasticsearch:5.6.13-alpine
     environment:
@@ -36,19 +56,6 @@ services:
     volumes:
       - ./config/logstash/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
     command: ["-f", "/usr/share/logstash/pipeline/logstash.conf"]
-  web:
-    build:
-      context: ./web
-    ports:
-      - "3000:3000"
-  grafana:
-    image: grafana/grafana:latest
-    ports:
-      - "4000:3000"
-    volumes:
-      - "./config/grafana/datasources/all.yml:/etc/grafana/provisioning/datasources/all.yml"
-      - "./config/grafana/dashboards/all.yml:/etc/grafana/provisioning/dashboards/all.yml"
-      - "./config/grafana/krakend:/var/lib/grafana/dashboards/krakend"
   fake_api:
     image: jaxgeller/lwan
     volumes:
@@ -56,25 +63,17 @@ services:
     ports:
       - "8000:8080"
   krakend:
-    # The :watch image restarts the service automatically when the configuration files change.
-    # Do not use this image in production, it's meant to speed up your testing and development.
-    image: 052351007912.dkr.ecr.us-east-1.amazonaws.com/krakend-ee:watch
+    image: 052351007912.dkr.ecr.us-east-1.amazonaws.com/krakend-ee:2.0.0
     volumes:
       - ./config/krakend:/etc/krakend
     command: ["run", "-c", "krakend.json", "--accept-eula", "-d"]
-    restart: always
     ports:
-      - "1234:1234"
-      - "8080:8080"
-      - "8090:8090"
-    depends_on:
-      - fake_api
-      - jaeger
+      - "3000:3000"
   jwt_revoke:
     build:
-      context: ./jwt-revoker
+      context: config/jwt-revoker
     ports:
       - "9000:8080"
     restart: always
     depends_on:
-      - krakend
+      - krakend_ee

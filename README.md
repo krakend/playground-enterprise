@@ -2,7 +2,7 @@
 
 # KrakenD Enterprise Playground
 
- | _Note:_ **This playground requires a valid KrakenD Enterprise license file copied under `./config/krakend/LICENSE` to use Enterprise functionality.** |
+| _Note:_ **This playground requires a valid KrakenD Enterprise license file copied under `./config/krakend/LICENSE` to use Enterprise functionality.** |
 | --- |
 
 · _Without a LICENSE all Enterprise features will be disabled_
@@ -24,21 +24,23 @@ As KrakenD is an API gateway, we have added surrounding services:
 The docker-compose.yml includes the following services:
 
 ### The API Gateway!
-On port `8080` you have an instance of KrakenD Enterprise with several endpoints. Its configuration is available at `config/krakend/krakend.json`, including descriptive `@comments` for each endpoint.
+On port `8080` you have an instance of KrakenD Enterprise Edition with several endpoints. Its configuration is available at `config/krakend/krakend.json`, including descriptive `@comments` for each endpoint.
 
-See [http://localhost:8080/demo/](http://localhost:8080/demo/) where you'll find a [static website served by KrakenD](https://www.krakend.io/docs/enterprise/endpoints/serve-static-content/) itself.
+It runs in [http://localhost:8000](http://localhost:8000)
 
-### Fake API
+Visit [http://localhost:8080/demo/](http://localhost:8080/demo/) where you'll find a [static website served by KrakenD](https://www.krakend.io/docs/enterprise/endpoints/serve-static-content/) itself.
+
+### Fake API backend
 On port `8000` you have a simple API that provides raw data to the gateway. You can add or remove data by adding XML, JSON, or RSS files in the `data` folder.
 
-See [http://localhost:8000](http://localhost:8000)
+Visit [http://localhost:8000](http://localhost:8000)
 
 ### Metrics, logs & tracing
 Request several endpoints and then open any of the metrics included in this demo:
 
+- A **Grafana** dashboard shows the metrics provided by InfluxDB. Grafana runs on [http://localhost:4000](http://localhost:4000)
 - A **Jaeger** dashboard shows the traces of the activity you generate on [http://localhost:16686](http://localhost:16686)
 - A **Kibana** dashboard shows the logs registered by Logstash and persisted in Elasticsearch. Kibana runs on [http://localhost:5601](http://localhost:5601)
-- A **Grafana** dashboard shows the metrics provided by InfluxDB. Grafana runs on [http://localhost:4000](http://localhost:4000)
 
 ### The JWT revoker
 A simple implementation of a JWT revoker using the KrakenD remote bloomfilter client.
@@ -52,7 +54,12 @@ The client is a Single Page Application using [Auth0](https://auth0.com) to gene
 
 **You don't need to install any npm locally**; the docker image will download and install the dependencies in the container.
 
-Runs on [http://localhost:3000](http://localhost:3000)
+Visit [http://localhost:3000](http://localhost:3000)
+
+### The async source
+A RabbitMQ instance ready to accept amqp messages to be delivered to the gateway.
+
+You can manage the queue consumed by the async agent at [http://localhost:15672/#/queues/%2F/krakend](http://localhost:15672/#/queues/%2F/krakend) (credentials: guest/guest)
 
 ## Start the service
 
@@ -91,8 +98,8 @@ Fire up your browser, curl, postman, httpie, or anything else you like to intera
 - Jaeger (tracing): [http://localhost:16686](http://localhost:16686)
 - Kibana (logs): [http://localhost:5601](http://localhost:5601)
 - Grafana (metrics): [http://localhost:4000](http://localhost:4000)
+- Sample SPA for auth: [http://localhost:3000](http://localhost:3000)
 - JWT revoker: [http://localhost:9000](http://localhost:9000)
-- Web: [http://localhost:3000](http://localhost:3000)
 
 When you change the `krakend.json` the changes are applied automatically.
 
@@ -128,3 +135,7 @@ To add more tests, add more files in the folder following the syntax of the exis
 If you have any questions or doubts, you can find our support resources at [https://www.krakend.io/support/](https://www.krakend.io/support/)
 
 **Interested in a demo or a trial license of KrakenD Enterprise?** [Write us »](https://www.krakend.io/enterprise/#contact-sales)
+
+---
+
+_Note: if you're looking for the KrakenD Community Edition Playground, you'll find it here: https://github.com/krakendio/krakend-playground_

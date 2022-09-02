@@ -1,4 +1,4 @@
-.PHONY: start stop logs
+.PHONY: start stop restart logs compile-flexible-config
 
 start:
 	docker-compose up -d
@@ -7,10 +7,10 @@ stop:
 	docker-compose down --volumes
 
 restart:
-	docker-compose restart
+	docker-compose restart krakend_ee
 
 logs:
-	docker-compose logs -f krakend
+	docker-compose logs -f krakend_ee
 
 compile-flexible-config:
 	docker run \

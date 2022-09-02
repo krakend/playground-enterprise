@@ -135,6 +135,31 @@
       }
     },
     {
+      "@comment": "Feature: Aggregation + backend rate limiting + endpoint rate limiting",
+      "endpoint": "/shop",
+      "backend": [
+        {
+          "url_pattern": "/shop/campaigns.json",
+          "allow": [ "campaigns" ]
+        },
+        {
+          "url_pattern": "/shop/products.json",
+          "allow": [ "products" ],
+          "extra_config": {
+            "qos/ratelimit/proxy": {
+              "max_rate": 1,
+              "capacity": 1
+            }
+          }
+        }
+      ],
+      "extra_config": {
+        "qos/ratelimit/router": {
+          "max_rate": 2
+        }
+      }
+    },
+    {
       "@comment": "Feature: Concurrent calls - Not enabled",
       "endpoint": "/market/simple",
       "backend": [
@@ -186,6 +211,24 @@
       }
     },
     {
+      "@comment": "Feature: Sequential calls, using values from 1st call response into 2nd call request",
+      "endpoint": "/sequential",
+      "backend": [
+        {
+          "url_pattern": "/hotels/1.json",
+          "allow": [ "destination_id" ]
+        },
+        {
+          "url_pattern": "/destinations/{resp0_destination_id}.json"
+        }
+      ],
+      "extra_config": {
+        "proxy": {
+          "sequential": true
+        }
+      }
+    },
+    {
       "@comment": "Feature: Expose a GET REST endpoint from POST to SOAP service",
       "endpoint": "/countries-list",
       "backend": [
@@ -212,7 +255,7 @@
       ]
     },
     {
-      "@comment": "Feature: Wildcard to our fake API, open",
+      "@comment": "EE only feature: Wildcard to our fake API, open",
       "endpoint": "/__wildcard/fake-api",
       "input_headers": [
         "X-Krakend-Wildcard"
@@ -238,7 +281,7 @@
       }
     },
     {
-      "@comment": "Feature: Wildcard to our fake API, protected with Basic Auth",
+      "@comment": "EE only feature: Wildcard to our fake API, protected with Basic Auth",
       "endpoint": "/__wildcard/fake-api-auth",
       "input_headers": [
         "X-Krakend-Wildcard"
@@ -264,7 +307,7 @@
       }
     },
     {
-      "@comment": "Feature: Wildcard with geofencing - Allow visits only from Spain",
+      "@comment": "EE only feature: Wildcard with geofencing - Allow visits only from Spain",
       "endpoint": "/__wildcard/fake-api-geofence",
       "input_headers": [
         "X-Krakend-Wildcard",
@@ -296,7 +339,7 @@
       }
     },
     {
-      "@comment": "A public endpoint that requires no authentication",
+      "@comment": "Feature: A public endpoint that requires no authentication",
       "endpoint": "/public",
       "backend": [
         {
@@ -305,7 +348,7 @@
       ]
     },
     {
-      "@comment": "Feature: Authorization based on JWT with Auth0",
+      "@comment": "Feature: Authorization based on JWT (using Auth0)",
       "endpoint": "/private/auth0",
       "backend": [
         {
@@ -335,7 +378,45 @@
       }
     },
     {
-      "@comment": "Feature: Authorization based on API Keys",
+      "@comment": "Feature: Authorization based on JWT (using KrakenD JOSE signer)",
+      "endpoint": "/private/custom",
+      "backend": [
+        {
+          "url_pattern": "/user/1.json"
+        }
+      ],
+      "extra_config": {
+        "auth/validator": {
+          "alg": "HS256",
+          "audience": ["http://api.example.com"],
+          "roles_key": "roles",
+          "issuer": "https://krakend.io",
+          "roles": ["role_a", "role_c"],
+          "jwk_url": "http://fake_api:8080/jwk/symmetric.json",
+          "disable_jwk_security": true
+        }
+      }
+    },
+    {
+      "@comment": "Feature: JWT signing, as described at https://www.krakend.io/docs/authorization/jwt-signing/",
+      "endpoint": "/token",
+      "backend": [
+        {
+          "url_pattern": "/token.json"
+        }
+      ],
+      "extra_config": {
+        "auth/signer": {
+          "alg": "HS256",
+          "kid": "sim2",
+          "keys_to_sign": ["access_token", "refresh_token"],
+          "jwk_url": "http://fake_api:8080/jwk/symmetric.json",
+          "disable_jwk_security": true
+        }
+      }
+    },
+    {
+      "@comment": "EE only feature: Authorization based on API Keys",
       "endpoint": "/api-key",
       "backend": [
         {
@@ -448,7 +529,6 @@
       }
     },
     "documentation/openapi": {
-      "fraction": 1,
       "version": "1",
       "contact_name": "John Doe",
       "contact_email": "contact@example.com",
@@ -473,15 +553,6 @@
       ],
       "max_age": "12h"
     },
-    "telemetry/gelf": {
-      "address": "logstash:12201"
-    },
-    "telemetry/logging": {
-      "level": "DEBUG",
-      "prefix": "[KRAKEND]",
-      "syslog": false,
-      "stdout": true
-    },
     "telemetry/metrics": {
       "collection_time": "60s",
       "listen_address": ":8090"
@@ -489,7 +560,7 @@
     "telemetry/influx": {
       "address": "http://influxdb:8086",
       "ttl": "25s",
-      "buffer_size": 0,
+      "buffer_size": 100,
       "username": "krakend-dev",
       "password": "pas5w0rd"
     },
@@ -503,9 +574,19 @@
       "exporters": {
         "jaeger": {
           "endpoint": "http://jaeger:14268/api/traces",
-          "serviceName": "krakend"
+          "service_name": "krakend"
         }
       }
+    },
+    "telemetry/gelf": {
+      "address": "logstash:12201",
+      "enable_tcp": false
+    },
+    "telemetry/logging": {
+      "level": "DEBUG",
+      "prefix": "[KRAKEND]",
+      "syslog": false,
+      "stdout": true
     },
     "auth/api-keys": {
       "keys": [
