@@ -9,4 +9,4 @@ RUN go build .
 
 EXPOSE 8080
 
-CMD ["./jwt-revoker"]
+CMD ["./jwt-revoker", "-server", "krakend_ee:1234"]
