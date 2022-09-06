@@ -6,12 +6,14 @@ services:
     image: 052351007912.dkr.ecr.us-east-1.amazonaws.com/krakend-ee:watch
     volumes:
       - ./config/krakend:/etc/krakend
-    command: ["run", "-c", "krakend.json", "--accept-eula", "-d"]
-    restart: always
     ports:
       - "1234:1234"
       - "8080:8080"
       - "8090:8090"
+    command: ["run", "-d", "-c", "krakend.json", "--accept-eula"]
+    depends_on:
+      - fake_api
+      - jaeger
   grafana:
     image: grafana/grafana:9.1.2
     ports:
@@ -33,8 +35,8 @@ services:
   jaeger:
     image: jaegertracing/all-in-one:1
     ports:
-      - "14268:14268"
       - "16686:16686"
+      - "14268:14268"
   elasticsearch:
     image: elasticsearch:8.4.1
     environment:
@@ -59,24 +61,26 @@ services:
     volumes:
       - ./config/logstash/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
     command: ["-f", "/usr/share/logstash/pipeline/logstash.conf"]
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - "15672:15672"
   fake_api:
     image: jaxgeller/lwan
     volumes:
       - ./data:/lwan/wwwroot
     ports:
       - "8000:8080"
-  krakend:
-    image: 052351007912.dkr.ecr.us-east-1.amazonaws.com/krakend-ee:2.0.0
-    volumes:
-      - ./config/krakend:/etc/krakend
-    command: ["run", "-c", "krakend.json", "--accept-eula", "-d"]
+  web:
+    build:
+      context: images/spa-auth-web
     ports:
       - "3000:3000"
   jwt_revoke:
     build:
-      context: config/jwt-revoker
+      context: images/jwt-revoker
     ports:
       - "9000:8080"
-    restart: always
     depends_on:
       - krakend_ee
+    restart: always

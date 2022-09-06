@@ -2,10 +2,10 @@
   "$id": "https://www.krakend.io/schema/v3.json",
   "version": 3,
   "name": "KrakenD Enterprise API Gateway",
-  "host": [
-    "http://fake_api:8080"
-  ],
   "port": 8080,
+  "host": ["http://fake_api:8080"],
+  "timeout": "3000ms",
+  "cache_ttl": "300s",
   "plugin": {
     "pattern": ".so",
     "folder": "/opt/krakend/plugins/"
@@ -16,9 +16,7 @@
       "endpoint": "/git/{user}",
       "backend": [
         {
-          "host": [
-            "https://api.github.com"
-          ],
+          "host": ["https://api.github.com"],
           "url_pattern": "/users/{user}",
           "allow": [
             "avatar_url",
@@ -38,9 +36,7 @@
           "group": "user"
         },
         {
-          "host": [
-            "https://api.github.com"
-          ],
+          "host": ["https://api.github.com"],
           "url_pattern": "/users/{user}/repos",
           "mapping": {
             "collection": "repos"
@@ -63,9 +59,7 @@
       "endpoint": "/cryptos/{currency}",
       "backend": [
         {
-          "host": [
-            "https://api.coingecko.com"
-          ],
+          "host": ["https://api.coingecko.com"],
           "url_pattern": "/api/v3/coins/markets?vs_currency={currency}&ids=bitcoin%2Cethereum&order=market_cap_desc&per_page=100&page=1&sparkline=false",
           "encoding": "safejson",
           "extra_config": {
@@ -107,9 +101,7 @@
           }
         },
         {
-          "host": [
-            "https://api.coingecko.com"
-          ],
+          "host": ["https://api.coingecko.com"],
           "url_pattern": "/api/v3/global",
           "allow": [
             "total_market_cap.btc",
@@ -160,13 +152,30 @@
       }
     },
     {
+      "@comment": "Feature: Backend cache",
+      "endpoint": "/market/cached",
+      "backend": [
+        {
+          "host": ["https://api.coingecko.com"],
+          "url_pattern": "/api/v3/coins/markets?vs_currency=eur&ids=bitcoin%2Cethereum&order=market_cap_desc&per_page=100&page=1&sparkline=false",
+          "encoding": "safejson",
+          "mapping": {
+            "collection": "coins"
+          },
+          "extra_config": {
+            "qos/http-cache": {
+              "shared": true
+            }
+          }
+        }
+      ]
+    },
+    {
       "@comment": "Feature: Concurrent calls - Not enabled",
       "endpoint": "/market/simple",
       "backend": [
         {
-          "host": [
-            "https://api.coingecko.com"
-          ],
+          "host": ["https://api.coingecko.com"],
           "url_pattern": "/api/v3/coins/markets?vs_currency=eur&ids=bitcoin%2Cethereum&order=market_cap_desc&per_page=100&page=1&sparkline=false",
           "encoding": "safejson",
           "mapping": {
@@ -190,9 +199,7 @@
       "concurrent_calls": 3,
       "backend": [
         {
-          "host": [
-            "https://api.coingecko.com"
-          ],
+          "host": ["https://api.coingecko.com"],
           "url_pattern": "/api/v3/coins/markets?vs_currency=eur&ids=bitcoin%2Cethereum&order=market_cap_desc&per_page=100&page=1&sparkline=false",
           "encoding": "safejson",
           "mapping": {
@@ -227,6 +234,21 @@
           "sequential": true
         }
       }
+    },
+    {
+      "@comment": "Feature: A failing request from a non-existent backend",
+      "endpoint": "/fail",
+      "backend": [
+        {
+          "url_pattern": "/user/1.json",
+          "group": "user"
+        },
+        {
+          "host": [ "http://fake_url_that_should_not_resolve.tld" ],
+          "url_pattern": "/",
+          "group": "none"
+        }
+      ]
     },
     {
       "@comment": "Feature: Expose a GET REST endpoint from POST to SOAP service",
@@ -358,14 +380,9 @@
       "extra_config": {
         "auth/validator": {
           "alg": "RS256",
-          "audience": [
-            "http://api.example.com"
-          ],
+          "audience": ["http://api.example.com"],
           "roles_key": "http://api.example.com/custom/roles",
-          "roles": [
-            "user",
-            "admin"
-          ],
+          "roles": ["user", "admin"],
           "jwk_url": "https://albert-test.auth0.com/.well-known/jwks.json"
         },
         "documentation/openapi": {
@@ -477,6 +494,36 @@
       }
     }
   ],
+  "sequential_start":true,
+  "async_agent":[
+    {
+      "name": "async-agent-demo",
+      "backend": [
+        {
+          "host":[ "http://127.0.0.1:8080" ],
+          "url_pattern": "/__debug/async-agent-demo",
+          "method": "POST"
+        }
+      ],
+      "consumer": {
+        "topic": "*.bar",
+        "workers": 20
+      },
+      "connection": {
+        "max_retries": 10,
+        "backoff_strategy":"exponential-jitter"
+      },
+      "extra_config": {
+        "async/amqp": {
+          "name":           "krakend",
+          "host":           "amqp://guest:guest@rabbitmq:5672/",
+          "exchange":       "foo",
+          "prefetch_count": 40,
+          "auto_ack":       true
+        }
+      }
+    }
+  ],
   "extra_config": {
     "plugin/http-server": {
       "name": [
@@ -535,59 +582,6 @@
       "license_name": "MIT",
       "license_url": "https://opensource.org/licenses/MIT"
     },
-    "security/cors": {
-      "allow_origins": [
-        "*"
-      ],
-      "allow_methods": [
-        "POST",
-        "GET"
-      ],
-      "allow_headers": [
-        "Origin",
-        "Authorization",
-        "Content-Type"
-      ],
-      "expose_headers": [
-        "Content-Length"
-      ],
-      "max_age": "12h"
-    },
-    "telemetry/metrics": {
-      "collection_time": "60s",
-      "listen_address": ":8090"
-    },
-    "telemetry/influx": {
-      "address": "http://influxdb:8086",
-      "ttl": "25s",
-      "buffer_size": 100,
-      "username": "krakend-dev",
-      "password": "pas5w0rd"
-    },
-    "telemetry/opencensus": {
-      "sample_rate": 100,
-      "reporting_period": 1,
-      "enabled_layers": {
-        "backend": true,
-        "router": true
-      },
-      "exporters": {
-        "jaeger": {
-          "endpoint": "http://jaeger:14268/api/traces",
-          "service_name": "krakend"
-        }
-      }
-    },
-    "telemetry/gelf": {
-      "address": "logstash:12201",
-      "enable_tcp": false
-    },
-    "telemetry/logging": {
-      "level": "DEBUG",
-      "prefix": "[KRAKEND]",
-      "syslog": false,
-      "stdout": true
-    },
     "auth/api-keys": {
       "keys": [
         {
@@ -607,6 +601,48 @@
           "@description": "Administrators Inc."
         }
       ]
+    },
+    "telemetry/metrics": {
+      "collection_time": "30s",
+      "listen_address": ":8090"
+    },
+    "telemetry/influx": {
+      "address": "http://influxdb:8086",
+      "ttl": "25s",
+      "buffer_size": 100,
+      "username": "krakend-dev",
+      "password": "pas5w0rd"
+    },
+    "telemetry/logging": {
+      "level": "DEBUG",
+      "prefix": "[KRAKEND]",
+      "syslog": false,
+      "stdout": true
+    },
+    "telemetry/gelf": {
+      "address": "logstash:12201",
+      "enable_tcp": false
+    },
+    "telemetry/opencensus": {
+      "sample_rate": 100,
+      "reporting_period": 1,
+      "enabled_layers": {
+        "backend": true,
+        "router": true
+      },
+      "exporters": {
+        "jaeger": {
+          "endpoint": "http://jaeger:14268/api/traces",
+          "service_name": "krakend"
+        }
+      }
+    },
+    "security/cors": {
+      "allow_origins": ["*"],
+      "allow_methods": ["POST", "GET"],
+      "allow_headers": ["Origin", "Authorization", "Content-Type"],
+      "expose_headers": ["Content-Length"],
+      "max_age": "12h"
     },
     "auth/revoker": {
       "N": 10000000,

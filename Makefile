@@ -7,7 +7,7 @@ stop:
 	docker-compose down --volumes
 
 restart:
-	docker-compose restart krakend_ee
+	docker-compose restart
 
 logs:
 	docker-compose logs -f krakend_ee
