@@ -18,7 +18,7 @@ As KrakenD is an API gateway, we have added surrounding services:
 - Static assets to test the by KrakenD Static Server based on disk content
 - Integrations with Grafana+Influx (metrics), ELK (log storing and visualization), Jaeger (tracing) and RabbitMQ (for async agents).
 
-![KrakenD Docker compose](composer-env.png)
+![KrakenD Docker compose](assets/composer-env.png)
 
 ## Services
 The docker-compose.yml includes the following services:
@@ -36,11 +36,25 @@ On port `8000` you have a simple API that provides raw data to the gateway. You 
 It runs in [http://localhost:8000](http://localhost:8000)
 
 ### Metrics, logs & tracing
-Request several endpoints and then open any of the metrics included in this demo:
+KrakenD can export telemetry to several services, and this demonstration has a few examples. After starting the service and calling some endpoints you will see the activity in Jaeger, Grafana and Kibana.
 
-- A **Grafana** dashboard shows the metrics provided by InfluxDB. Grafana runs on [http://localhost:4000](http://localhost:4000)
-- A **Jaeger** dashboard shows the traces of the activity you generate on [http://localhost:16686](http://localhost:16686)
-- A **Kibana** dashboard shows the logs registered by Logstash and persisted in Elasticsearch. Kibana runs on [http://localhost:5601](http://localhost:5601)
+#### Grafana demo (metrics)
+![grafana screenshot](assets/grafana-screenshot.png)
+
+A **Grafana** dashboard shows the metrics provided by InfluxDB. Grafana runs on [http://localhost:4000](http://localhost:4000)
+
+#### Jaeger demo (tracing)
+![jaeger screenshot](assets/jaeger-screenshot.png)
+
+A **Jaeger** dashboard shows the traces of the activity you generate on [http://localhost:16686](http://localhost:16686), so you can see all the activity between the client and your end services.
+
+#### Kibana demo (logs)
+![Kibana screenshot](assets/kibana-screenshot.png)
+
+A **Kibana** dashboard shows the logs registered by Logstash and persisted in Elasticsearch. Kibana runs on [http://localhost:5601](http://localhost:5601). To import a Kibana dashboard with some useful metrics run in the console (make sure all services started):
+
+    make elastic
+
 
 ### Web client
 This consumer of the API gateway is a simple Express JS application that interacts with KrakenD to fetch the data. All code is under `images/spa-auth-web/`.
