@@ -5,18 +5,18 @@
 | _Note:_ **This playground requires a valid KrakenD Enterprise license file copied under `./config/krakend/LICENSE` to use Enterprise functionality.** |
 | --- |
 
-· _Without a LICENSE all Enterprise features will be disabled_
+· _Without a LICENSE, all Enterprise features will be disabled_
 · _[Request a KrakenD EE demo or a trial license »](https://www.krakend.io/enterprise/#contact-sales)_ \
 · _See the [open-source edition of a similar environment »](https://github.com/devopsfaith/krakend-playground)_
 
-The KrakenD Enterprise Playground is a demonstration environment that puts together the necessary pieces to get you started with our API Gateway, using example use-cases.
+The KrakenD Enterprise Playground is a demonstration environment that combines the necessary pieces to get you started with our API Gateway, using example use cases.
 
 As KrakenD is an API gateway, we have added surrounding services:
 
 - Internal and third-party services that feed the gateway
 - Authentication/authorization examples, including JWT token-based authentication with Auth0 integration, a JWT token revoker, API-Key-based authentication, and basic authentication.
-- Static assets to test the by KrakenD Static Server based on disk content
-- Integrations with Grafana+Influx (metrics), ELK (log storing and visualization), Jaeger (tracing) and RabbitMQ (for async agents).
+- Static assets to test them by KrakenD Static Server based on disk content
+- Integrations with Grafana+Influx (metrics), ELK (log storing and visualization), Jaeger (tracing), and RabbitMQ (for async agents).
 
 ![KrakenD Docker compose](assets/composer-env.png)
 
@@ -24,37 +24,27 @@ As KrakenD is an API gateway, we have added surrounding services:
 The docker-compose.yml includes the following services:
 
 ### The API Gateway!
-On port `8080` you have an instance of KrakenD Enterprise Edition with several endpoints. Its configuration is available at `config/krakend/krakend.json`, including descriptive `@comments` for each endpoint.
-
-It runs in [http://localhost:8000](http://localhost:8000)
+On port `8080`, you have an instance of KrakenD Enterprise Edition with several endpoints. Its configuration is available at `config/krakend/krakend.json`, including descriptive `@comments` for each endpoint.
 
 Visit [http://localhost:8080/demo/](http://localhost:8080/demo/) where you'll find a [static website served by KrakenD](https://www.krakend.io/docs/enterprise/endpoints/serve-static-content/) itself.
 
-### Fake API backend
-On port `8000` you have a simple API that provides raw data to the gateway. You can add or remove data by adding XML, JSON, or RSS files in the `data` folder.
+### Fake API backend (Upstream)
+On port `8000`, you have a simple fake API that provides raw data to the gateway. You can add or remove data by adding XML, JSON, or RSS files in the `data` folder.
 
 It runs in [http://localhost:8000](http://localhost:8000)
 
 ### Metrics, logs & tracing
-KrakenD can export telemetry to several services, and this demonstration has a few examples. After starting the service and calling some endpoints you will see the activity in Jaeger, Grafana and Kibana.
+KrakenD can export telemetry to several services; this demonstration has a few examples. After starting the service and calling some endpoints, you will see the activity in Jaeger, Grafana, and Kibana.
 
-#### Grafana demo (metrics)
-![grafana screenshot](assets/grafana-screenshot.png)
+| Metrics | Logging | Tracing |
+| --- | --- | --- |
+| **Grafana** shows the metrics stored by KrakenD on InfluxDB| **Kibana** shows the logs registered by Logstash and persisted in Elasticsearch | **Jaeger** shows the traces of the activity between the client and your end services, including times of hops.|
+| URL: [http://localhost:4000](http://localhost:4000)| URL: [http://localhost:5601](http://localhost:5601) | URL: [http://localhost:16686](http://localhost:16686) |
+|![grafana screenshot](assets/grafana-screenshot.png)|![Kibana screenshot](assets/kibana-screenshot.png)|![jaeger screenshot](assets/jaeger-screenshot.png)|
 
-A **Grafana** dashboard shows the metrics provided by InfluxDB. Grafana runs on [http://localhost:4000](http://localhost:4000)
-
-#### Jaeger demo (tracing)
-![jaeger screenshot](assets/jaeger-screenshot.png)
-
-A **Jaeger** dashboard shows the traces of the activity you generate on [http://localhost:16686](http://localhost:16686), so you can see all the activity between the client and your end services.
-
-#### Kibana demo (logs)
-![Kibana screenshot](assets/kibana-screenshot.png)
-
-A **Kibana** dashboard shows the logs registered by Logstash and persisted in Elasticsearch. Kibana runs on [http://localhost:5601](http://localhost:5601). To import a Kibana dashboard with some useful metrics run in the console (make sure all services started):
+**NOTE**: To import a Kibana dashboard with some valuable metrics, run in the console the following command once all has started:
 
     make elastic
-
 
 ### Web client
 This consumer of the API gateway is a simple Express JS application that interacts with KrakenD to fetch the data. All code is under `images/spa-auth-web/`.
@@ -65,10 +55,10 @@ The client is a Single Page Application using [Auth0](https://auth0.com) to gene
 
 Visit [http://localhost:3000](http://localhost:3000)
 
-### The async source
-A RabbitMQ instance ready to accept amqp messages to be delivered to the gateway.
+### The async agent
+A RabbitMQ instance is ready to accept AMQP messages to be delivered to the gateway.
 
-You can manage the queue consumed by the async agent at [http://localhost:15672/#/queues/%2F/krakend](http://localhost:15672/#/queues/%2F/krakend) (credentials: guest/guest)
+You can insert messages in the `krakend` queue at [http://localhost:15672/#/queues/%2F/krakend](http://localhost:15672/#/queues/%2F/krakend) (credentials: `guest`/`guest`) and see how the async agent picks them and delivers them.
 
 ### Metrics
 A Jaeger dashboard shows the traces of the activity you generate. Runs on [http://localhost:16686](http://localhost:16686)
@@ -91,7 +81,7 @@ Create a new SPA application in [Auth0](https://manage.auth0.com/) and fill the 
     var AUTH0_DOMAIN='AUTH0_DOMAIN';
     var AUTH0_AUDIENCE = 'AUTH0_AUDIENCE';
 
-**You must do this before starting the docker-compose.** If you have started docker-compose before setting these variables, you need to build the image again with `docker compose build web`.
+**You must do this before starting the docker-compose.** If you have started docker-compose before setting these variables, you must build the image again with `docker compose build web`.
 
 ### Running the playground
 
@@ -111,7 +101,7 @@ To shut down the complete stack, removing all the volumes
 ```
 
 ## Play!
-Fire up your browser, curl, postman, httpie, or anything else you like to interact with any of the published services.
+Fire up your browser, curl, postman, httpie, or anything else you like to interact with any published services.
 
 - Demo static website: [http://localhost:8080/demo/](http://localhost:8080/demo/)
 - Fake API: [http://localhost:8000](http://localhost:8000)
@@ -122,14 +112,14 @@ Fire up your browser, curl, postman, httpie, or anything else you like to intera
 - Sample SPA for auth: [http://localhost:3000](http://localhost:3000)
 - JWT revoker: [http://localhost:9000](http://localhost:9000)
 
-When you change the `krakend.json` the changes are applied automatically.
+When you change the `krakend.json`, the changes are applied automatically.
 
 | 💡 Bonus track - Flexible configuration |
 | --- |
-| We've added an example of [flexible configuration](https://www.krakend.io/docs/configuration/flexible-config/), so you can view how it works in practice. <br><br> Apart from the default config file, `krakend.json`, you will find a `krakend-flexible-config.tmpl`, that includes some code snippets, invokes a template using variables, and show some basic logic (iterations & conditions). <br><br> When working with the flexible configuration, you can optionally ask KrakenD to save the "compiled" output to a file. We've added a command `make compile-flexible-config` so you can see quickly and easily how KrakenD builds the final configuration file based on the existing templates.<br><br>Internally KrakenD's flexible configuration uses [Golang templating syntax](https://pkg.go.dev/text/template#hdr-Examples). |
+| We've added an example of [flexible configuration](https://www.krakend.io/docs/configuration/flexible-config/), so you can view how it works in practice. <br><br> Apart from the default config file, `krakend.json`, you will find a `krakend-flexible-config.tmpl` that includes some code snippets, invokes a template using variables, and show some basic logic (iterations & conditions). <br><br> When working with the flexible configuration, you can optionally ask KrakenD to save the "compiled" output to a file. We've added a command `make compile-flexible-config` so you can see quickly and easily how KrakenD builds the final configuration file based on the existing templates.<br><br>Internally KrakenD's flexible configuration uses [Golang templating syntax](https://pkg.go.dev/text/template#hdr-Examples). |
 
 ## Editing the API Gateway endpoints
-To add or remove endpoints, edit the file `krakend/krakend.json`. The easiest way to do it is by **dragging this file to the [KrakenD Designer](https://designer.krakend.io/)** and downloading the edited file. Then, to reflect the changes, restart with `make restart`.
+To add or remove endpoints, edit the file `krakend/krakend.json`. The easiest way to do it is by **dragging this file to the [KrakenD Designer](https://designer.krakend.io/)** and downloading the edited file. If you move the downloaded file to `krakend/krakend.json` the server will apply the changes automatically.
 
 To change the data in the static server (simulating your backend API), edit, add or delete files in the **`data/`** folder.
 
@@ -142,12 +132,12 @@ The following endpoints are worth noticing:
 | Caching backend responses                     | [`/market/cached`](http://localhost:8080/market/cached)                         | Caching a backend response (based on cache headers provided by the backend)                                                                                                                                                                                                                                                          |
 | Concurrent requests                           | [`/market/concurrent`](http://localhost:8080/market/concurrent)                 | Using [concurrent requests](https://www.krakend.io/docs/endpoints/concurrent-requests/) to gather data from Coingecko API                                                                                                                                                                                                            |
 | Sequential calls                              | [`/sequential`](http://localhost:8080/sequential)                               | Using [sequential proxy](https://www.krakend.io/docs/endpoints/sequential-proxy/) to build a pipe of sequential calls, using values from 1st call response into 2nd call request                                                                                                                                                     |
-| An aggregated requests with a failing backend | [`/fail`](http://localhost:8080/fail)                                           | An example on how the `X-KrakenD-complete` header works when a backend fails on an aggregated response                                                                                                                                                                                                                               |
-| Convert a legacy SOAP XML into REST JSON      | [`/countries-list`](http://localhost:8080/countries-list)                       | Convert the XML returned by a SOAP service that require a POST of an XML body and answers with a complex XML into a GET REST endpoint answering with a simple JSON                                                                                                                                                                   |
-| Wildcards                                     | [`/fake-api/{*}`](http://localhost:8080/fake-api/user/1.json)                   | Expose information from internal service at fake api using wildcard                                                                                                                                                                                                                                                                  |
-| Basic authentication                          | [`/fake-api-auth/{*}`](http://localhost:8080/fake-api-auth/user/1.json)         | Expose information from internal service at fake api using wildcard and adding Basic Authentication                                                                                                                                                                                                                                  |
+| An aggregated requests with a failing backend | [`/fail`](http://localhost:8080/fail)                                           | An example of how the `X-KrakenD-complete` header works when a backend fails on an aggregated response                                                                                                                                                                                                                               |
+| Convert a legacy SOAP XML into REST JSON      | [`/countries-list`](http://localhost:8080/countries-list)                       | Convert the XML returned by a SOAP service that requires a POST of an XML body and answers with a complex XML into a GET REST endpoint answering with a simple JSON                                                                                                                                                                   |
+| Wildcards                                     | [`/fake-api/{*}`](http://localhost:8080/fake-api/user/1.json)                   | Expose information from internal service at fake API using wildcard                                                                                                                                                                                                                                                                  |
+| Basic authentication                          | [`/fake-api-auth/{*}`](http://localhost:8080/fake-api-auth/user/1.json)         | Expose information from internal service at fake API using wildcard and adding Basic Authentication                                                                                                                                                                                                                                  |
 | Geolocation / Geofencing                      | [`/fake-api-geofence/{*}`](http://localhost:8080/fake-api-geofence/user/1.json) | Expose information from internal service at fake API using wildcard and applying geofencing (only accessible ) <br>_Note: to use geofencing, you should download a [Maxmind GeoIP City database](https://dev.maxmind.com/geoip/geolite2-free-geolocation-data?lang=en) (commercial or free) and store it on `config/krakend/geoip/`_ |
-| JWT based Authentication                      | [`/private/auth0`](http://localhost:8080/private/auth0)                         | Protects and endpoint validating JWT tokens issued by Auth0                                                                                                                                                                                                                                                                          |
+| JWT-based Authentication                      | [`/private/auth0`](http://localhost:8080/private/auth0)                         | Protects and endpoint validating JWT tokens issued by Auth0                                                                                                                                                                                                                                                                          |
 | API Keys based Authentication                 | [`/api-key`](http://localhost:8080/api-key)                                     | Protects and endpoint using an API-Key                                                                                                                                                                                                                                                                                               |
 
 You will find more examples with comments in `config/krakend/krakend.json`
