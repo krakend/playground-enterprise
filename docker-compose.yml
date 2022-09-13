@@ -23,7 +23,7 @@ services:
       - "./config/grafana/dashboards/all.yml:/etc/grafana/provisioning/dashboards/all.yml"
       - "./config/grafana/krakend:/var/lib/grafana/dashboards/krakend"
   influxdb:
-    image: influxdb:1.8
+    image: influxdb:1.8.10
     environment:
       - "INFLUXDB_DB=krakend"
       - "INFLUXDB_USER=krakend-dev"
@@ -63,8 +63,6 @@ services:
     command: ["-f", "/usr/share/logstash/pipeline/logstash.conf"]
   rabbitmq:
     image: rabbitmq:3-management
-    ports:
-      - "15672:15672"
   fake_api:
     image: jaxgeller/lwan
     volumes:
