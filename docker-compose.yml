@@ -6,7 +6,7 @@ services:
       - "14268:14268"
       - "16686:16686"
   influxdb:
-    image: influxdb:1.8.5
+    image: influxdb:1.8.10
     environment:
       - "INFLUXDB_DB=krakend"
       - "INFLUXDB_USER=krakend-dev"
@@ -42,7 +42,7 @@ services:
     ports:
       - "3000:3000"
   grafana:
-    image: grafana/grafana:latest
+    image: grafana/grafana:9.1.2
     ports:
       - "4000:3000"
     volumes:
@@ -56,7 +56,7 @@ services:
     ports:
       - "8000:8080"
   krakend:
-    image: 052351007912.dkr.ecr.us-east-1.amazonaws.com/krakend-ee:2.0.0
+    image: 052351007912.dkr.ecr.us-east-1.amazonaws.com/krakend-ee:watch
     volumes:
       - ./config/krakend:/etc/krakend
     command: ["run", "-c", "krakend.json", "--accept-eula", "-d"]
