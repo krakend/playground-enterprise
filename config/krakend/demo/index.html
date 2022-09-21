@@ -112,8 +112,7 @@
                                     <a href="https://petstore.swagger.io/?url=http://localhost:8080/demo/swagger.json">Documentation</a>
                                 </h5>
                                 <p class="card-text">OpenAPI/Swagger documentation can be generated with <code>krakend generate openapi</code></p>
-                                <pre>docker run -v "$PWD/config/krakend/:/etc/krakend/" 052351007912.dkr.ecr.us-east-1.amazonaws.com/krakend-ee:1.3.0 generate openapi -c krakend.json -o /etc/krakend/demo/swagger.json
-                                </pre>
+                                <pre>docker-compose exec krakend_ee krakend generate openapi -o /etc/krakend/demo/swagger.json</pre>
                             </div>
                         </div>
                     </div>
@@ -129,9 +128,7 @@
                                     Postman
                                 </h5>
                                 <p class="card-text">OpenAPI/Swagger documentation can be generated with <code>krakend generate openapi</code></p>
-                                <pre>docker run -v "$PWD/config/krakend/:/etc/krakend/" 052351007912.dkr.ecr.us-east-1.amazonaws.com/krakend-ee:1.3.0 generate postman -c krakend.json -o /etc/krakend/demo/postman.json
-
-                                </pre>
+                                <pre>docker-compose exec krakend_ee krakend generate postman -o /etc/krakend/demo/postman.json</pre>
                             </div>
                         </div>
                     </div>
@@ -329,24 +326,7 @@
                 </div>
             </div>
 
-
             <section class="feature-block zebra">
-                <div class="container title">
-                    <h2>KrakenD Studio</h2>
-                    <p>Documentation for the development tool KrakenD Studio</strong>
-                    <p>
-                    <p><a class="btn btn-primary btn-lg btn-circle" href="KrakenD Studio.pdf"
-                            role="button">
-                            <i class="fa fa-download"></i>
-                            KrakenD Studio documentation (PDF)
-                        </a></p>
-                </div>
-            </section>
-
-            
-
-
-            <section class="feature-block">
                 <div class="container title">
                     <h4>Questions?</h4>
                     <a href="mailto:support@krakend.io?subject=Enterprise-docs" class="btn btn-primary btn-circle">
@@ -354,7 +334,6 @@
                     </a>
                 </div>
             </section>
-
 
         </div>
     </div>
