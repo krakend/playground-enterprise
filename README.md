@@ -20,6 +20,15 @@ As KrakenD is an API gateway, we have added surrounding services:
 
 ![KrakenD Docker compose](assets/composer-env.png)
 
+## Installation
+Clone this repository **recursively** (as it includes submodules)
+
+    git clone git@github.com:krakendio/playground-enterprise.git --recursive
+
+If you didn't specify the `--recursive` flag you can later download the submodules with
+
+    git submodule update
+
 ## Services
 The docker-compose.yml includes the following services:
 
@@ -63,7 +72,7 @@ You can insert messages in the `krakend` queue at [http://localhost:15672/#/queu
 ### Metrics
 A Jaeger dashboard shows the traces of the activity you generate. Runs on [http://localhost:16686](http://localhost:16686)
 
-A Grafana dashboard shows the metrics of the activity you generate. Runs on [http://localhost:3003](http://localhost:3003) (credentials: admin/admin)
+A Grafana dashboard shows the metrics of the activity you generate. Runs on [http://localhost:3003](http://localhost:3003) (credentials: admin/admin). You must go to datasources and edit the `influx` datasource to write the Token `my-super-secret-auth-token` to connect to InfluxDB.
 
 ### The JWT revoker
 A simple implementation of a JWT revoker using the KrakenD remote [bloomfilter client](https://github.com/krakendio/bloomfilter).
