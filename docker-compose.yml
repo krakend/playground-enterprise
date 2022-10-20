@@ -6,6 +6,7 @@ services:
     image: 052351007912.dkr.ecr.us-east-1.amazonaws.com/krakend-ee:watch
     volumes:
       - ./config/krakend:/etc/krakend
+      - ./dumps:/tmp/krakend-http-logger
     ports:
       - "1234:1234"
       - "8080:8080"
