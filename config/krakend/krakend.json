@@ -271,6 +271,11 @@
                 "@comment": "The body should be base64-encoded",
                 "body": "PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz4KPHNvYXA6RW52ZWxvcGUgeG1sbnM6c29hcD0iaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvc29hcC9lbnZlbG9wZS8iPgogIDxzb2FwOkJvZHk+CiAgICA8TGlzdE9mTGFuZ3VhZ2VzQnlOYW1lIHhtbG5zPSJodHRwOi8vd3d3Lm9vcnNwcm9uZy5vcmcvd2Vic2FtcGxlcy5jb3VudHJ5aW5mbyI+CiAgICA8L0xpc3RPZkxhbmd1YWdlc0J5TmFtZT4KICA8L3NvYXA6Qm9keT4KPC9zb2FwOkVudmVsb3BlPg=="
               }
+            },
+            "plugin/http-client": {
+              "name": "http-logger",
+              "path": "/tmp/krakend-http-logger",
+              "file_prefix": "soap"
             }
           }
         }
@@ -445,9 +450,7 @@
       ],
       "extra_config": {
         "auth/api-keys": {
-          "roles": [
-            "admin"
-          ]
+          "roles": ["admin"]
         },
         "documentation/openapi": {
           "summary": "Some information behind API-Keys authentication protection",
@@ -644,7 +647,7 @@
       "expose_headers": ["Content-Length"],
       "max_age": "12h"
     },
-    "auth/revoker": {
+    "@auth/revoker": {
       "N": 10000000,
       "P": 0.0000001,
       "hash_name": "optimal",
