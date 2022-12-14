@@ -647,7 +647,7 @@
       "expose_headers": ["Content-Length"],
       "max_age": "12h"
     },
-    "@auth/revoker": {
+    "auth/revoker": {
       "N": 10000000,
       "P": 0.0000001,
       "hash_name": "optimal",
