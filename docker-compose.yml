@@ -64,6 +64,9 @@ services:
     command: ["-f", "/usr/share/logstash/pipeline/logstash.conf"]
   rabbitmq:
     image: rabbitmq:3-management
+    # Login with guest/guest
+    ports:
+      - "15672:15672"
   fake_api:
     image: jaxgeller/lwan
     volumes:
