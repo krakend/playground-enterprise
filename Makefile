@@ -1,4 +1,4 @@
-.PHONY: start stop restart logs compile-flexible-config elastic
+.PHONY: start stop restart logs compile-flexible-config elastic audit check
 
 start:
 	docker-compose up -d
@@ -20,8 +20,20 @@ compile-flexible-config:
         -e FC_PARTIALS=/etc/krakend/partials \
         -e FC_TEMPLATES=/etc/krakend/templates \
         -e FC_OUT=/etc/krakend/krakend-flexible-config.compiled.json \
-        devopsfaith/krakend \
+        krakend/krakend-ee \
         check -c krakend-flexible-config.tmpl
+
+check:
+	docker run -it \
+        -v $(PWD)/config/krakend/:/etc/krakend/ \
+        krakend/krakend-ee \
+        check -d -t -c krakend.json --lint
+
+audit:
+	docker run -it \
+        -v $(PWD)/config/krakend/:/etc/krakend/ \
+        krakend/krakend-ee \
+        audit -c krakend.json
 
 elastic:
 	curl -X POST "localhost:5601/api/saved_objects/_import" -H "kbn-xsrf: true" --form file=@config/telemetry/kibana/dashboard.ndjson -H "kbn-xsrf: true"

@@ -162,6 +162,23 @@ You can run the integration tests defined under the folder `config/krakend/specs
     $ docker-compose run krakend e2e
 
 To add more tests, add more files in the folder following the syntax of the existing files.
+
+## Checking the configuration
+KrakenD will fail to start when the configuration is broken, but here there are a few useful commands you can try before going to production:
+
+**Check that the configuration file is valid:**
+
+```
+make check
+```
+
+**Audit the configuration:**
+
+```
+make audit
+```
+The example configuration has several flaws and the output will show the associated errors with the different severity levels.
+
 ---
 
 ## Contribute!
