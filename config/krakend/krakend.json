@@ -256,30 +256,22 @@
     },
     {
       "@comment": "Feature: Expose a GET REST endpoint from POST to SOAP service",
-      "endpoint": "/countries-list",
+      "endpoint": "/capital-of/{country}",
       "backend": [
         {
           "host": ["http://webservices.oorsprong.org"],
           "url_pattern": "/websamples.countryinfo/CountryInfoService.wso",
           "encoding": "xml",
           "method": "POST",
-          "target": "Envelope.Body.ListOfLanguagesByNameResponse.ListOfLanguagesByNameResult",
+          "target": "Envelope.Body.CapitalCityResponse",
           "mapping": {
-            "tLanguage": "languages"
+            "CapitalCityResult": "capital"
           },
+          "deny": ["-m"],
           "extra_config": {
-            "modifier/martian": {
-              "body.Modifier": {
-                "scope": ["request"],
-                "contentType": "text/xml; charset=utf-8",
-                "@comment": "The body should be base64-encoded",
-                "body": "PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz4KPHNvYXA6RW52ZWxvcGUgeG1sbnM6c29hcD0iaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvc29hcC9lbnZlbG9wZS8iPgogIDxzb2FwOkJvZHk+CiAgICA8TGlzdE9mTGFuZ3VhZ2VzQnlOYW1lIHhtbG5zPSJodHRwOi8vd3d3Lm9vcnNwcm9uZy5vcmcvd2Vic2FtcGxlcy5jb3VudHJ5aW5mbyI+CiAgICA8L0xpc3RPZkxhbmd1YWdlc0J5TmFtZT4KICA8L3NvYXA6Qm9keT4KPC9zb2FwOkVudmVsb3BlPg=="
-              }
-            },
-            "plugin/http-client": {
-              "name": "http-logger",
-              "path": "/tmp/krakend-http-logger",
-              "file_prefix": "soap"
+            "backend/soap": {
+              "@comment": "The XML template with variables is in the following path:",
+              "path": "./templates/soap_request_capital_city.tmpl.xml"
             }
           }
         }

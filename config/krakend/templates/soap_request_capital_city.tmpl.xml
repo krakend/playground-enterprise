@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+  <soap:Body>
+    <CapitalCity xmlns="http://www.oorsprong.org/websamples.countryinfo">
+      <sCountryISOCode>{{ .req_params.Country }}</sCountryISOCode>
+    </CapitalCity>
+  </soap:Body>
+</soap:Envelope>
