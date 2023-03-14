@@ -89,21 +89,46 @@
           "allow": ["credit_card"],
             "extra_config": {
                 "plugin/req-resp-modifier": {
-                    "name": [
-                        "content-replacer"
-                    ],
-                    "content-replacer": {
-                        "credit_card.number": {
-                          "@comment": "Ridiculous card masking. Show last 4 digits and remove the rest. Credit card number is nested.",
-                          "find": "^.*(\\d{4})",
-                          "replace": "XXXX-${1}",
-                          "regexp": true
-                        }
-                    }
+                "name": ["content-replacer"],
+                "content-replacer": {
+                  "credit_card.number": {
+                    "@comment": "Ridiculous card masking. Show last 4 digits and remove the rest. Credit card number is nested.",
+                    "find": "^.*(\\d{4})",
+                    "replace": "XXXX-${1}",
+                    "regexp": true
+                  }
                 }
             }
+          }
         }
       ]
+    },
+    {
+      "@comment": "Feature: Security policy engine for requests, responses and claim checking",
+      "endpoint": "/track-user",
+      "@test_with": "curl -iG -H'Cookie: GDPR=yes' 'http://localhost:8080/track-user'",
+      "input_headers": [
+        "Cookie"
+      ],
+      "backend": [
+        {
+          "host": ["http://localhost:8080"],
+          "url_pattern": "/__debug/cookie"
+        }
+      ],
+      "extra_config": {
+        "security/policies": {
+          "req": {
+            "policies": [
+              "getCookie('GDPR') == 'yes'"
+            ],
+            "error": {
+              "body": "User did not accept the cookie and tracking is not allowed",
+              "status": 403
+            }
+          }
+        }
+      }
     },
     {
       "@comment": "Feature: Aggregation + backend rate limiting + endpoint rate limiting",
@@ -492,16 +517,15 @@
               "an_object": {
                 "obj": "obj1"
               }
-            }
-          ,
+            },
             "strategy": "always"
           }
         }
       }
     }
   ],
-  "sequential_start":true,
-  "async_agent":[
+  "sequential_start": true,
+  "async_agent": [
     {
       "name": "async-agent-demo",
       "backend": [
@@ -517,20 +541,23 @@
       },
       "connection": {
         "max_retries": 10,
-        "backoff_strategy":"exponential-jitter"
+        "backoff_strategy": "exponential-jitter"
       },
       "extra_config": {
         "async/amqp": {
-          "name":           "krakend",
-          "host":           "amqp://guest:guest@rabbitmq:5672/",
-          "exchange":       "foo",
+          "name": "krakend",
+          "host": "amqp://guest:guest@rabbitmq:5672/",
+          "exchange": "foo",
           "prefetch_count": 40,
-          "auto_ack":       true
+          "auto_ack": true
         }
       }
     }
   ],
   "extra_config": {
+    "router": {
+      "return_error_msg": true
+    },
     "plugin/http-server": {
       "name": [
         "static-filesystem",
