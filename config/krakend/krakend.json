@@ -314,9 +314,11 @@
     {
       "@comment": "EE only feature: Wildcard to our fake API, protected with Basic Auth",
       "endpoint": "/__wildcard/fake-api-auth",
+      "@test_with": "curl -iG 'http://admin:admin@localhost:8080/fake-api-auth/articles.json'",
       "input_headers": [
         "X-Krakend-Wildcard"
       ],
+      "output_encoding": "no-op",
       "backend": [
         {
           "url_pattern": "/",
@@ -328,6 +330,8 @@
         }
       ],
       "extra_config": {
+        "@comment": "The simple inclusion of the Auth Basic component enables it for this endpoint",
+        "auth/basic": {},
         "documentation/openapi": {
           "summary": "Calls to internal service with wildcard, adding auth",
           "description": "This endpoint will send all requests to a designed backend including everything after the /fake-api-auth path, adding Basic Authentication",
@@ -558,10 +562,13 @@
     "router": {
       "return_error_msg": true
     },
+    "auth/basic": {
+      "@comment": "Location of the password file for endpoints requiring basic auth",
+      "htpasswd_path": "/etc/krakend/.htpasswd"
+    },
     "plugin/http-server": {
       "name": [
         "static-filesystem",
-        "basic-auth",
         "wildcard",
         "geoip",
         "url-rewrite"
@@ -569,12 +576,6 @@
       "static-filesystem": {
         "prefix": "/demo/",
         "path": "/etc/krakend/demo/"
-      },
-      "basic-auth": {
-        "htpasswd_path": "/etc/krakend/.htpasswd",
-        "endpoints": [
-          "/__wildcard/fake-api-auth"
-        ]
       },
       "wildcard": {
         "endpoints": {
