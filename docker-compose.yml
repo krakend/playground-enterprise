@@ -20,19 +20,30 @@ services:
     ports:
       - "4000:3000"
     volumes:
-      - "./config/grafana/datasources/all.yml:/etc/grafana/provisioning/datasources/all.yml"
-      - "./config/grafana/dashboards/all.yml:/etc/grafana/provisioning/dashboards/all.yml"
-      - "./config/grafana/krakend:/var/lib/grafana/dashboards/krakend"
+      - "./config/telemetry/grafana/datasources/all.yml:/etc/grafana/provisioning/datasources/all.yml"
+      - "./config/telemetry/grafana/dashboards/all.yml:/etc/grafana/provisioning/dashboards/all.yml"
+      - "./config/telemetry/grafana/krakend:/var/lib/grafana/dashboards/krakend"
   influxdb:
-    image: influxdb:1.8.10
+  #  image: influxdb:1.8.10
+  #  environment:
+  #    - "INFLUXDB_DB=krakend"
+  #    - "INFLUXDB_USER=krakend-dev"
+  #    - "INFLUXDB_USER_PASSWORD=pas5w0rd"
+  #    - "INFLUXDB_ADMIN_USER=admin"
+  #    - "INFLUXDB_ADMIN_PASSWORD=supersecretpassword"
+    image: influxdb:2.4
     environment:
-      - "INFLUXDB_DB=krakend"
-      - "INFLUXDB_USER=krakend-dev"
-      - "INFLUXDB_USER_PASSWORD=pas5w0rd"
-      - "INFLUXDB_ADMIN_USER=admin"
-      - "INFLUXDB_ADMIN_PASSWORD=supersecretpassword"
+      - "DOCKER_INFLUXDB_INIT_MODE=setup"
+      - "DOCKER_INFLUXDB_INIT_USERNAME=krakend-dev"
+      - "DOCKER_INFLUXDB_INIT_PASSWORD=pas5w0rd"
+      - "DOCKER_INFLUXDB_INIT_ORG=my-org"
+      - "DOCKER_INFLUXDB_INIT_BUCKET=krakend"
+      - "DOCKER_INFLUXDB_INIT_RETENTION=1w"
+      - "DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=my-super-secret-auth-token"
     ports:
       - "8086:8086"
+    volumes:
+      - "./config/telemetry/influx:/docker-entrypoint-initdb.d"
   jaeger:
     image: jaegertracing/all-in-one:1
     ports:
@@ -60,7 +71,7 @@ services:
     environment:
       - "xpack.monitoring.elasticsearch.url=http://elasticsearch:9200"
     volumes:
-      - ./config/logstash/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
+      - ./config/telemetry/logstash/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
     command: ["-f", "/usr/share/logstash/pipeline/logstash.conf"]
   rabbitmq:
     image: rabbitmq:3-management
