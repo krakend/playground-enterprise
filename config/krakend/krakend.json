@@ -12,7 +12,7 @@
   },
   "endpoints": [
     {
-      "@comment": "Feature: Aggregation & Transformation",
+      "@comment": "Feature: Aggregation + Basic transformation (filtering & mapping) + grouping",
       "endpoint": "/git/{user}",
       "backend": [
         {
@@ -55,71 +55,24 @@
       }
     },
     {
-      "@comment": "Feature: Aggregation & Transformation with collections",
+      "@comment": "Feature: One-liner advanced data manipulation (filter, sorting & remapping) with JMESPath Query Language",
       "endpoint": "/cryptos/{currency}",
+      "output_encoding": "json-collection",
       "backend": [
         {
           "host": ["https://api.coingecko.com"],
-          "url_pattern": "/api/v3/coins/markets?vs_currency={currency}&ids=bitcoin%2Cethereum&order=market_cap_desc&per_page=100&page=1&sparkline=false",
-          "encoding": "safejson",
-          "extra_config": {
-            "proxy": {
-              "flatmap_filter": [
-                {
-                  "type": "move",
-                  "args": [
-                    "collection",
-                    "coins"
-                  ]
-                },
-                {
-                  "type": "del",
-                  "args": [
-                    "coins.*.ath_change_percentage",
-                    "coins.*.ath_date",
-                    "coins.*.atl",
-                    "coins.*.atl_change_percentage",
-                    "coins.*.atl_date",
-                    "coins.*.circulating_supply",
-                    "coins.*.fully_diluted_valuation",
-                    "coins.*.high_24h",
-                    "coins.*.fully_diluted_valuation",
-                    "coins.*.low_24h",
-                    "coins.*.market_cap_change_24h",
-                    "coins.*.market_cap_change_percentage_24h",
-                    "coins.*.market_cap_rank",
-                    "coins.*.max_supply",
-                    "coins.*.price_change_24h",
-                    "coins.*.price_change_percentage_24h",
-                    "coins.*.roi",
-                    "coins.*.total_supply",
-                    "coins.*.total_volume"
-                  ]
-                }
-              ]
-            }
-          }
-        },
-        {
-          "host": ["https://api.coingecko.com"],
-          "url_pattern": "/api/v3/global",
-          "allow": [
-            "total_market_cap.btc",
-            "total_market_cap.eth",
-            "total_volume.btc",
-            "total_volume.eth",
-            "market_cap_percentage.btc",
-            "market_cap_percentage.eth",
-            "updated_at"
-          ],
-          "target": "data",
-          "group": "market"
+          "url_pattern": "/api/v3/coins/markets?vs_currency={currency}&order=market_cap_desc&per_page=100&page=1&sparkline=false",
+          "encoding": "safejson"
         }
       ],
       "extra_config": {
+        "modifier/jmespath": {
+          "@comment": "Get first 5 crypto by market capitalization, then reverse sort them by name, finally filter and rename some fields",
+          "expr": "reverse(sort_by(collection[:5], &name))[*].{name: name, token: symbol,price: current_price, price_change: price_change_percentage_24h, market_cap: market_cap}"
+        },
         "documentation/openapi": {
-          "summary": "Get crypto capitalization data for a given currency",
-          "description": "This endpoint fetches crypto capitalization data from Coingecko for a given currency.",
+          "summary": "Get TOP 5 crypto capitalization & price data for a given currency",
+          "description": "This endpoint fetches some crypto capitalization data from Coingecko for a given currency.",
           "tags": [
             "Aggregation"
           ]
