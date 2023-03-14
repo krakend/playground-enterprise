@@ -1,17 +1,19 @@
 {
-	"id_user": 1,
+    "id_user": 1,
     "firstName": "John",
     "lastName": "Smith",
     "age": 25,
-    "address":
-    {
+    "address": {
         "streetAddress": "21 2nd Street",
         "city": "New York",
         "state": "NY",
         "postalCode": "10021"
     },
-    "phoneNumber":
-    [
+    "credit_card": {
+        "number": "1234-56789-1234-5678",
+        "type": "mastercard"
+    },
+    "phoneNumber": [
         {
             "type": "home",
             "number": "212 555-1234"
