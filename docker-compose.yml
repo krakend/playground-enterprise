@@ -23,6 +23,11 @@ services:
       - "./config/telemetry/grafana/datasources/all.yml:/etc/grafana/provisioning/datasources/all.yml"
       - "./config/telemetry/grafana/dashboards/all.yml:/etc/grafana/provisioning/dashboards/all.yml"
       - "./config/telemetry/grafana/krakend:/var/lib/grafana/dashboards/krakend"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      # The token below must match the one in influxdb
+      - INFLUXDB_TOKEN=my-super-secret-auth-token
   influxdb:
   #  image: influxdb:1.8.10
   #  environment:
