@@ -572,6 +572,7 @@
           }
         }
       ]
+    }
   ],
   "sequential_start": true,
   "async_agent": [
