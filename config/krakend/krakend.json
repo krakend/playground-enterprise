@@ -525,7 +525,7 @@
       "input_query_strings": ["lat", "lon"],
       "backend": [
         {
-          "host": ["localhost:4242"],
+          "host": ["grpc_flights:4242"],
           "group": "flights",
           "url_pattern": "/flight_finder.Flights/FindFlight",
           "extra_config": {
@@ -538,7 +538,7 @@
           }
         },
         {
-          "host": ["localhost:4243"],
+          "host": ["grpc_trains:4243"],
           "group": "trains",
           "url_pattern": "/train_finder.Trains/FindTrains",
           "extra_config": {
@@ -558,7 +558,7 @@
           }
         },
         {
-          "host": ["localhost:4243"],
+          "host": ["grpc_trains:4243"],
           "group": "trains_classes",
           "url_pattern": "/train_finder.Trains/GetTrainClasses",
           "extra_config": {
