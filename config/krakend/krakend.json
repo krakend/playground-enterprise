@@ -543,7 +543,7 @@
           "url_pattern": "/train_finder.Trains/FindTrains",
           "extra_config": {
             "backend/grpc": {
-                "input_query_strings_mapping" : {
+                "input_mapping" : {
                     "lat": "origin.position.latitude",
                     "lon": "origin.position.longitude"
                 },
