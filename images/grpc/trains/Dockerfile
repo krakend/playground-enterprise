@@ -1,8 +1,12 @@
-FROM golang:1.17.11
+FROM golang:1.20-alpine AS builder
 RUN mkdir /app
 WORKDIR /app
 COPY . .
-RUN GOPROXY=https://goproxy.io go get -d -v ./...
+RUN go get -d -v ./...
 RUN go build ./cmd/server
+
+FROM scratch
+COPY --from=builder /app/server /server
+COPY --from=builder /app/certs /certs
 EXPOSE 4243
-CMD ["./server"]
+ENTRYPOINT ["/server"]

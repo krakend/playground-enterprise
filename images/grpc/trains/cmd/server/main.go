@@ -18,13 +18,10 @@ import (
 func main() {
 	fes := NewTrainsEchoServer()
 
-	_s := grpc.NewServer()
-
 	s := grpc.NewServer(
 		grpc.Creds(loadCredentials()),
 		grpc.UnaryInterceptor(checkClientCert),
 	)
-	fmt.Printf("_s :%#v\n", _s)
 	trainspb.RegisterTrainsServer(s, fes)
 
 	// TODO: select the listen port
@@ -54,7 +51,7 @@ func checkClientCert(ctx context.Context, req interface{}, info *grpc.UnaryServe
 }
 
 func loadCredentials() credentials.TransportCredentials {
-	certificate, err := tls.LoadX509KeyPair("certs/server_cert.pem", "certs/server_key.pem")
+	certificate, err := tls.LoadX509KeyPair("certs/server.cert", "certs/server.key")
 	if err != nil {
 		panic("failed to load server certification: " + err.Error())
 	}

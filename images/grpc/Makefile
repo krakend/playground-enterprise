@@ -31,25 +31,21 @@ gentrainscert:
 		-days 3650 \
 		-out ./trains/certs/ca.crt \
 		-keyout ./trains/certs/ca.key \
-		-subj "/C=SO/ST=Earth/L=Mountain/O=Krakend/OU=KrakendPlayground/CN=localhost" 
-	# create client certificate
-	openssl genrsa -out ./trains/certs/client.key 2048
-	openssl req -new -key ./trains/certs/client.key \
-		-out ./trains/certs/client.csr \
-    	-subj "/C=SO/ST=Earth/L=Mountain/O=Krakend/OU=KrakendPlayground/CN=localhost"
-	openssl x509 -req -in ./trains/certs/client.csr \
-		-extfile <(printf "subjectAltName=DNS:localhost") -CA ./trains/certs/ca.crt -CAkey ./trains/certs/ca.key \
-		-out ./trains/certs/client.crt \
+		-config ./trains/certs/openssl.cnf 
+	# create server private key
+	openssl genrsa -out ./trains/certs/server.key 2048
+	# create a signing request
+	openssl req -new -key \
+		./trains/certs/server.key \
+		-out ./trains/certs/server.csr \
+		-config ./trains/certs/openssl.cnf
+	# create SSL certificate:
+	openssl x509 -req -in ./trains/certs/server.csr \
+		-extfile ./trains/certs/cert.cnf \
+		-CA ./trains/certs/ca.crt \
+	    -CAkey ./trains/certs/ca.key \
+		-out ./trains/certs/server.cert \
 		-days 3650 -sha256 -CAcreateserial
-	# create server certificate
-	go run $$GOROOT/src/crypto/tls/generate_cert.go \
-		--rsa-bits 1024 \
-		--host 127.0.0.1,::1,localhost \
-		--ca \
-		--start-date "Jan 1 00:00:00 1970" \
-		--duration=1000000h
-	mv cert.pem ./trains/certs/server_cert.pem
-	mv key.pem ./trains/certs/server_key.pem
 .PHONY: gentrainscert
 
 genflights:

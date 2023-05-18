@@ -3,7 +3,7 @@ services:
   krakend_ee:
     # The :watch image restarts the service automatically when the configuration files change.
     # Do not use this image in production, it's meant to speed up your testing and development.
-    image: krakend/krakend-ee:watch
+    image: krakend/krakend-ee:2.3.0-alpha
     volumes:
       - ./config/krakend:/etc/krakend
       - ./dumps:/tmp/krakend-http-logger
@@ -104,15 +104,13 @@ services:
       - krakend_ee
     restart: always
   grpc_flights:
-    build:
-      context: images/grpc/flights
+    image: dhontecillas/grpc_flights_fake:latest
     depends_on:
       - krakend_ee
     ports:
       - "4242:4242"
   grpc_trains:
-    build:
-      context: images/grpc/trains
+    image: dhontecillas/grpc_trains_fake:latest
     depends_on:
       - krakend_ee
     ports:
