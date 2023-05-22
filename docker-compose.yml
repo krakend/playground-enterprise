@@ -3,7 +3,7 @@ services:
   krakend_ee:
     # The :watch image restarts the service automatically when the configuration files change.
     # Do not use this image in production, it's meant to speed up your testing and development.
-    image: krakend/krakend-ee:2.3.0
+    image: krakend/krakend-ee:2.3-watch
     volumes:
       - ./config/krakend:/etc/krakend
       - ./dumps:/tmp/krakend-http-logger
