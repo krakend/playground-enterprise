@@ -105,14 +105,10 @@ services:
     restart: always
   grpc_flights:
     image: krakend/grpc_flights_fake:latest
-    depends_on:
-      - krakend_ee
     ports:
       - "4242:4242"
   grpc_trains:
     image: krakend/grpc_trains_fake:latest
-    depends_on:
-      - krakend_ee
     ports:
       - "4243:4243"
 
