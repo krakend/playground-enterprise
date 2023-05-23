@@ -30,10 +30,63 @@ So we have:
 - `defs`: here we have the binary definitions of the `.proto`
     files.
 
+## Shared library
+
+Under the `contracts/lib` folder there are some `.proto`
+definitions that are used in both services, to try
+to mimic a real use case where an organization might
+have some shared `gRPC` data definitions. 
+
+Those definitions are:
+    - `Page`: for requesting and sending paginated results
+    - `GeoPosition`: just for grouping the `latitude` and 
+        `longitude` in a single type.
+    - `Address`: a human readable address
+    - `Location`: a place that have an address and is
+        geopositioned.
+    - `TimeRange`: just a way to group two timestamps
+        to define a time slice.
+
+
 ## Flights
 
-The `flights` service is based on a `proto3` gRPC service
-definition.
+The `flights` service is based on [a `proto3` gRPC service
+definition](./contracts/flights/flights.proto)
+
+The service exposes two `gRPC` calls:
+
+- `FindFlight`: that is used to search for flights
+- `BookFlight`: that is used to book for a flight
+
+### `FindFlight` request
+
+It uses several type from our own defined library to 
+start a search: Page, Location and TimeRange to define
+the page of results, the origin and time reange of
+departure, and the destination and the time range of arrival.
+
+There is also a `classes` array, so we can filter by the 
+classes that we want to flight on (like `ECONOMY` or `BUSINESS`).
+
+And also a filter requiring to just find flight that have 
+a minimum discount, either by amount **OR** percentage (this
+part does not make much sense, but is just to showcase the
+usage of the `oneof`'s `proto3` feature.
+
+### `BookFlight` request
+
+This requests have some fields that cannot be mapped from
+param / query strings, as it hits some limitations
+explained in [gRPC passing user parameters](https://www.krakend.io/docs/enterprise/backends/grpc/#passing-user-parameters) :
+
+- list of objects
+
+#### Discounts
+
+In order to test the usage of a `proto3`'s map as input,
+we use the `Passenger`'s `discounts` field, that will
+map a discount name, to its discount value to be applied.
+
 
 ## Trains
 
@@ -46,6 +99,7 @@ showcase how a `gRPC` service can use `TLS`.
 The main `Train` gRPC call has a couple of fields
 declared as `required` (a `proto2` "feature" that
 is no longer supported in `proto3`)
+
 
 
 ## Makefile
@@ -66,7 +120,7 @@ follow are:
 
 Following these steps we document the `Makefile` targets to use:
 
-### `getknowntypes`
+### `get_known_types`
 
 Before start writting our own contracts, we want to fetch
 the "well known types" proto definitions, like the `Timestamp`
@@ -127,3 +181,4 @@ can be collected in a single file (`bin_proto_single_file`).
 
 The multiplle files ones makes use of a script found in the
 `contracts` directory called `compile.sh`.
+
