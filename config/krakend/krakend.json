@@ -572,6 +572,22 @@
           }
         }
       ]
+    },
+    {
+      "@comment": "EE only feature: GRPC Payload in Body",
+      "endpoint": "/travel_book_flight",
+      "backend": [
+        {
+          "host": ["grpc_flights:4242"],
+          "group": "flights",
+          "url_pattern": "/flight_finder.Flights/BookFlight",
+          "extra_config": {
+            "backend/grpc": {
+                "use_request_body": true
+            }
+          }
+        }
+      ]
     }
   ],
   "sequential_start": true,
