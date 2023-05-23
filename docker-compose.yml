@@ -85,9 +85,10 @@ services:
     ports:
       - "15672:15672"
   fake_api:
-    image: jaxgeller/lwan
+    image: nginx:1.23.4-alpine
     volumes:
-      - ./data:/lwan/wwwroot
+      - ./config/nginx/default.conf:/etc/nginx/conf.d/default.conf
+      - ./data:/usr/share/nginx/html
     ports:
       - "8000:8080"
   web:
