@@ -576,6 +576,7 @@
     {
       "@comment": "EE only feature: GRPC Payload in Body",
       "endpoint": "/travel_book_flight",
+      "method": "POST",
       "backend": [
         {
           "host": ["grpc_flights:4242"],

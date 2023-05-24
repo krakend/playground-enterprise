@@ -69,16 +69,11 @@ func prettyPrint(title string, i interface{}) {
 }
 
 func loadCredentials() credentials.TransportCredentials {
-	certificate, err := tls.LoadX509KeyPair("certs/client.crt", "certs/client.key")
-	if err != nil {
-		panic("failed to load server certification: " + err.Error())
-	}
 
-	data, err := ioutil.ReadFile("certs/cert.pem")
+	data, err := ioutil.ReadFile("certs/ca.crt")
 	if err != nil {
 		panic("failed to load CA file: " + err.Error())
 	}
-
 	capool := x509.NewCertPool()
 	if !capool.AppendCertsFromPEM(data) {
 		panic("can't add ca cert")
@@ -86,8 +81,6 @@ func loadCredentials() credentials.TransportCredentials {
 
 	tlsConfig := &tls.Config{
 		RootCAs:      capool,
-		Certificates: []tls.Certificate{certificate},
-		ClientCAs:    capool,
 	}
 	return credentials.NewTLS(tlsConfig)
 }
