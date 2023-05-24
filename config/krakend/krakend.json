@@ -558,6 +558,10 @@
           }
         },
         {
+          "group": "hotels",
+          "url_pattern": "/hotels/1.json"
+        },
+        {
           "host": ["grpc_trains:4243"],
           "group": "trains_classes",
           "url_pattern": "/train_finder.Trains/GetTrainClasses",
