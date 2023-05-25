@@ -17,6 +17,7 @@ func main() {
 	fmt.Printf("this is a client...\n")
 	c := NewFlightsClient("localhost:4242")
 	c.FindFlight()
+	c.BookFlight()
 }
 
 type FlightsClient struct {
@@ -48,6 +49,25 @@ func (c *FlightsClient) FindFlight() {
 		return
 	}
 	prettyPrint("Flights", resp)
+}
+
+func (c *FlightsClient) BookFlight() {
+	ctx := context.Background()
+	resp, err := c.conn.BookFlight(ctx, &flightspb.BookFlightRequest{
+		FlightId: "foobar",
+		Passengers: []*flightspb.Passenger{
+			&flightspb.Passenger{
+				FullName: "Foo",
+			},
+		},
+	})
+
+	if err != nil {
+		fmt.Printf("\ncannot book flight %s\n", err.Error())
+		return
+	}
+	prettyPrint("Flights", resp)
+
 }
 
 func prettyPrint(title string, i interface{}) {

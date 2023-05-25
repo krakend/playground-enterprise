@@ -558,6 +558,10 @@
           }
         },
         {
+          "group": "hotels",
+          "url_pattern": "/hotels/1.json"
+        },
+        {
           "host": ["grpc_trains:4243"],
           "group": "trains_classes",
           "url_pattern": "/train_finder.Trains/GetTrainClasses",
@@ -568,6 +572,23 @@
                 "client_tls": {
                     "allow_insecure_connections": true
                 }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "@comment": "EE only feature: GRPC Payload in Body",
+      "endpoint": "/travel_book_flight",
+      "method": "POST",
+      "backend": [
+        {
+          "host": ["grpc_flights:4242"],
+          "group": "flights",
+          "url_pattern": "/flight_finder.Flights/BookFlight",
+          "extra_config": {
+            "backend/grpc": {
+                "use_request_body": true
             }
           }
         }

@@ -1,16 +1,4 @@
-defs:
-	cd contracts && bash ./compile.sh
-.PHONY: defs
-
-fullcatalog:
-	mkdir -p ./defs
-	cd contracts && \
-		protoc \
-		--descriptor_set_out=../fullcatalog.pb \
-		$$(find . -name '*.proto')
-.PHONY: fullcatalog
-
-getknowntypes:
+get_known_types:
 	rm -rf ./contracts/google
 	rm -rf ./tmp
 	mkdir -p ./tmp && \
@@ -19,12 +7,43 @@ getknowntypes:
 	mv ./tmp/protobuf/src/google ./contracts
 	rm -rf ./contracts/google/protobuf/compiler
 	find ./contracts/google -type f | grep -v '\.proto' | xargs rm
-	find ./contracts/google -type f | grep 'unittest' | xargs rm
+	find ./contracts/google -type f -name '*test*.proto' | xargs rm
+	rm -rf ./contracts/google/protobuf/util 
 	find ./contracts/google -type d -empty -delete
 	rm -rf ./tmp
-.PHONY: getknowntypes
+.PHONY: get_known_types
 
-gentrainscert:
+generate_grpc_flights_lib:
+	cd contracts && \
+	protoc \
+		--go_out=../genlib \
+		--go_opt=paths=source_relative \
+		--go-grpc_out=../genlib \
+		--go-grpc_opt=paths=source_relative \
+		lib/*.proto \
+		flights/*.proto
+.PHONY: generate_grpc_flights_lib
+
+generate_grpc_trains_lib:
+	cd contracts && \
+	protoc \
+		--go_out=../genlib \
+		--go_opt=paths=source_relative \
+		--go-grpc_out=../genlib \
+		--go-grpc_opt=paths=source_relative \
+		lib/*.proto \
+		trains/*.proto
+.PHONY: generate_grpc_trains_lib
+
+flights_server:
+	cd flights; go build -o ../flights_server ../flights/cmd/server
+.PHONY: flights_server
+
+trains_server:
+	cd trains; go build -o ../trains_server ../trains/cmd/server
+.PHONY: trains_server
+
+generate_trains_cert:
 	# create CA for signing client:
 	openssl req -newkey rsa:2048 \
 		-new -nodes -x509 \
@@ -46,35 +65,26 @@ gentrainscert:
 	    -CAkey ./trains/certs/ca.key \
 		-out ./trains/certs/server.cert \
 		-days 3650 -sha256 -CAcreateserial
-.PHONY: gentrainscert
+.PHONY: generate_trains_cert
 
-genflights:
+
+flights_docker_image:
+	cd flights && docker build -t krakend/grpc_flights_fake:latest .
+.PHONY: flights_docker_image
+
+trains_docker_image:
+	cd trains && docker build -t krakend/grpc_trains_fake:latest .
+.PHONY: trains_docker_image
+
+bin_proto_multiple_files:
+	cd contracts && bash ./compile.sh
+.PHONY: defs
+
+bin_proto_single_file:
+	mkdir -p ./defs
 	cd contracts && \
-	protoc \
-		--go_out=../genlib \
-		--go_opt=paths=source_relative \
-		--go-grpc_out=../genlib \
-		--go-grpc_opt=paths=source_relative \
-		lib/*.proto \
-		flights/*.proto
-.PHONY: genflights
+		protoc \
+		--descriptor_set_out=../fullcatalog.pb \
+		$$(find . -name '*.proto')
+.PHONY: fullcatalog
 
-gentrains:
-	cd contracts && \
-	protoc \
-		--go_out=../genlib \
-		--go_opt=paths=source_relative \
-		--go-grpc_out=../genlib \
-		--go-grpc_opt=paths=source_relative \
-		lib/*.proto \
-		trains/*.proto
-.PHONY: gentrains
-
-flights_server:
-	echo "build flights server"
-.PHONY: flights_server
-
-
-trains_server:
-	echo "build trains server"
-.PHONY: trains_server

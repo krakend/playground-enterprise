@@ -32,16 +32,32 @@ func prettyPrint(title string, i interface{}) {
 		fmt.Printf("cannot display %s\n", err.Error())
 		return
 	}
-	fmt.Printf("\n**[ %s ]**\n%s\n\n", title, string(bytesOut))
+	fmt.Printf("**[ %s ]**\n%s\n\n", title, string(bytesOut))
 }
 
 func (s *FlightsEchoServer) FindFlight(ctx context.Context,
 	req *flightspb.FindFlightRequest) (*flightspb.FindFlightResponse, error) {
 
-	fmt.Printf("\n-----[%v]-----\n", time.Now())
+	tm := time.Now()
+	fmt.Printf("\n-[FindFlight @ %v]-----\n", tm)
 	prettyPrint("received", req)
 	resp := s.generateResponse(req)
 	prettyPrint("sending", resp)
+	fmt.Printf("\n=[FindFlight @ %v]=====\n", tm)
+	return resp, nil
+}
+
+func (s *FlightsEchoServer) BookFlight(ctx context.Context,
+	req *flightspb.BookFlightRequest) (*flightspb.BookFlightResponse, error) {
+
+	tm := time.Now()
+	fmt.Printf("\n-[BookFlight @ %v]-----\n", tm)
+	prettyPrint("received", req)
+	resp := &flightspb.BookFlightResponse{
+		ConfirmationId: fmt.Sprintf("%v", tm),
+	}
+	prettyPrint("sending", resp)
+	fmt.Printf("\n=[BookFlight @ %v]=====\n", tm)
 	return resp, nil
 }
 

@@ -5,6 +5,8 @@ github.com/google/go-cmp v0.5.5/go.mod h1:v8dTdLbMG2kIc/vJvl+f65V22dbkXbowE6jgT/
 github.com/google/go-cmp v0.5.9 h1:O2Tfq5qg4qc4AmwVlvv0oLiVAGB7enBSJ2x2DqQFi38=
 github.com/krakendio/playground-enterprise/images/grpc/genlib v0.0.0-20230518154016-798be9f2e364 h1:yWVZqUyUHNqnanA3QmKk+vJYqN1VUFY7uewz5a76i+k=
 github.com/krakendio/playground-enterprise/images/grpc/genlib v0.0.0-20230518154016-798be9f2e364/go.mod h1:L22KcqLCsbT0Wb7e0PTZm2cpEetRapzvoI438nddgIw=
+github.com/krakendio/playground-enterprise/images/grpc/genlib v0.0.0-20230523094503-74a0a31d1ed1 h1:IyyZRaEGw8bBVi+dP17rOBb7rvm7GVEvvc8iZoe1o3Y=
+github.com/krakendio/playground-enterprise/images/grpc/genlib v0.0.0-20230523094503-74a0a31d1ed1/go.mod h1:L22KcqLCsbT0Wb7e0PTZm2cpEetRapzvoI438nddgIw=
 golang.org/x/net v0.8.0 h1:Zrh2ngAOFYneWTAIAPethzeaQLuHwhuBkuV6ZiRnUaQ=
 golang.org/x/net v0.8.0/go.mod h1:QVkue5JL9kW//ek3r6jTKnTFis1tRmNAW2P1shuFdJc=
 golang.org/x/sys v0.6.0 h1:MVltZSvRTcU2ljQOhs94SXPftV6DCNnZViHeQps87pQ=
