@@ -573,24 +573,6 @@
       ]
     },
     {
-      "@comment": "EE only feature: WebSockets",
-      "endpoint": "/ws",
-      "backend": [
-        {
-          "url_pattern": "/",
-          "disable_host_sanitize": true,
-          "host": ["ws://websockets:5678"]
-        }
-      ],
-      "extra_config": {
-        "websocket": {
-          "connect_event": true,
-          "disconnect_event": true
-
-        }
-      }
-    },
-    {
         "@comment": "EE only feature: WebSockets (chat example)",
         "endpoint": "/chat/ws/{room}",
         "input_query_strings":[ "*" ],
