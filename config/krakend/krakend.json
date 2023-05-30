@@ -573,22 +573,45 @@
       ]
     },
     {
-      "@comment": "EE only feature: WebSockets",
-      "endpoint": "/ws",
-      "backend": [
-        {
-          "url_pattern": "/",
-          "disable_host_sanitize": true,
-          "host": ["ws://websockets:5678"]
+        "@comment": "EE only feature: WebSockets (chat example)",
+        "endpoint": "/chat/ws/{room}",
+        "input_query_strings":[ "*" ],
+        "input_headers":[ "*" ],
+        "backend": [
+            {
+                "url_pattern": "/ws/{room}",
+                "disable_host_sanitize": true,
+                "host": [ "ws://chat:8888" ]
+            }
+        ],
+        "extra_config":{
+            "websocket": {
+                "input_headers":["Cookie", "Authorization"],
+                "connect_event": true,
+                "disconnect_event": true,
+                "read_buffer_size": 4096,
+                "write_buffer_size": 4096,
+                "message_buffer_size": 4096,
+                "max_message_size": 3200000,
+                "write_wait": "10s",
+                "pong_wait": "60s",
+                "ping_period": "54s",
+                "max_retries": 0,
+                "backoff_strategy": "exponential"
+            }
         }
-      ],
-      "extra_config": {
-        "websocket": {
-          "connect_event": true,
-          "disconnect_event": true
-
-        }
-      }
+    },
+    {
+        "@comment": "EE only feature: WebSockets (chat example web interface)",
+        "endpoint": "/chat",
+        "output_encoding": "no-op",
+        "backend":[
+            {
+                "url_pattern":"/",
+                "host": [ "http://chat:8888" ],
+                "encoding":"no-op"
+            }
+        ]
     }
   ],
   "sequential_start": true,

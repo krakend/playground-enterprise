@@ -1,0 +1,73 @@
+<html>
+  <head>
+    <title>Chat example</title>
+  </head>
+
+  <style>
+    #chat {
+      text-align: left;
+      background: #f1f1f1;
+      width: 500px;
+      min-height: 300px;
+      padding: 20px;
+    }
+  </style>
+
+  <body>
+    <center>
+      <h5>Chat room:</h5> 
+      <h3 id="id_roomname">foo</h3>
+      <pre id="chat"></pre>
+      <input placeholder="say something" id="text" type="text">
+    </center>
+
+    <script>
+      var room = 'foo'
+      if( window.location.search.length > 0 ){
+        // select the room with the room query param
+        var qParams = window.location.search.substr(1);
+        qParams.split('&').forEach((x) => {
+            let kv = x.split('=');
+            if( kv.length == 2 && kv[0] == 'room' && kv[1].length > 0) {
+                room = kv[1];
+            }
+        });
+      }
+    
+      // display current room:
+      var chat = document.getElementById("id_roomname");
+      chat.innerHTML = room;
+
+      // use the subdir for the ws connection
+      var url = "ws://" + window.location.host + window.location.pathname;
+      if( !url.endsWith('/') ) {
+          url = url + '/';
+      }
+      url = url + 'ws/' + room;
+
+      var ws = new WebSocket(url);
+      var name = "Guest" + Math.floor(Math.random() * 1000);
+
+      var chat = document.getElementById("chat");
+      var text = document.getElementById("text");
+
+      var now = function () {
+        var iso = new Date().toISOString();
+        return iso.split("T")[1].split(".")[0];
+      };
+
+      ws.onmessage = function (msg) {
+        var line =  now() + " " + msg.data + "\n";
+        chat.innerText += line;
+      };
+
+      text.onkeydown = function (e) {
+        if (e.keyCode === 13 && text.value !== "") {
+          ws.send("<" + name + "> " + text.value);
+          text.value = "";
+        }
+      };
+
+    </script>
+  </body>
+</html>
