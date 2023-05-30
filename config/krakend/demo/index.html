@@ -112,7 +112,7 @@
                                     <a href="https://petstore.swagger.io/?url=http://localhost:8080/demo/swagger.json">Documentation</a>
                                 </h5>
                                 <p class="card-text">OpenAPI/Swagger documentation can be generated with <code>krakend generate openapi</code></p>
-                                <pre>docker-compose exec krakend_ee krakend generate openapi -o /etc/krakend/demo/swagger.json</pre>
+                                <pre>docker-compose exec krakend_ee krakend openapi export -c /etc/krakend/krakend.json -o /etc/krakend/demo/swagger.json</pre>
                             </div>
                         </div>
                     </div>
@@ -128,7 +128,7 @@
                                     Postman
                                 </h5>
                                 <p class="card-text">OpenAPI/Swagger documentation can be generated with <code>krakend generate openapi</code></p>
-                                <pre>docker-compose exec krakend_ee krakend generate postman -o /etc/krakend/demo/postman.json</pre>
+                                <pre>docker-compose exec krakend_ee krakend generate postman -c /etc/krakend/krakend.json -o /etc/krakend/demo/postman.json</pre>
                             </div>
                         </div>
                     </div>
@@ -137,7 +137,7 @@
                             <img src="keycloak.png" class="card-img-top img-fluid p-3" alt="logo">
                             <div class="card-body">
                                 <h5 class="card-title">
-                                    <a href="http://localhost:9090">Identity Providers</a>
+                                    Identity Providers
                                 </h5>
                                 <p class="card-text">Keycloak and many other identity providers can be integrated with KrakenD</p>
                             </div>
@@ -148,8 +148,7 @@
                             <img src="apikey.png" class="card-img-top img-fluid p-3" alt="logo">
                             <div class="card-body">
                                 <h5 class="card-title">
-                                    API-Key
-                                        authentication
+                                    API-Key authentication
                                 </h5>
                                 <p class="card-text">The API key authentication enables a Role-Based Access Control
                                     (RBAC) mechanism by reading the Authorization header of incoming requests.</p>
