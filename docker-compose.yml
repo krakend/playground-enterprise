@@ -17,6 +17,7 @@ services:
       - fake_api
       - jaeger
       - chat
+      - websockets
   grafana:
     image: grafana/grafana:9.1.2
     ports:
