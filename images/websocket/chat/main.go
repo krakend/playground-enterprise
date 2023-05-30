@@ -69,11 +69,14 @@ func main() {
 			// remove session from the list
 
 		case "":
-			log.Printf("msg received through the gateway (body size: %d). broadcasting it back", len(decoded.Body))
+            log.Printf("msg received through the gateway (body size: %d) room: %s. broadcasting it back", len(decoded.Body), decoded.URL)
 			log.Println(string(decoded.Body))
-			m.Broadcast(decoded.Body)
-			//s.Write(decoded.Body)
-
+            bMsg := Message{
+                URL: decoded.URL,
+                Body: decoded.Body,
+            }
+			b, _ := json.Marshal(bMsg)
+			s.Write(b)
 		}
 	})
 

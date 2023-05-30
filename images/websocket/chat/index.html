@@ -15,19 +15,36 @@
 
   <body>
     <center>
-      <h3>Chat</h3>
-      <h5>room: <b>foo</b></h5>
+      <h5>Chat room:</h5> 
+      <h3 id="id_roomname">foo</h3>
       <pre id="chat"></pre>
       <input placeholder="say something" id="text" type="text">
     </center>
 
     <script>
-      var url = "ws://" + window.location.host + window.location.pathname;
-      if( url.endsWith('/') ){
-        url = url + 'ws/foo';
-      } else {
-        url = url + '/ws/foo';
+      var room = 'foo'
+      if( window.location.search.length > 0 ){
+        // select the room with the room query param
+        var qParams = window.location.search.substr(1);
+        qParams.split('&').forEach((x) => {
+            let kv = x.split('=');
+            if( kv.length == 2 && kv[0] == 'room' && kv[1].length > 0) {
+                room = kv[1];
+            }
+        });
       }
+    
+      // display current room:
+      var chat = document.getElementById("id_roomname");
+      chat.innerHTML = room;
+
+      // use the subdir for the ws connection
+      var url = "ws://" + window.location.host + window.location.pathname;
+      if( !url.endsWith('/') ) {
+          url = url + '/';
+      }
+      url = url + 'ws/' + room;
+
       var ws = new WebSocket(url);
       var name = "Guest" + Math.floor(Math.random() * 1000);
 
