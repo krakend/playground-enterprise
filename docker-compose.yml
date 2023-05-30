@@ -16,6 +16,7 @@ services:
     depends_on:
       - fake_api
       - jaeger
+      - chat
   grafana:
     image: grafana/grafana:9.1.2
     ports:
@@ -119,3 +120,8 @@ services:
       - ./images/websocket/server.cjs:/app/server.cjs
     ports:
       - "5678:5678"
+  chat:
+    build:
+      context: images/websocket/chat
+    ports:
+      - "4245:8888"
