@@ -111,4 +111,11 @@ services:
     image: krakend/grpc_trains_fake:latest
     ports:
       - "4243:4243"
-
+  websockets:
+    platform: linux/amd64
+    build:
+      context: images/websocket
+    volumes:
+      - ./images/websocket/server.cjs:/app/server.cjs
+    ports:
+      - "5678:5678"

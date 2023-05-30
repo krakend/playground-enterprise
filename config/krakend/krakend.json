@@ -279,18 +279,10 @@
     },
     {
       "@comment": "EE only feature: Wildcard to our fake API, open",
-      "endpoint": "/__wildcard/fake-api",
-      "input_headers": [
-        "X-Krakend-Wildcard"
-      ],
+      "endpoint": "/fake-api/*",
       "backend": [
         {
-          "url_pattern": "/",
-          "extra_config": {
-            "plugin/http-client": {
-              "name": "wildcard"
-            }
-          }
+          "url_pattern": "/"
         }
       ],
       "extra_config": {
@@ -305,20 +297,12 @@
     },
     {
       "@comment": "EE only feature: Wildcard to our fake API, protected with Basic Auth",
-      "endpoint": "/__wildcard/fake-api-auth",
+      "endpoint": "/fake-api-auth/*",
       "@test_with": "curl -iG 'http://admin:admin@localhost:8080/fake-api-auth/articles.json'",
-      "input_headers": [
-        "X-Krakend-Wildcard"
-      ],
       "output_encoding": "no-op",
       "backend": [
         {
-          "url_pattern": "/",
-          "extra_config": {
-            "plugin/http-client": {
-              "name": "wildcard"
-            }
-          }
+          "url_pattern": "/"
         }
       ],
       "extra_config": {
@@ -335,19 +319,13 @@
     },
     {
       "@comment": "EE only feature: Wildcard with geofencing - Allow visits only from Spain",
-      "endpoint": "/__wildcard/fake-api-geofence",
+      "endpoint": "/fake-api-geofence/*",
       "input_headers": [
-        "X-Krakend-Wildcard",
         "X-Geoip"
       ],
       "backend": [
         {
-          "url_pattern": "/",
-          "extra_config": {
-            "plugin/http-client": {
-              "name": "wildcard"
-            }
-          }
+          "url_pattern": "/"
         }
       ],
       "extra_config": {
@@ -530,7 +508,7 @@
           "url_pattern": "/flight_finder.Flights/FindFlight",
           "extra_config": {
             "backend/grpc": {
-                "input_query_strings_mapping" : {
+                "input_mapping" : {
                     "lat": "where.latitude",
                     "lon": "where.longitude"
                 }
@@ -593,6 +571,24 @@
           }
         }
       ]
+    },
+    {
+      "@comment": "EE only feature: WebSockets",
+      "endpoint": "/ws",
+      "backend": [
+        {
+          "url_pattern": "/",
+          "disable_host_sanitize": true,
+          "host": ["ws://websockets:5678"]
+        }
+      ],
+      "extra_config": {
+        "websocket": {
+          "connect_event": true,
+          "disconnect_event": true
+
+        }
+      }
     }
   ],
   "sequential_start": true,
@@ -641,26 +637,12 @@
     "plugin/http-server": {
       "name": [
         "static-filesystem",
-        "wildcard",
         "geoip",
         "url-rewrite"
       ],
       "static-filesystem": {
         "prefix": "/demo/",
         "path": "/etc/krakend/demo/"
-      },
-      "wildcard": {
-        "endpoints": {
-          "/__wildcard/fake-api": [
-            "/fake-api"
-          ],
-          "/__wildcard/fake-api-auth": [
-            "/fake-api-auth"
-          ],
-          "/__wildcard/fake-api-geofence": [
-            "/fake-api-geofence"
-          ]
-        }
       },
       "geoip": {
         "citydb_path": "/etc/krakend/geoip/GeoLite2-City.mmdb"
