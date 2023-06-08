@@ -1,0 +1,10 @@
+[
+    {
+        "path": "/something",
+        "method": "POST"
+    },
+    {
+        "path": "/something_else",
+        "method": "GET"
+    }
+]

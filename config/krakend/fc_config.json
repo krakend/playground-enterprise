@@ -1,0 +1,12 @@
+{
+    "out": "./dbg_out.json",
+    "templates": "./templates",
+    "partials": "./partials",
+    "settings": "./settings/dev",
+    "recursive_settings": {
+        "allow_overwrite": true,
+        "search_paths": [
+            "./vartree"
+        ]
+    }
+}
