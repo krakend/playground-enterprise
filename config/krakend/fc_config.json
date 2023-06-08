@@ -1,12 +1,12 @@
 {
-    "out": "./dbg_out.json",
-    "templates": "./templates",
-    "partials": "./partials",
-    "settings": "./settings/dev",
+    "out": "/etc/krakend/dbg_out.json",
+    "templates": "/etc/krakend/templates",
+    "partials": "/etc/krakend/partials",
+    "settings": "/etc/krakend/settings/dev",
     "recursive_settings": {
         "allow_overwrite": true,
         "search_paths": [
-            "./vartree"
+            "/etc/krakend/vartree"
         ]
     }
 }

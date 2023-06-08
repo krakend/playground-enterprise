@@ -23,6 +23,16 @@ compile-flexible-config:
         krakend/krakend-ee \
         check -c krakend-flexible-config.tmpl
 
+
+compile-extended-flexible-config:
+	docker run \
+        -v $(PWD)/config/krakend/:/etc/krakend/ \
+        -e FC_ENABLE=1 \
+        -e FC_CONFIG=/etc/krakend/fc_config.json \
+        krakend/krakend-ee \
+        check -c krakend-flexible-config.tmpl
+
+
 check:
 	docker run -it \
         -v $(PWD)/config/krakend/:/etc/krakend/ \
