@@ -1,0 +1,27 @@
+{
+    "$schema": "https://www.krakend.io/schema/v2.3/krakend.json",
+    "version": 3,
+    "port": 8081,
+    "extra_config": {
+        "auth/revoker": {
+            "hash_name": "default",
+            "N": 10000000,
+            "P": 1e-7,
+            "port": 1234,
+            "token_keys": [
+                "jti"
+            ],
+            "TTL": 1500,
+            "@extra_comment": "here",
+            "revoke_server_ping_url": "http://revoker:8081/instances",
+            "revoke_server_ping_interval": "30s",
+            "revoke_server_api_key": "639ee23f-f4c5-40c4-855c-912bf01fae87",
+            "revoke_server_max_workers":5
+        },
+        "telemetry/logging": {
+            "level": "DEBUG",
+            "prefix": "[REVOKER]",
+            "stdout": true
+        }
+    }
+}
