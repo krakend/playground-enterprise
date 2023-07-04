@@ -175,6 +175,26 @@
       ]
     },
     {
+      "@comment": "Feature: GraphQL to REST",
+      "endpoint": "/starwars_films/{movie_id}",
+      "backend": [
+        {
+          "host": ["https://swapi-graphql.netlify.app/"],
+          "url_pattern": "/.netlify/functions/index",
+          "target": "data.film",
+          "extra_config": {
+            "backend/graphql": {
+              "type": "query",
+              "query": "query Query ($movie_id: ID!) {\nfilm (filmID: $movie_id) {\nid\nepisodeID\ntitle\ndirector\nreleaseDate\nspeciesConnection {\nspecies {\nname\nclassification\nhomeworld {\nname\n}\n}\n}\n}\n}",
+              "variables": {
+                "movie_id": "{movie_id}"
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
       "@comment": "Feature: Concurrent calls - Not enabled",
       "endpoint": "/market/simple",
       "backend": [
