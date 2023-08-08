@@ -6,8 +6,8 @@
     "vars": {
         "allow_overwrite": true,
         "search_paths": [
-            "./extended/vars/root.vars.json",
-            "./extended/vars/endpoints"
+            "./extended/root.vars.json",
+            "./extended/vars"
         ]
     },
     "templater": {

@@ -12,156 +12,18 @@
     "folder": "/opt/krakend/plugins/"
   },
   "endpoints": [
-    {{ . | marshal }}
+    {{ $cnt := 0 }}
+    {{ range $nm, $ep := .endpoints }}
+        {{ if ne $cnt 0 }},{{ end }}
+        {{ $cnt = 1 }}
+        {{ $ep.def | marshal }}
+    {{ end }}
   ],
   "sequential_start": true,
   "async_agent": [
-    {
-      "name": "async-agent-demo",
-      "backend": [
-        {
-          "host":[ "http://127.0.0.1:8080" ],
-          "url_pattern": "/__debug/async-agent-demo",
-          "method": "POST"
-        }
-      ],
-      "consumer": {
-        "topic": "*.bar",
-        "workers": 20
-      },
-      "connection": {
-        "max_retries": 10,
-        "backoff_strategy": "exponential-jitter"
-      },
-      "extra_config": {
-        "async/amqp": {
-          "name": "krakend",
-          "host": "amqp://guest:guest@rabbitmq:5672/",
-          "exchange": "foo",
-          "prefetch_count": 40,
-          "auto_ack": true
-        }
-      }
-    }
+    { "$ref": "./async_agents/async_agent_demo.json"}
   ],
   "extra_config": {
-    "grpc": {
-        "catalog": [
-            "/etc/krakend/grpc_catalog"
-        ]
-    },
-    "router": {
-      "return_error_msg": true
-    },
-    "auth/basic": {
-      "@comment": "Location of the password file for endpoints requiring basic auth",
-      "htpasswd_path": "/etc/krakend/.htpasswd"
-    },
-    "plugin/http-server": {
-      "name": [
-        "static-filesystem",
-        "geoip",
-        "url-rewrite"
-      ],
-      "static-filesystem": {
-        "prefix": "/demo/",
-        "path": "/etc/krakend/demo/"
-      },
-      "geoip": {
-        "citydb_path": "/etc/krakend/geoip/GeoLite2-City.mmdb"
-      },
-      "url-rewrite": {
-        "literal": {
-          "/git-profile": "/git"
-        },
-        "regexp": [
-          [
-            "/git-profile/([a-z]{3})",
-            "/git/${1}"
-          ],
-          [
-            "/crypto-profile/([a-z]{3})",
-            "/cryptos/${1}"
-          ]
-        ]
-      }
-    },
-    "documentation/openapi": {
-      "version": "1",
-      "contact_name": "John Doe",
-      "contact_email": "contact@example.com",
-      "license_name": "MIT",
-      "license_url": "https://opensource.org/licenses/MIT"
-    },
-    "auth/api-keys": {
-      "keys": [
-        {
-          "key": "4d2c61e1-34c4-e96c-9456-15bd983c5019",
-          "roles": [
-            "role1",
-            "role2"
-          ],
-          "@description": "ACME Inc."
-        },
-        {
-          "key": "58427514-be32-0b52-b7c6-d01fada30497",
-          "roles": [
-            "admin",
-            "user"
-          ],
-          "@description": "Administrators Inc."
-        }
-      ]
-    },
-    "telemetry/metrics": {
-      "collection_time": "30s",
-      "listen_address": ":8090"
-    },
-    "telemetry/influx": {
-      "address": "http://influxdb:8086",
-      "ttl": "25s",
-      "buffer_size": 100,
-      "username": "krakend-dev",
-      "password": "pas5w0rd"
-    },
-    "telemetry/logging": {
-      "level": "DEBUG",
-      "prefix": "[KRAKEND]",
-      "syslog": false,
-      "stdout": true
-    },
-    "telemetry/gelf": {
-      "address": "logstash:12201",
-      "enable_tcp": false
-    },
-    "telemetry/opencensus": {
-      "sample_rate": 100,
-      "reporting_period": 1,
-      "enabled_layers": {
-        "backend": true,
-        "router": true
-      },
-      "exporters": {
-        "jaeger": {
-          "endpoint": "http://jaeger:14268/api/traces",
-          "service_name": "krakend"
-        }
-      }
-    },
-    "security/cors": {
-      "allow_origins": ["*"],
-      "allow_methods": ["POST", "GET"],
-      "allow_headers": ["Origin", "Authorization", "Content-Type"],
-      "expose_headers": ["Content-Length"],
-      "max_age": "12h"
-    },
-    "auth/revoker": {
-      "N": 10000000,
-      "P": 0.0000001,
-      "hash_name": "optimal",
-      "TTL": 1500,
-      "port": 1234,
-      "token_keys": ["jti"]
-    }
+    { "$ref": "./service_extra_config.json"}
   }
 }
