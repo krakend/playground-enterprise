@@ -1,0 +1,24 @@
+    {
+      "@comment": "Feature: Mocked response",
+      "endpoint": "/mocked-response",
+      "method": "GET",
+      "output_encoding": "json",
+      "backend": [{"host": ["http://unexistent_backend"], "url_pattern": "/"}],
+      "extra_config": {
+        "proxy": {
+          "static": {
+            "data": {
+              "an_integer": 123,
+              "an_array": [
+                "arr1",
+                "arr2"
+              ],
+              "an_object": {
+                "obj": "obj1"
+              }
+            },
+            "strategy": "always"
+          }
+        }
+      }
+    }

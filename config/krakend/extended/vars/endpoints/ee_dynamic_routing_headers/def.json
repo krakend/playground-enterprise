@@ -1,0 +1,12 @@
+{
+  "@comment": "EE only feature: Dynamic routing based on headers (token claim and cookie also available)",
+  "endpoint": "/dynamic/header",
+  "backend": [
+    {
+      "@comment": "We will route to the backend using the content of the 'X-Route' header",
+      "@test_with": "curl -iG -H 'X-Route: hello' 'http://localhost:8080/dynamic/header'",
+      "host": ["http://localhost:8080"],
+      "url_pattern": "/__debug/{input_headers.x-route}"
+    }
+  ]
+}

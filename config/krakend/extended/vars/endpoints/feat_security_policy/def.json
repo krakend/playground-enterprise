@@ -1,0 +1,24 @@
+{
+  "@comment": "Feature: Security policy engine for requests, responses and claim checking",
+  "endpoint": "/track-user",
+  "@test_with": "curl -iG -H'Cookie: GDPR=yes' 'http://localhost:8080/track-user'",
+  "input_headers": [
+    "Cookie"
+  ],
+  "extra_config": {
+    "security/policies": {
+      "req": {
+        "policies": [
+          "getCookie('GDPR') == 'yes'"
+        ],
+        "error": {
+          "body": "User did not accept the cookie and tracking is not allowed",
+          "status": 403
+        }
+      }
+    }
+  },
+  "backend": [
+    {"$ref": "./backends/debug_cookie.json"}
+  ]
+}

@@ -1,12 +1,18 @@
 {
-    "out": "/etc/krakend/dbg_out.json",
-    "templates": "/etc/krakend/templates",
-    "partials": "/etc/krakend/partials",
-    "settings": "/etc/krakend/settings/dev",
-    "recursive_settings": {
+    "out": "./extended/out.json",
+    "templates": "",
+    "partials": "./extended/partials",
+    "settings": "",
+    "vars": {
         "allow_overwrite": true,
         "search_paths": [
-            "/etc/krakend/vartree"
+            "./extended/vars/root.vars.json",
+            "./extended/vars/endpoints"
+        ]
+    },
+    "templater": {
+        "search_paths": [
+            "./extended/templates"
         ]
     }
 }

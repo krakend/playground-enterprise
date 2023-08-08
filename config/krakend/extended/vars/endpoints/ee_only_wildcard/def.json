@@ -1,0 +1,18 @@
+{
+  "@comment": "EE only feature: Wildcard to our fake API, open",
+  "endpoint": "/fake-api/*",
+  "backend": [
+    {
+      "url_pattern": "/"
+    }
+  ],
+  "extra_config": {
+    "documentation/openapi": {
+      "summary": "Calls to internal service with wildcard",
+      "description": "This endpoint will send all requests to a designed backend including everything after the /fake-api path",
+      "tags": [
+        "Wildcard"
+      ]
+    }
+  }
+}

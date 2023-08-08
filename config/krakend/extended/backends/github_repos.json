@@ -1,0 +1,10 @@
+{
+  "host": [
+    "https://api.github.com"
+  ],
+  "url_pattern": "/users/{user}/repos",
+  "mapping": {
+    "collection": "repos"
+  },
+  "is_collection": true
+}

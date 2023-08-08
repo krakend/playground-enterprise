@@ -1,0 +1,58 @@
+    {
+      "@comment": "EE only feature: GRPC",
+      "endpoint": "/travel",
+      "input_query_strings": ["lat", "lon"],
+      "backend": [
+        {
+          "host": ["grpc_flights:4242"],
+          "group": "flights",
+          "url_pattern": "/flight_finder.Flights/FindFlight",
+          "extra_config": {
+            "backend/grpc": {
+                "input_mapping" : {
+                    "lat": "where.latitude",
+                    "lon": "where.longitude"
+                }
+            }
+          }
+        },
+        {
+          "host": ["grpc_trains:4243"],
+          "group": "trains",
+          "url_pattern": "/train_finder.Trains/FindTrains",
+          "extra_config": {
+            "backend/grpc": {
+                "input_mapping" : {
+                    "lat": "origin.position.latitude",
+                    "lon": "origin.position.longitude"
+                },
+                "response_naming_convention": "camelCase",
+                "output_enum_as_string": true,
+                "output_timestamp_as_string": true,
+                "output_duration_as_string": true,
+                "client_tls": {
+                    "allow_insecure_connections": true
+                }
+            }
+          }
+        },
+        {
+          "group": "hotels",
+          "url_pattern": "/hotels/1.json"
+        },
+        {
+          "host": ["grpc_trains:4243"],
+          "group": "trains_classes",
+          "url_pattern": "/train_finder.Trains/GetTrainClasses",
+          "extra_config": {
+            "backend/grpc": {
+                "response_naming_convention": "camelCase",
+                "output_remove_unset_values": true,
+                "client_tls": {
+                    "allow_insecure_connections": true
+                }
+            }
+          }
+        }
+      ]
+    }

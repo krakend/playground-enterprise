@@ -1,0 +1,26 @@
+{
+  "@comment": "EE only feature: Wildcard with geofencing - Allow visits only from Spain",
+  "endpoint": "/fake-api-geofence/*",
+  "input_headers": [
+    "X-Geoip"
+  ],
+  "backend": [
+    {
+      "url_pattern": "/"
+    }
+  ],
+  "extra_config": {
+    "validation/cel": [
+      {
+        "check_expr": "req_headers['X-Geoip'][0].matches('\"IsoCode\":\"ES\"')"
+      }
+    ],
+    "documentation/openapi": {
+      "summary": "Calls to internal service with wildcard, using geofencing",
+      "description": "This endpoint will send all requests to a designed backend including everything after the /fake-api-geofence path, adding geofencing (allowing calls only from Spain)",
+      "tags": [
+        "Wildcard"
+      ]
+    }
+  }
+}

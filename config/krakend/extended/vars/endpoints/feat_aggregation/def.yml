@@ -1,0 +1,8 @@
+{
+    "@comment": "Feature: Aggregation + Basic transformation (filtering & mapping) + grouping",
+    "endpoint": "/git/{user}",
+    "backend": [
+        { "$ref": "./backends/github_user.json"},
+        { "$ref": "./backends/github_repos.json"}
+    ]
+}
