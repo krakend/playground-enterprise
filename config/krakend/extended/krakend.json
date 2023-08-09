@@ -16,7 +16,7 @@
     {{ range $nm, $ep := .endpoints }}
         {{ if ne $cnt 0 }},{{ end }}
         {{ $cnt = 1 }}
-        {{ $ep.def | marshal }}
+        {{ template "endpoint.json" $ep }}
     {{ end }}
   ],
   "sequential_start": true,

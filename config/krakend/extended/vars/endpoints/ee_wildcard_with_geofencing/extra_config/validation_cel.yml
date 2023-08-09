@@ -1,0 +1,3 @@
+key: validation/cel
+val:
+  - check_expr: req_headers['X-Geoip'][0].matches('"IsoCode":"ES"')

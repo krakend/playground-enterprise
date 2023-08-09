@@ -1,0 +1,5 @@
+{
+    "catalog": [
+        "/etc/krakend/grpc_catalog"
+    ]
+}

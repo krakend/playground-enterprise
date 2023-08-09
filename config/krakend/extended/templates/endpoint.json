@@ -1,0 +1,12 @@
+{
+{{ $cnt := 0 }}
+{{ range $k, $v := .def }}
+    {{ if ne $cnt 0 }},{{ end -}}
+    "{{ $k }}": {{ $v | marshal }}   
+    {{ $cnt = 1 }}
+{{ end }}
+
+{{ if .extra_config }}
+    ,{{ template "extra_config.json" .extra_config }}
+{{ end }}
+}

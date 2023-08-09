@@ -1,0 +1,7 @@
+{
+  "key": "modifier/jmespath",
+  "val": {
+    "@comment": "Get first 5 crypto by market capitalization, then reverse sort them by name, finally filter and rename some fields",
+    "expr": "reverse(sort_by(collection[:5], &name))[*].{name: name, token: symbol,price: current_price, price_change: price_change_percentage_24h, market_cap: market_cap}"
+  }
+}

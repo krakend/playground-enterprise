@@ -1,0 +1,18 @@
+{
+"key":        "proxy",
+"val": {
+          "static": {
+            "data": {
+              "an_integer": 123,
+              "an_array": [
+                "arr1",
+                "arr2"
+              ],
+              "an_object": {
+                "obj": "obj1"
+              }
+            },
+            "strategy": "always"
+          }
+        }
+      }

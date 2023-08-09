@@ -3,21 +3,7 @@
   "endpoint": "/capital-of/{country}",
   "backend": [
     {
-      "host": ["http://webservices.oorsprong.org"],
-      "url_pattern": "/websamples.countryinfo/CountryInfoService.wso",
-      "encoding": "xml",
-      "method": "POST",
-      "target": "Envelope.Body.CapitalCityResponse",
-      "mapping": {
-        "CapitalCityResult": "capital"
-      },
-      "deny": ["-m"],
-      "extra_config": {
-        "backend/soap": {
-          "@comment": "The XML template with variables is in the following path:",
-          "path": "./templates/soap_request_capital_city.tmpl.xml"
-        }
-      }
+      "$ref": "./backends/soap.json"
     }
   ]
 }

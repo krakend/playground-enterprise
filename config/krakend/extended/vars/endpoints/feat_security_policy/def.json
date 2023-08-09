@@ -5,20 +5,9 @@
   "input_headers": [
     "Cookie"
   ],
-  "extra_config": {
-    "security/policies": {
-      "req": {
-        "policies": [
-          "getCookie('GDPR') == 'yes'"
-        ],
-        "error": {
-          "body": "User did not accept the cookie and tracking is not allowed",
-          "status": 403
-        }
-      }
-    }
-  },
   "backend": [
-    {"$ref": "./backends/debug_cookie.json"}
+    {
+      "$ref": "./backends/debug_cookie.json"
+    }
   ]
 }

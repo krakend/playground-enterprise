@@ -9,10 +9,5 @@
     {
       "url_pattern": "/destinations/{resp0_destination_id}.json"
     }
-  ],
-  "extra_config": {
-    "proxy": {
-      "sequential": true
-    }
-  }
+  ]
 }

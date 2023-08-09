@@ -1,0 +1,5 @@
+summary: Some information behind API-Keys authentication protection
+description: This endpoint uses API-Key authentication
+tags:
+  - Authentication
+

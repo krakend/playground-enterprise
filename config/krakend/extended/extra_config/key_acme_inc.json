@@ -1,0 +1,8 @@
+{
+  "@description": "ACME Inc.",
+  "key": "4d2c61e1-34c4-e96c-9456-15bd983c5019",
+  "roles": [
+    "role1",
+    "role2"
+  ]
+}

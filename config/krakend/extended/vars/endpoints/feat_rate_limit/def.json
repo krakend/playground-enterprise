@@ -1,13 +1,12 @@
+{
+  "@comment": "Feature: Aggregation + backend rate limiting + endpoint rate limiting",
+  "endpoint": "/shop",
+  "backend": [
     {
-      "@comment": "Feature: Aggregation + backend rate limiting + endpoint rate limiting",
-      "endpoint": "/shop",
-      "backend": [
-        { "$ref": "./backends/shop_campaigns.json" },
-        { "$ref": "./backends/shop_products.json" }
-      ],
-      "extra_config": {
-        "qos/ratelimit/router": {
-          "max_rate": 2
-        }
-      }
+      "$ref": "./backends/shop_campaigns.json"
+    },
+    {
+      "$ref": "./backends/shop_products.json"
     }
+  ]
+}

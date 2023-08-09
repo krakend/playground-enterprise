@@ -1,25 +1,9 @@
+{
+  "@comment": "Feature: Authorization based on JWT (using Auth0)",
+  "endpoint": "/private/auth0",
+  "backend": [
     {
-      "@comment": "Feature: Authorization based on JWT (using Auth0)",
-      "endpoint": "/private/auth0",
-      "backend": [
-        {
-          "url_pattern": "/user/1.json"
-        }
-      ],
-      "extra_config": {
-        "auth/validator": {
-          "alg": "RS256",
-          "audience": ["http://api.example.com"],
-          "roles_key": "http://api.example.com/custom/roles",
-          "roles": ["user", "admin"],
-          "jwk_url": "https://albert-test.auth0.com/.well-known/jwks.json"
-        },
-        "documentation/openapi": {
-          "summary": "Some information behind JWT authentication protection (Auth0)",
-          "description": "This endpoint uses JWT authentication with Auth0",
-          "tags": [
-            "Authentication"
-          ]
-        }
-      }
+      "url_pattern": "/user/1.json"
     }
+  ]
+}

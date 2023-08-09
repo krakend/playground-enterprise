@@ -1,0 +1,15 @@
+{
+  "host": [
+    "grpc_flights:4242"
+  ],
+  "group": "flights",
+  "url_pattern": "/flight_finder.Flights/FindFlight",
+  "extra_config": {
+    "backend/grpc": {
+      "input_mapping": {
+        "lat": "where.latitude",
+        "lon": "where.longitude"
+      }
+    }
+  }
+}
