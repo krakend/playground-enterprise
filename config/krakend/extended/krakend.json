@@ -24,6 +24,6 @@
     { "$ref": "./async_agents/async_agent_demo.json"}
   ],
   "extra_config": {
-    { "$ref": "./service_extra_config.json"}
+    "$ref": "./service_extra_config.json"
   }
 }
