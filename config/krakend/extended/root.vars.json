@@ -5,5 +5,13 @@
   "host": ["http://fake_api:8080"],
   "timeout": "3000ms",
   "cache_ttl": "300s",
-  "debug_endpoint": true
+  "debug_endpoint": true,
+  "servers": {
+    "influxdb": "influxdb:8086",
+    "logstash": "logstash:12201",
+    "chat": "chat:8888",
+    "rabbitmq": "rabbitmq:5672",
+    "fake_api": "fake_api:8080"
+  },
+  "conf_dir": "/etc/krakend"
 }

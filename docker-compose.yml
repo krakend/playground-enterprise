@@ -85,6 +85,7 @@ services:
     # Login with guest/guest
     ports:
       - "15672:15672"
+      - "5672:5672"
   fake_api:
     image: ghcr.io/lpereira/lwan:latest
     volumes:

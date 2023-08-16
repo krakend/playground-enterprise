@@ -3,7 +3,7 @@
   "version": 3,
   "name": "KrakenD Enterprise API Gateway",
   "port": 8080,
-  "host": ["http://fake_api:8080"],
+  "host": ["http://{{.servers.fake_api}}"],
   "timeout": "3000ms",
   "cache_ttl": "300s",
   "debug_endpoint": true,
@@ -647,7 +647,7 @@
   "extra_config": {
     "grpc": {
         "catalog": [
-            "/etc/krakend/grpc_catalog"
+            "{{.conf_dir}}/grpc_catalog"
         ]
     },
     "router": {
@@ -655,7 +655,7 @@
     },
     "auth/basic": {
       "@comment": "Location of the password file for endpoints requiring basic auth",
-      "htpasswd_path": "/etc/krakend/.htpasswd"
+      "htpasswd_path": "{{.conf_dir}}/.htpasswd"
     },
     "plugin/http-server": {
       "name": [
@@ -665,10 +665,10 @@
       ],
       "static-filesystem": {
         "prefix": "/demo/",
-        "path": "/etc/krakend/demo/"
+        "path": "{{.conf_dir}}/demo/"
       },
       "geoip": {
-        "citydb_path": "/etc/krakend/geoip/GeoLite2-City.mmdb"
+        "citydb_path": "{{.conf_dir}}/geoip/GeoLite2-City.mmdb"
       },
       "url-rewrite": {
         "literal": {

@@ -1,5 +1,5 @@
 {
     "catalog": [
-        "/etc/krakend/grpc_catalog"
+        "{{.conf_dir}}/grpc_catalog"
     ]
 }

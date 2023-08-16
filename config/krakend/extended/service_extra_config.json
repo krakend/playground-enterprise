@@ -5,7 +5,7 @@
     },
     "auth/basic": {
       "@comment": "Location of the password file for endpoints requiring basic auth",
-      "htpasswd_path": "/etc/krakend/.htpasswd"
+      "htpasswd_path": "{{.conf_dir}}/.htpasswd"
     },
     "plugin/http-server": {
       "name": [
@@ -15,10 +15,10 @@
       ],
       "static-filesystem": {
         "prefix": "/demo/",
-        "path": "/etc/krakend/demo/"
+        "path": "{{.conf_dir}}/demo/"
       },
       "geoip": {
-        "citydb_path": "/etc/krakend/geoip/GeoLite2-City.mmdb"
+        "citydb_path": "{{.conf_dir}}/geoip/GeoLite2-City.mmdb"
       },
       "url-rewrite": {
         "literal": {
@@ -54,7 +54,7 @@
       "listen_address": ":8090"
     },
     "telemetry/influx": {
-      "address": "http://influxdb:8086",
+      "address": "http://{{.servers.influxdb}}",
       "ttl": "25s",
       "buffer_size": 100,
       "username": "krakend-dev",
@@ -67,7 +67,7 @@
       "stdout": true
     },
     "telemetry/gelf": {
-      "address": "logstash:12201",
+      "address": "{{.servers.logstash}}",
       "enable_tcp": false
     },
     "telemetry/opencensus": {

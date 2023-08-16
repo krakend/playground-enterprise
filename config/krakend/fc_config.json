@@ -1,18 +1,18 @@
 {
-    "out": "./extended/out.json",
+    "out": "/etc/krakend/extended/out.json",
     "templates": "",
-    "partials": "./extended/partials",
+    "partials": "/etc/krakend/extended/partials",
     "settings": "",
     "vars": {
         "allow_overwrite": true,
         "search_paths": [
-            "./extended/root.vars.json",
-            "./extended/vars"
+            "/etc/krakend/extended/root.vars.json",
+            "/etc/krakend/extended/vars"
         ]
     },
     "templater": {
         "search_paths": [
-            "./extended/templates"
+            "/etc/krakend/extended/templates"
         ]
     }
 }
