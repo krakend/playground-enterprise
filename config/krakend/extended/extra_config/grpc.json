@@ -1,5 +1,5 @@
 {
     "catalog": [
-        "{{.conf_dir}}/grpc_catalog"
+        "{{.grpc_catalog}}"
     ]
 }

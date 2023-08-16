@@ -1,6 +1,6 @@
 {
   "host": [
-    "grpc_trains:4243"
+    "{{.servers.grpc_trains}}"
   ],
   "group": "trains_classes",
   "url_pattern": "/train_finder.Trains/GetTrainClasses",

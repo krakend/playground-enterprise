@@ -1,0 +1,38 @@
+{
+  "conf_dir": "./",
+  "grpc_catalog": "../../images/grpc/defs",
+  "host": ["http://localhost:8080"],
+  "servers": {
+    "influxdb": "localhost:8086",
+    "logstash": "localhost:12201",
+    "chat": "localhost:8888",
+    "rabbitmq": "localhost:5672",
+    "grpc_flights": "localhost:4242",
+    "grpc_trains": "localhost:4243",
+    "fake_api": "localhost:8080"
+  },
+  "endpoints": {
+    "ee_websockets": {
+        "def": {
+            "backend": [
+                {
+                    "url_pattern": "/ws/{room}",
+                    "disable_host_sanitize": true,
+                    "host": ["ws://localhost:4245"]
+                }
+            ]
+        }
+    },
+    "ee_websockets_ee": {
+        "def": {
+            "backend": [
+                {
+                    "url_pattern": "/",
+                    "encoding": "no-op",
+                    "host": ["http://localhost:4245"]
+                }
+            ]
+        }
+    }
+  }
+}

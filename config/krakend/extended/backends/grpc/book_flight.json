@@ -1,6 +1,6 @@
 {
   "host": [
-    "grpc_flights:4242"
+    "{{servers.grpc_flights}}"
   ],
   "group": "flights",
   "url_pattern": "/flight_finder.Flights/BookFlight",
