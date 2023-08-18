@@ -1,7 +1,5 @@
 #!/bin/bash
 
-# enable the usage of flexible config:
-export FC_ENABLE=1
 # enable debug output:
 export FC_DEBUG=true
 # when running from the local environment with a local executable, use this config:

@@ -1,18 +1,18 @@
 {
     "out": "./extended/out.json",
-    "templates": "",
-    "partials": "./extended/partials",
-    "settings": "",
-    "vars": {
+    "partials": {
+        "paths": ["./extended/partials"]
+    },
+    "settings": {
         "allow_overwrite": true,
-        "search_paths": [
+        "paths": [
             "./extended/root.vars.json",
             "./extended/vars",
             "./extended/root.local.vars.json"
         ]
     },
-    "templater": {
-        "search_paths": [
+    "templates": {
+        "paths": [
             "./extended/templates"
         ]
     }

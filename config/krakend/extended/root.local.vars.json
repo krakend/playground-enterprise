@@ -1,7 +1,7 @@
 {
   "conf_dir": "./",
   "grpc_catalog": "../../images/grpc/defs",
-  "host": ["http://localhost:8080"],
+  "host": ["http://localhost:8666"],
   "servers": {
     "influxdb": "localhost:8086",
     "logstash": "localhost:12201",
@@ -9,7 +9,7 @@
     "rabbitmq": "localhost:5672",
     "grpc_flights": "localhost:4242",
     "grpc_trains": "localhost:4243",
-    "fake_api": "localhost:8080"
+    "fake_api": "localhost:8000"
   },
   "endpoints": {
     "ee_websockets": {
@@ -33,6 +33,15 @@
                 }
             ]
         }
-    }
+    },
+      "feat_jwt_signing": {
+        "extra_config": {
+            "signer": {
+                "val": {
+                    "jwk_url": "http://localhost:8000/jwk/symmetric.json"
+                }
+            }
+        }
+      }
   }
 }

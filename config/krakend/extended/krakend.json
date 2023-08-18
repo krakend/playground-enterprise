@@ -3,7 +3,7 @@
   "version": 3,
   "name": "KrakenD Enterprise API Gateway",
   "port": 8080,
-  "host": ["http://fake_api:8080"],
+  "host": ["http://{{.servers.fake_api}}"],
   "timeout": "3000ms",
   "cache_ttl": "300s",
   "debug_endpoint": true,

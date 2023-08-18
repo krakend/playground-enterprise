@@ -11,6 +11,8 @@
     "logstash": "logstash:12201",
     "chat": "chat:8888",
     "rabbitmq": "rabbitmq:5672",
+    "grpc_flights": "grpc_flights:4242",
+    "grpc_trains": "grpc_trains:4243",
     "fake_api": "fake_api:8080"
   },
   "conf_dir": "/etc/krakend",
