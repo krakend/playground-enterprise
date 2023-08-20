@@ -557,18 +557,19 @@
     },
     {
       "@comment": "EE only feature: GRPC Payload in Body",
-      "endpoint": "/travel_book_flight/{flight_id}",
+      "endpoint": "/travel_book_flight/{id_flight}/{main_passenger}",
       "method": "POST",
       "backend": [
         {
           "host": ["grpc_flights:4242"],
           "group": "flights",
           "url_pattern": "/flight_finder.Flights/BookFlight",
-          "input_mapping": {
-                "Flight_id": "flight_id"
-          },
           "extra_config": {
             "backend/grpc": {
+                "input_mapping": {
+                    "Id_flight": "flight_id",
+                    "Main_passenger": "main_passenger.full_name"
+                },
                 "use_request_body": true
             }
           }
