@@ -1,11 +1,15 @@
 {
   "host": [
-    "{{servers.grpc_flights}}"
+    "{{.servers.grpc_flights}}"
   ],
   "group": "flights",
   "url_pattern": "/flight_finder.Flights/BookFlight",
   "extra_config": {
     "backend/grpc": {
+      "input_mapping": {
+        "Id_flight": "flight_id",
+        "Main_passenger": "main_passenger.full_name"
+      },
       "use_request_body": true
     }
   }
