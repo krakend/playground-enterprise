@@ -63,6 +63,7 @@ message Passenger {
 message BookFlightRequest {
     string flight_id = 1;
     repeated Passenger passengers = 2;
+    Passenger main_passenger = 3;
 }
 
 message BookFlightResponse {
