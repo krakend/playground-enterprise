@@ -106,7 +106,8 @@ services:
       - krakend_ee
     restart: always
   grpc_flights:
-    image: krakend/grpc_flights_fake:latest
+    build:
+      context: images/grpc/flights
     ports:
       - "4242:4242"
   grpc_trains:

@@ -32,7 +32,7 @@ func prettyPrint(title string, i interface{}) {
 		fmt.Printf("cannot display %s\n", err.Error())
 		return
 	}
-	fmt.Printf("**[ %s ]**\n%s\n\n", title, string(bytesOut))
+	fmt.Printf("* -> [ %s ]:\n%s\n\n", title, string(bytesOut))
 }
 
 func (s *FlightsEchoServer) FindFlight(ctx context.Context,
