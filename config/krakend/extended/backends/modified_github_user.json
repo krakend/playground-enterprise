@@ -1,0 +1,11 @@
+{
+  "host": [
+    "https://api.github.com"
+  ],
+  "url_pattern": "/users/{user}",
+  "extra_config": {
+    "modifier/response-body-generator": {
+        "path": "/etc/krakend/extended/flight_booking_transform.tmpl.json"
+    }
+  }
+}
