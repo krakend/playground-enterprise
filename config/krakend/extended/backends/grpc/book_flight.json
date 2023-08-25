@@ -11,9 +11,6 @@
         "Main_passenger": "main_passenger.full_name"
       },
       "use_request_body": true
-    },
-    "modifier/response-body-generator": {
-        "template": {{ include "flight_booking_transform.tmpl.json" | b64enc }}
     }
   }
 }
