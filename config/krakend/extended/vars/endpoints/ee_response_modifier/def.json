@@ -2,6 +2,6 @@
     "@comment": "EE Feature: response body generator",
     "endpoint": "/gitusrbrief/{user}",
     "backend": [
-        { "$ref": "./backends/github_user.json"}
+        { "$ref": "./backends/modified_github_user.json"}
     ]
 }

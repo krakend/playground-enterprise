@@ -1,0 +1,11 @@
+{
+    "available_data": {
+        "response" : {
+            "headers": {{ toPrettyJson .resp_headers }},
+            "body": "{{ .resp_body }}"
+        },
+        "request" : {
+            "body": "THE BODY OF THE REQUEST IS NOT AVAILABLE"
+        }
+    }
+}
