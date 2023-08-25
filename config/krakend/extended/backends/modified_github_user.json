@@ -5,7 +5,7 @@
   "url_pattern": "/users/{user}",
   "extra_config": {
     "modifier/response-body-generator": {
-        "path": "/etc/krakend/extended/partials/github_user_transform.tmpl.json"
+        "path": "{{ .conf_dir }}/extended/partials/github_user_transform.tmpl.json"
     }
   }
 }
