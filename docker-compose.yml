@@ -6,6 +6,7 @@ services:
     image: krakend/krakend-ee:2.4.0-alpha
     environment:
       - "FC_CONFIG=/etc/krakend/fc_config.json"
+      - "FC_DEBUG=true"
     volumes:
       - ./config/krakend:/etc/krakend
       - ./dumps:/tmp/krakend-http-logger
@@ -14,9 +15,9 @@ services:
       - "1234:1234"
       - "8080:8080"
       - "8090:8090"
-    command: ["run", "-d", "-c", "krakend.json", "--accept-eula"]
+    command: ["run", "-d", "-c", "./extended/krakend.json"]
     depends_on:
-      - fake_api
+      # - fake_api
       - jaeger
       - chat
   grafana:
@@ -58,16 +59,16 @@ services:
     ports:
       - "16686:16686"
       - "14268:14268"
-  elasticsearch:
-    image: elasticsearch:8.4.1
-    environment:
-      - "discovery.type=single-node"
-      - "xpack.security.enabled=false"
-      - "xpack.security.transport.ssl.enabled=false"
-      - "xpack.security.http.ssl.enabled=false"
-    ports:
-      - "19200:9200"
-      - "9300:9300"
+        # elasticsearch:
+        #   image: elasticsearch:8.4.1
+        #   environment:
+        #     - "discovery.type=single-node"
+        #     - "xpack.security.enabled=false"
+        #     - "xpack.security.transport.ssl.enabled=false"
+        #     - "xpack.security.http.ssl.enabled=false"
+        #   ports:
+        #     - "19200:9200"
+        #     - "9300:9300"
   kibana:
     image: kibana:8.4.1
     ports:
@@ -88,12 +89,12 @@ services:
     ports:
       - "15672:15672"
       - "5672:5672"
-  fake_api:
-    image: ghcr.io/lpereira/lwan:latest
-    volumes:
-      - ./data:/wwwroot
-    ports:
-      - "8000:8080"
+        # fake_api:
+        #   image: ghcr.io/lpereira/lwan:latest
+        #   volumes:
+        #     - ./data:/wwwroot
+        #   ports:
+        #     - "8000:8080"
   web:
     build:
       context: images/spa-auth-web

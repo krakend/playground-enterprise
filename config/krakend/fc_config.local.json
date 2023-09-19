@@ -1,5 +1,5 @@
 {
-    "out": "./extended/out.json",
+    "out": "./extended/composed_conf.json",
     "partials": {
         "paths": ["./extended/partials"]
     },

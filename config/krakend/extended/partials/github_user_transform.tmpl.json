@@ -1,0 +1,21 @@
+{
+    "available_data": {
+        "response" : {
+            "headers": {{ toJson .resp_headers }},
+            "body": {{ toJson .resp_body }},
+            "status": "{{ .resp_status }}"
+        },
+        "request" : {
+            "headers": {{ toJson .req_headers }},
+            "params": {{ toJson .req_params }},
+            "query_string": {{ toJson .req_querystring }},
+            "path": {{ toJson .req_path }},
+            "body": "THE BODY OF THE REQUEST IS NOT AVAILABLE"
+        }
+    },
+    "some_fields": {
+        "name": "{{ .resp_body.name }}",
+        "frogllowers": "{{ .resp_body.followers }}",
+        "blog": "{{ .resp_body.blog }}"
+    }
+}
