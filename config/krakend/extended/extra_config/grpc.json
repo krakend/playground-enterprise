@@ -1,0 +1,16 @@
+{
+    "catalog": [
+        "{{.grpc_catalog}}"
+    ],
+    "server" : {
+        "port": 8910,
+        "services": [
+            {
+                "name": "Flights",
+                "methods": [
+                    {"name": "FindFlight"}
+                ]
+            }
+        }
+    }
+}
