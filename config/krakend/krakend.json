@@ -1,9 +1,9 @@
 {
-  "$schema": "https://www.krakend.io/schema/v3.json",
+  "$schema": "https://www.krakend.io/schema/krakend.json",
   "version": 3,
   "name": "KrakenD Enterprise API Gateway",
   "port": 8080,
-  "host": ["http://{{.servers.fake_api}}"],
+  "host": ["http://fake_api:8080"],
   "timeout": "3000ms",
   "cache_ttl": "300s",
   "debug_endpoint": true,
@@ -636,7 +636,25 @@
                 "encoding":"no-op"
             }
         ]
-    }
+    },
+    {
+      "@comment": "EE only feature: Web Server - Static content",
+      "endpoint": "/demo/*",
+      "output_encoding": "no-op",
+      "backend":[
+          {
+              "url_pattern":"/",
+              "extra_config": {
+                "backend/static-filesystem": {
+                  "directory_listing": false,
+                  "path": "./demo/"
+                }
+              },
+              "host": [ "http://localhost:8080" ],
+              "encoding":"no-op"
+          }
+      ]
+  }
   ],
   "sequential_start": true,
   "async_agent": [
@@ -671,7 +689,7 @@
   "extra_config": {
     "grpc": {
         "catalog": [
-            "{{.conf_dir}}/grpc_catalog"
+            "./grpc_catalog"
         ]
     },
     "router": {
@@ -679,20 +697,15 @@
     },
     "auth/basic": {
       "@comment": "Location of the password file for endpoints requiring basic auth",
-      "htpasswd_path": "{{.conf_dir}}/.htpasswd"
+      "htpasswd_path": ".htpasswd"
     },
     "plugin/http-server": {
       "name": [
-        "static-filesystem",
         "geoip",
         "url-rewrite"
       ],
-      "static-filesystem": {
-        "prefix": "/demo/",
-        "path": "{{.conf_dir}}/demo/"
-      },
       "geoip": {
-        "citydb_path": "{{.conf_dir}}/geoip/GeoLite2-City.mmdb"
+        "citydb_path": "./geoip/GeoLite2-City.mmdb"
       },
       "url-rewrite": {
         "literal": {

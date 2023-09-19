@@ -3,7 +3,7 @@ services:
   krakend_ee:
     # The :watch image restarts the service automatically when the configuration files change.
     # Do not use this image in production, it's meant to speed up your testing and development.
-    image: krakend/krakend-ee:2.4.0-alpha
+    image: krakend/krakend-ee:2.4-watch
     environment:
       - "FC_CONFIG=/etc/krakend/fc_config.json"
       - "FC_DEBUG=true"
@@ -15,7 +15,9 @@ services:
       - "1234:1234"
       - "8080:8080"
       - "8090:8090"
-    command: ["run", "-d", "-c", "./extended/krakend.json"]
+    command: ["run", "-d", "-c", "krakend.json"]
+    # Uncomment to use the extended flexible configuration
+    #command: ["run", "-d", "-c", "./extended/krakend.json"]
     depends_on:
       # - fake_api
       - jaeger
@@ -59,16 +61,16 @@ services:
     ports:
       - "16686:16686"
       - "14268:14268"
-        # elasticsearch:
-        #   image: elasticsearch:8.4.1
-        #   environment:
-        #     - "discovery.type=single-node"
-        #     - "xpack.security.enabled=false"
-        #     - "xpack.security.transport.ssl.enabled=false"
-        #     - "xpack.security.http.ssl.enabled=false"
-        #   ports:
-        #     - "19200:9200"
-        #     - "9300:9300"
+  elasticsearch:
+    image: elasticsearch:8.4.1
+    environment:
+      - "discovery.type=single-node"
+      - "xpack.security.enabled=false"
+      - "xpack.security.transport.ssl.enabled=false"
+      - "xpack.security.http.ssl.enabled=false"
+    ports:
+      - "19200:9200"
+      - "9300:9300"
   kibana:
     image: kibana:8.4.1
     ports:
@@ -89,12 +91,12 @@ services:
     ports:
       - "15672:15672"
       - "5672:5672"
-        # fake_api:
-        #   image: ghcr.io/lpereira/lwan:latest
-        #   volumes:
-        #     - ./data:/wwwroot
-        #   ports:
-        #     - "8000:8080"
+  fake_api:
+    image: ghcr.io/lpereira/lwan:latest
+    volumes:
+      - ./data:/wwwroot
+    ports:
+      - "8000:8080"
   web:
     build:
       context: images/spa-auth-web
