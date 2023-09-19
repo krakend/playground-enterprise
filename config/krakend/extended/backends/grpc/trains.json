@@ -1,0 +1,22 @@
+{
+  "host": [
+    "{{.servers.grpc_trains}}"
+  ],
+  "group": "trains",
+  "url_pattern": "/train_finder.Trains/FindTrains",
+  "extra_config": {
+    "backend/grpc": {
+      "input_mapping": {
+        "lat": "origin.position.latitude",
+        "lon": "origin.position.longitude"
+      },
+      "response_naming_convention": "camelCase",
+      "output_enum_as_string": true,
+      "output_timestamp_as_string": true,
+      "output_duration_as_string": true,
+      "client_tls": {
+        "allow_insecure_connections": true
+      }
+    }
+  }
+}

@@ -21,5 +21,25 @@
             ]
         }
       {{ end }}
+
+      {{ $supu := . }}
+      {{ range $tidx, $team := .enabled_teams }}
+      ,
+      {{ $path_prefix := index $supu $team "path_prefix" }}
+      {{ range $idx, $team_ep := index $supu $team "endpoints" }}
+      {{ if $idx }},{{ end }}
+        {
+            "endpoint": "{{ $path_prefix }}{{ index $team_ep "path" }}",
+            "method": "{{ index $team_ep "method" }}",
+            "backend": [
+              {
+                "host": [ "http://localhost:8080" ],
+                "url_pattern": "/__debug{{ $path_prefix }}{{ index $team_ep "path" }}"
+              }
+            ]
+        }
+      {{ end }}
+      {{ end }}
+
    ]
 }

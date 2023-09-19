@@ -1,0 +1,29 @@
+{
+  "$schema": "https://www.krakend.io/schema/v3.json",
+  "version": 3,
+  "name": "KrakenD Enterprise API Gateway",
+  "port": 8080,
+  "host": ["http://{{.servers.fake_api}}"],
+  "timeout": "3000ms",
+  "cache_ttl": "300s",
+  "debug_endpoint": true,
+  "plugin": {
+    "pattern": ".so",
+    "folder": "/opt/krakend/plugins/"
+  },
+  "endpoints": [
+    {{ $cnt := 0 }}
+    {{ range $nm, $ep := .endpoints }}
+        {{ if ne $cnt 0 }},{{ end }}
+        {{ $cnt = 1 }}
+        {{ template "endpoint.json" $ep }}
+    {{ end }}
+  ],
+  "sequential_start": true,
+  "async_agent": [
+    { "$ref": "./async_agents/async_agent_demo.json"}
+  ],
+  "extra_config": {
+    "$ref": "./service_extra_config.json"
+  }
+}

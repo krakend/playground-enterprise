@@ -1,0 +1,5 @@
+summary: Get crypto market information with 3 concurrent calls
+description: |
+  This endpoint fetches crypto market information from Coingecko using 3 concurrent calls
+tags:
+  - Concurrent calls

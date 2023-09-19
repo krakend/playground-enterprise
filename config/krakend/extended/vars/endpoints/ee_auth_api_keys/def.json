@@ -1,0 +1,12 @@
+{
+  "@comment": "EE only feature: Authorization based on API Keys",
+  "endpoint": "/api-key",
+  "backend": [
+    {
+      "url_pattern": "/__debug/admin",
+      "host": [
+        "http://localhost:8080"
+      ]
+    }
+  ]
+}

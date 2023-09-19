@@ -1,0 +1,13 @@
+{
+  "@comment": "Feature: Sequential calls, using values from 1st call response into 2nd call request",
+  "endpoint": "/sequential",
+  "backend": [
+    {
+      "url_pattern": "/hotels/1.json",
+      "allow": [ "destination_id" ]
+    },
+    {
+      "url_pattern": "/destinations/{resp0_destination_id}.json"
+    }
+  ]
+}

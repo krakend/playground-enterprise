@@ -1,0 +1,7 @@
+{
+  "@comment": "Feature: Backend cache",
+  "endpoint": "/market/cached",
+  "backend": [
+      { "$ref": "./backends/coingecko_bitcoin.json" }
+  ]
+}

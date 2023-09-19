@@ -1,0 +1,10 @@
+{
+  "@comment": "Feature: One-liner advanced data manipulation (filter, sorting & remapping) with JMESPath Query Language",
+  "endpoint": "/cryptos/{currency}",
+  "output_encoding": "json-collection",
+  "backend": [
+    {
+      "$ref": "./backends/coingecko_markets.json"
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "@comment": "EE only feature: GRPC Payload in Body",
+  "endpoint": "/travel_book_flight/{id_flight}/{main_passenger}",
+  "method": "POST",
+  "backend": [
+    {
+      "$ref": "./backends/grpc/book_flight.json"
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "@comment": "EE only feature: GRPC",
+  "endpoint": "/travel",
+  "input_query_strings": [
+    "lat",
+    "lon"
+  ],
+  "backend": [
+    { "$ref": "./backends/grpc/flights.json" },
+    { "$ref": "./backends/grpc/trains.json" },
+    { "$ref": "./backends/hotels.json" },
+    { "$ref": "./backends/grpc/trains_classes.json" }
+  ]
+}

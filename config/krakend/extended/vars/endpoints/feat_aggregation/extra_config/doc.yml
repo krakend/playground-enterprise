@@ -1,0 +1,7 @@
+summary: Merges two calls from github and serves under a single endpoint
+description: | 
+  This endpoint fetches in parallel the user information and the 
+  repository information from Githuib and returns it together. 
+  Non interesting fields are removed
+tags: 
+  - Aggregation

@@ -1,0 +1,18 @@
+
+        {
+          "url_pattern": "/user/1.json",
+          "allow": ["credit_card"],
+            "extra_config": {
+                "plugin/req-resp-modifier": {
+                "name": ["content-replacer"],
+                "content-replacer": {
+                  "credit_card.number": {
+                    "@comment": "Ridiculous card masking. Show last 4 digits and remove the rest. Credit card number is nested.",
+                    "find": "^.*(\\d{4})",
+                    "replace": "XXXX-${1}",
+                    "regexp": true
+                  }
+                }
+            }
+          }
+        }

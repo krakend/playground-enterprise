@@ -1,0 +1,14 @@
+{
+  "key": "security/policies",
+  "val": {
+    "req": {
+      "policies": [
+        "getCookie('GDPR') == 'yes'"
+      ],
+      "error": {
+        "body": "User did not accept the cookie and tracking is not allowed",
+        "status": 403
+      }
+    }
+  }
+}

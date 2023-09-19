@@ -1,0 +1,5 @@
+{
+    "catalog": [
+        "{{.grpc_catalog}}"
+    ]
+}

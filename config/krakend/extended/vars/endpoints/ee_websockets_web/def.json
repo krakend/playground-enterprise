@@ -1,0 +1,12 @@
+{
+    "@comment": "EE only feature: WebSockets (chat example web interface)",
+    "endpoint": "/chat",
+    "output_encoding": "no-op",
+    "backend":[
+        {
+            "url_pattern":"/",
+            "host": [ "http://chat:8888" ],
+            "encoding":"no-op"
+        }
+    ]
+}

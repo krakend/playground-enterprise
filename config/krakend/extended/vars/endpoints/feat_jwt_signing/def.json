@@ -1,0 +1,9 @@
+{
+  "@comment": "Feature: JWT signing, as described at https://www.krakend.io/docs/authorization/jwt-signing/",
+  "endpoint": "/token",
+  "backend": [
+    {
+      "url_pattern": "/token.json"
+    }
+  ]
+}

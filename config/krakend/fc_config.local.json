@@ -1,0 +1,19 @@
+{
+    "out": "./extended/out.json",
+    "partials": {
+        "paths": ["./extended/partials"]
+    },
+    "settings": {
+        "allow_overwrite": true,
+        "paths": [
+            "./extended/root.vars.json",
+            "./extended/vars",
+            "./extended/root.local.vars.json"
+        ]
+    },
+    "templates": {
+        "paths": [
+            "./extended/templates"
+        ]
+    }
+}

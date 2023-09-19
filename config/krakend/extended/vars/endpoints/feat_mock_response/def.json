@@ -1,0 +1,7 @@
+    {
+      "@comment": "Feature: Mocked response",
+      "endpoint": "/mocked-response",
+      "method": "GET",
+      "output_encoding": "json",
+      "backend": [{"host": ["http://unexistent_backend"], "url_pattern": "/"}],
+    }

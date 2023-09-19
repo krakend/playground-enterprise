@@ -1,0 +1,10 @@
+    {
+      "@comment": "Feature: Only POST method allowed",
+      "endpoint": "/post",
+      "method": "POST",
+      "backend": [
+        {
+          "url_pattern": "/__debug/post"
+        }
+      ]
+    }

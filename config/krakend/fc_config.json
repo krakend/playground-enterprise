@@ -1,0 +1,18 @@
+{
+    "out": "/etc/krakend/extended/out.json",
+    "partials": {
+        "paths": ["/etc/krakend/extended/partials"]
+    },
+    "settings": {
+        "allow_overwrite": true,
+        "paths": [
+            "/etc/krakend/extended/root.vars.json",
+            "/etc/krakend/extended/vars"
+        ]
+    },
+    "templates": {
+        "paths": [
+            "/etc/krakend/extended/templates"
+        ]
+    }
+}

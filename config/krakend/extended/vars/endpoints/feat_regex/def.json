@@ -1,0 +1,7 @@
+{
+  "@comment": "Feature: Regular expression manipulation",
+  "endpoint": "/user/creditcard",
+  "backend": [
+      {"$ref": "./backends/user_credit_card.json"}
+  ]
+}

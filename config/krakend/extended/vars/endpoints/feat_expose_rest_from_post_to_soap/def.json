@@ -1,0 +1,9 @@
+{
+  "@comment": "Feature: Expose a GET REST endpoint from POST to SOAP service",
+  "endpoint": "/capital-of/{country}",
+  "backend": [
+    {
+      "$ref": "./backends/soap.json"
+    }
+  ]
+}
