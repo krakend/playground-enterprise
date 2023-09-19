@@ -106,7 +106,7 @@ services:
       - 8081:8081
     volumes:
       - "./config/krakend:/etc/krakend"
-    command: ["revoke", "-c", "revoker.json"]
+    command: ["revoker", "-c", "revoker.json"]
     depends_on:
       - krakend_ee
     restart: always
