@@ -2,6 +2,7 @@ FROM golang:1.20-alpine AS builder
 RUN mkdir /app
 WORKDIR /app
 COPY . .
+RUN apk add git
 RUN go get -d -v ./...
 RUN go build ./cmd/server
 

@@ -6,7 +6,7 @@ require google.golang.org/grpc v1.57.0
 
 require (
 	github.com/golang/protobuf v1.5.3 // indirect
-	github.com/krakendio/playground-enterprise/images/grpc/genlib v0.0.0-20230820144907-62cfdeb9111e // indirect
+	github.com/krakendio/playground-enterprise/images/grpc/genlib v0.0.0-20230919101031-fce6544db29e // indirect
 	golang.org/x/net v0.14.0 // indirect
 	golang.org/x/sys v0.11.0 // indirect
 	golang.org/x/text v0.12.0 // indirect

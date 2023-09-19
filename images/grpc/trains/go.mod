@@ -3,7 +3,7 @@ module github.com/playground-enterprise/images/grpc/trains
 go 1.20
 
 require (
-	github.com/krakendio/playground-enterprise/images/grpc/genlib v0.0.0-20230518154016-798be9f2e364
+	github.com/krakendio/playground-enterprise/images/grpc/genlib v0.0.0-20230919101031-fce6544db29e
 	google.golang.org/grpc v1.54.0
 	google.golang.org/protobuf v1.30.0
 )

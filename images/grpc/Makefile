@@ -88,3 +88,6 @@ bin_proto_single_file:
 		$$(find . -name '*.proto')
 .PHONY: fullcatalog
 
+all_images: generate_grpc_flights_lib generate_grpc_trains_lib flights_docker_image trains_docker_image
+
+.PHONY: all_images

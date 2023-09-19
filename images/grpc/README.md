@@ -12,6 +12,10 @@ So we have:
 - the `flights` service (built upon a `proto3` gRPC service definition).
 - the `trains` service (built upon a `proto2` gRPC service definition).
 
+## Building
+
+To build the images run `make all_images`
+
 ### Folder structure:
 
 - `contracts`: here is were we place all the `.proto` files definitions,

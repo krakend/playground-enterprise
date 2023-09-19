@@ -11,6 +11,8 @@ github.com/krakendio/playground-enterprise/images/grpc/genlib v0.0.0-20230523094
 github.com/krakendio/playground-enterprise/images/grpc/genlib v0.0.0-20230523094503-74a0a31d1ed1/go.mod h1:L22KcqLCsbT0Wb7e0PTZm2cpEetRapzvoI438nddgIw=
 github.com/krakendio/playground-enterprise/images/grpc/genlib v0.0.0-20230820144907-62cfdeb9111e h1:rWWTho6HCGM0F8b9j0ddz5gcDSlW3kyVAHmK0IyX95E=
 github.com/krakendio/playground-enterprise/images/grpc/genlib v0.0.0-20230820144907-62cfdeb9111e/go.mod h1:L22KcqLCsbT0Wb7e0PTZm2cpEetRapzvoI438nddgIw=
+github.com/krakendio/playground-enterprise/images/grpc/genlib v0.0.0-20230919101031-fce6544db29e h1:8/gU+Tsk4v/fC3kpLIBLGd+JyUd2IvFZtCtDHGF0DAU=
+github.com/krakendio/playground-enterprise/images/grpc/genlib v0.0.0-20230919101031-fce6544db29e/go.mod h1:L22KcqLCsbT0Wb7e0PTZm2cpEetRapzvoI438nddgIw=
 golang.org/x/net v0.8.0 h1:Zrh2ngAOFYneWTAIAPethzeaQLuHwhuBkuV6ZiRnUaQ=
 golang.org/x/net v0.8.0/go.mod h1:QVkue5JL9kW//ek3r6jTKnTFis1tRmNAW2P1shuFdJc=
 golang.org/x/net v0.14.0 h1:BONx9s002vGdD9umnlX1Po8vOZmrgH34qlHcD1MfK14=
