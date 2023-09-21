@@ -1,5 +1,5 @@
 {
-    "out": "/etc/krakend/extended/composed_config.json",
+    "out": "/etc/krakend/krakend-flexible-config.compiled.json",
     "partials": {
         "paths": ["/etc/krakend/extended/partials"]
     },

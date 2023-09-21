@@ -14,34 +14,22 @@ logs:
 
 compile-flexible-config:
 	docker run \
-        -v $(PWD)/config/krakend/:/etc/krakend/ \
-        -e FC_ENABLE=1 \
-        -e FC_SETTINGS=/etc/krakend/settings/dev \
-        -e FC_PARTIALS=/etc/krakend/partials \
-        -e FC_TEMPLATES=/etc/krakend/templates \
-        -e FC_OUT=/etc/krakend/krakend-flexible-config.compiled.json \
+        -v "$(PWD)/config/krakend/:/etc/krakend/" \
+        -e "FC_DEBUG=true" \
+        -e "FC_CONFIG=/etc/krakend/fc_config.json" \
         krakend/krakend-ee \
-        check -c krakend-flexible-config.tmpl
-
-
-compile-extended-flexible-config:
-	docker run \
-        -v $(PWD)/config/krakend/:/etc/krakend/ \
-        -e FC_ENABLE=1 \
-        -e FC_CONFIG=/etc/krakend/fc_config.json \
-        krakend/krakend-ee \
-        check -c krakend-flexible-config.tmpl
+        check -c extended/krakend.tmpl
 
 
 check:
 	docker run -it \
-        -v $(PWD)/config/krakend/:/etc/krakend/ \
+        -v "$(PWD)/config/krakend/:/etc/krakend/" \
         krakend/krakend-ee \
         check -d -t -c krakend.json --lint
 
 audit:
 	docker run -it \
-        -v $(PWD)/config/krakend/:/etc/krakend/ \
+        -v "$(PWD)/config/krakend/:/etc/krakend/" \
         krakend/krakend-ee \
         audit -c krakend.json
 

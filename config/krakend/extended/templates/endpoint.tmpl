@@ -2,7 +2,7 @@
 {{ $cnt := 0 }}
 {{ range $k, $v := .def }}
     {{ if ne $cnt 0 }},{{ end -}}
-    "{{ $k }}": {{ $v | marshal }}   
+    "{{ $k }}": {{ $v | marshal }}
     {{ $cnt = 1 }}
 {{ end }}
 

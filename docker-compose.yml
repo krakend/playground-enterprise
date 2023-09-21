@@ -4,9 +4,6 @@ services:
     # The :watch image restarts the service automatically when the configuration files change.
     # Do not use this image in production, it's meant to speed up your testing and development.
     image: krakend/krakend-ee:2.4-watch
-    environment:
-      - "FC_CONFIG=/etc/krakend/fc_config.json"
-      - "FC_DEBUG=true"
     volumes:
       - ./config/krakend:/etc/krakend
       - ./dumps:/tmp/krakend-http-logger
@@ -17,9 +14,12 @@ services:
       - "8090:8090"
     command: ["run", "-d", "-c", "krakend.json"]
     # Uncomment to use the extended flexible configuration
-    #command: ["run", "-d", "-c", "./extended/krakend.json"]
+    #command: ["run", "-d", "-c", "./extended/krakend.tmpl"]
+    #environment:
+    #  - "FC_CONFIG=/etc/krakend/fc_config.json"
+    #  - "FC_DEBUG=true"
     depends_on:
-      # - fake_api
+      - fake_api
       - jaeger
       - chat
   grafana:
@@ -113,8 +113,7 @@ services:
       - krakend_ee
     restart: always
   grpc_flights:
-    build:
-      context: images/grpc/flights
+    image: krakend/grpc_flights_fake:latest
     ports:
       - "4242:4242"
   grpc_trains:
