@@ -1,0 +1,4 @@
+{
+  "conf_dir": "/etc/krakend",
+  "grpc_catalog": "/etc/krakend/grpc_catalog"
+}

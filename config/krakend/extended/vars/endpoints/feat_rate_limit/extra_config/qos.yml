@@ -1,3 +1,0 @@
-key: "qos/ratelimit/router"
-val:
-  max_rate: 2

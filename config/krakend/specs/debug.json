@@ -1,4 +1,5 @@
 {
+    "$schema": "https://www.krakend.io/schema/v2.4/e2e.json",
 	"@comment": "Makes sure that the debug endpoint is available on e2e command",
     "in": {
         "method": "GET",
@@ -13,8 +14,7 @@
           "message": "pong"
         },
         "header": {
-            "content-type": ["application/json; charset=utf-8"],
-            "Cache-Control": [""]
+            "Content-Type": ["application/json; charset=utf-8"]
         }
     }
 }

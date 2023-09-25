@@ -18,7 +18,7 @@
   "extra_config": {
     "async/amqp": {
       "name": "krakend",
-      "host": "amqp://guest:guest@{{.servers.rabbitmq}}/",
+      "host": "amqp://guest:guest@{{.hosts.rabbitmq}}/",
       "exchange": "foo",
       "prefetch_count": 40,
       "auto_ack": true

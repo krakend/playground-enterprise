@@ -1,4 +1,5 @@
 {
+    "$schema": "https://www.krakend.io/schema/v2.4/e2e.json",
 	"@comment": "Makes sure that a valid API Key can consume content",
     "in": {
         "method": "GET",

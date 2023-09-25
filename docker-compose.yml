@@ -13,7 +13,7 @@ services:
       - "8080:8080"
       - "8090:8090"
     command: ["run", "-d", "-c", "krakend.json"]
-    # Uncomment to use the extended flexible configuration
+    # Uncomment to automatically compile using flexible configuration
     #command: ["run", "-d", "-c", "./extended/krakend.tmpl"]
     #environment:
     #  - "FC_CONFIG=/etc/krakend/fc_config.json"
@@ -103,7 +103,7 @@ services:
     ports:
       - "3000:3000"
   revoker:
-    image: krakend/krakend-ee:2
+    image: krakend/krakend-ee:2.4-watch
     ports:
       - 8081:8081
     volumes:

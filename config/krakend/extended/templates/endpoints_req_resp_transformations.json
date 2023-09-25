@@ -1,0 +1,171 @@
+{
+  "@comment": "Feature: Aggregation + Basic transformation (filtering & mapping) + grouping",
+  "endpoint": "/git/{user}",
+  "backend": [
+    {
+      "host": [
+        "https://api.github.com"
+      ],
+      "url_pattern": "/users/{user}",
+      "allow": [
+        "avatar_url",
+        "name",
+        "company",
+        "blog",
+        "location",
+        "mail",
+        "hireable",
+        "followers",
+        "public_repos",
+        "public_gists"
+      ],
+      "mapping": {
+        "blog": "website"
+      },
+      "group": "user"
+    },
+    {
+      "host": [
+        "https://api.github.com"
+      ],
+      "url_pattern": "/users/{user}/repos",
+      "mapping": {
+        "collection": "repos"
+      },
+      "is_collection": true
+    }
+  ],
+  "extra_config": {
+    "documentation/openapi": {
+      "summary": "Merges two calls from github and serves under a single endpoint",
+      "description": "This endpoint fetches in parallel the user information and the repository information from Githuib and returns it together. Non interesting fields are removed.",
+      "tags": [
+        "Aggregation"
+      ]
+    }
+  }
+},
+{
+  "@comment": "Feature: One-liner advanced data manipulation (filter, sorting & remapping) with JMESPath Query Language",
+  "endpoint": "/cryptos/{currency}",
+  "output_encoding": "json-collection",
+  "backend": [
+    {
+      "host": [
+        "https://api.coingecko.com"
+      ],
+      "url_pattern": "/api/v3/coins/markets?vs_currency={currency}&order=market_cap_desc&per_page=100&page=1&sparkline=false",
+      "encoding": "safejson"
+    }
+  ],
+  "extra_config": {
+    "modifier/jmespath": {
+      "@comment": "Get first 5 crypto by market capitalization, then reverse sort them by name, finally filter and rename some fields",
+      "expr": "reverse(sort_by(collection[:5], &name))[*].{name: name, token: symbol,price: current_price, price_change: price_change_percentage_24h, market_cap: market_cap}"
+    },
+    "documentation/openapi": {
+      "summary": "Get TOP 5 crypto capitalization & price data for a given currency",
+      "description": "This endpoint fetches some crypto capitalization data from Coingecko for a given currency.",
+      "tags": [
+        "Aggregation"
+      ]
+    }
+  }
+},
+{
+  "@comment": "Feature: Regular expression manipulation",
+  "endpoint": "/user/creditcard",
+  "backend": [
+    {
+      "url_pattern": "/user/1.json",
+      "allow": [
+        "credit_card"
+      ],
+      "extra_config": {
+        "plugin/req-resp-modifier": {
+          "name": [
+            "content-replacer"
+          ],
+          "content-replacer": {
+            "credit_card.number": {
+              "@comment": "Ridiculous card masking. Show last 4 digits and remove the rest. Credit card number is nested.",
+              "find": "^.*(\\d{4})",
+              "replace": "XXXX-${1}",
+              "regexp": true
+            }
+          }
+        }
+      }
+    }
+  ]
+},
+{
+  "@comment": "Feature: Backend cache",
+  "endpoint": "/market/cached",
+  "backend": [
+    {
+      "host": [
+        "https://api.coingecko.com"
+      ],
+      "url_pattern": "/api/v3/coins/markets?vs_currency=eur&ids=bitcoin,ethereum&order=market_cap_desc&per_page=100&page=1&sparkline=false",
+      "encoding": "safejson",
+      "mapping": {
+        "collection": "coins"
+      },
+      "extra_config": {
+        "qos/http-cache": {
+          "shared": true
+        }
+      }
+    }
+  ]
+},
+{
+  "@comment": "Feature: Mocked response",
+  "endpoint": "/mocked-response",
+  "method": "GET",
+  "output_encoding": "json",
+  "backend": [
+    {
+      "host": [
+        "http://unexistent_backend"
+      ],
+      "url_pattern": "/"
+    }
+  ],
+  "extra_config": {
+    "proxy": {
+      "static": {
+        "data": {
+          "an_integer": 123,
+          "an_array": [
+            "arr1",
+            "arr2"
+          ],
+          "an_object": {
+            "obj": "obj1"
+          }
+        },
+        "strategy": "always"
+      }
+    }
+  }
+},
+{
+  "@comment": "Feature: Sequential calls, using values from 1st call response into 2nd call request",
+  "endpoint": "/sequential",
+  "backend": [
+    {
+      "url_pattern": "/hotels/1.json",
+      "allow": [ "destination_id" ]
+    },
+    {
+      "url_pattern": "/destinations/{resp0_destination_id}.json"
+    }
+  ],
+  "extra_config": {
+    "proxy": {
+      "sequential": true
+    }
+  }
+}

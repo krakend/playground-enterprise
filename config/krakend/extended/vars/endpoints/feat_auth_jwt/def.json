@@ -1,9 +1,0 @@
-{
-  "@comment": "Feature: Authorization based on JWT (using Auth0)",
-  "endpoint": "/private/auth0",
-  "backend": [
-    {
-      "url_pattern": "/user/1.json"
-    }
-  ]
-}

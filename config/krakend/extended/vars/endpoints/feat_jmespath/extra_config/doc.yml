@@ -1,5 +1,0 @@
-summary: Get TOP 5 crypto capitalization & price data for a given currency
-description: |
-  This endpoint fetches some crypto capitalization data from Coingecko for a given currency
-tags:
-  - Aggregation

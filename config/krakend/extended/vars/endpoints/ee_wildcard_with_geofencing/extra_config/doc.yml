@@ -1,7 +1,0 @@
-summary: Calls to internal service with wildcard, using geofencing,
-description: | 
-  This endpoint will send all requests to a designed backend 
-  including everything after the /fake-api-geofence path, adding 
-  geofencing (allowing calls only from Spain)
-tags:
-  - Wildcard

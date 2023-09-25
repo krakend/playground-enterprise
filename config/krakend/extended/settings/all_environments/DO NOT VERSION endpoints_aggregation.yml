@@ -1,0 +1,28 @@
+- endpoint: "/git/{user}"
+  comment: "Feature: Aggregation + Basic transformation (filtering & mapping) + grouping"
+  backend:
+     - url_pattern: "/users/{user}"
+       allow:
+        - avatar_url
+        - name
+        - company
+        - blog
+        - location
+        - mail
+        - hireable
+        - followers
+        - public_repos
+        - public_gists
+       mapping:
+        blog: "website"
+       group: "user"
+     - url_pattern: "/users/{user}/repos"
+       mapping:
+         collection: "repos"
+       is_collection: true
+  extra_config:
+    documentation/openapi:
+      summary: "Merges two calls from github and serves under a single endpoint"
+      description: "This endpoint fetches in parallel the user information and the repository information from Githuib and returns it together. Non interesting fields are removed."
+      tags:
+      - Aggregation

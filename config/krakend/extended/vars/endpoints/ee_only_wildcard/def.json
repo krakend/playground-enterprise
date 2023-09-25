@@ -1,9 +1,0 @@
-{
-  "@comment": "EE only feature: Wildcard to our fake API, open",
-  "endpoint": "/fake-api/*",
-  "backend": [
-    {
-      "url_pattern": "/"
-    }
-  ]
-}

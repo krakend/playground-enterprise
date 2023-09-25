@@ -1,6 +1,0 @@
-summary: Get crypto market information with a single call
-description: |
-  This endpoint fetches crypto market information from Coingecko
-  using a single non-concurrent call
-tags:
-  - Concurrent calls

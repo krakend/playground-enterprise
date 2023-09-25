@@ -1,5 +1,0 @@
-
-        {
-          "host": ["http://localhost:8080"],
-          "url_pattern": "/__debug/cookie"
-        }

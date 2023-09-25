@@ -3,7 +3,9 @@
   "version": 3,
   "name": "KrakenD Enterprise API Gateway",
   "port": 8080,
-  "host": ["http://{{.servers.fake_api}}"],
+  "host": [
+    "{{.hosts.fake_api }}"
+  ],
   "timeout": "3000ms",
   "cache_ttl": "300s",
   "debug_endpoint": true,
@@ -11,17 +13,16 @@
     "pattern": ".so",
     "folder": "/opt/krakend/plugins/"
   },
-  "endpoints": [
-    {{ $cnt := 0 }}
-    {{ range $nm, $ep := .endpoints }}
-        {{ if ne $cnt 0 }},{{ end }}
-        {{ $cnt = 1 }}
-        {{ template "endpoint.tmpl" $ep }}
-    {{ end }}
-  ],
-  "sequential_start": true,
   "async_agent": [
-    { "$ref": "./async_agents/async_agent_demo.json"}
+    {
+      "$ref": "./async_agents/async_agent_demo.json"
+    }
+  ],
+  "endpoints": [
+      {{ template "endpoints_req_resp_transformations.json" . }},
+      {{ template "endpoints_authentication.json" . }},
+      {{ template "endpoints_traffic_management.json" . }},
+      {{ template "endpoints_services_connectivity.json" . }}
   ],
   "extra_config": {
     "$ref": "./service_extra_config.json"

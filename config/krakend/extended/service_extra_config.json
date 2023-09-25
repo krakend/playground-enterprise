@@ -1,102 +1,133 @@
 {
-    "grpc": { "$ref": "extra_config/grpc.json" },
-    "router": {
-      "return_error_msg": true
+  "grpc": {
+    "catalog": [
+      "{{.grpc_catalog}}"
+    ]
+  },
+  "router": {
+    "return_error_msg": true,
+    "disable_gzip": true
+  },
+  "auth/basic": {
+    "@comment": "Location of the password file for endpoints requiring basic auth",
+    "htpasswd_path": ".htpasswd"
+  },
+  "plugin/http-server": {
+    "name": [
+      "geoip",
+      "url-rewrite"
+    ],
+    "geoip": {
+      "citydb_path": "geoip/GeoLite2-City.mmdb"
     },
-    "auth/basic": {
-      "@comment": "Location of the password file for endpoints requiring basic auth",
-      "htpasswd_path": "{{.conf_dir}}/.htpasswd"
-    },
-    "plugin/http-server": {
-      "name": [
-        "static-filesystem",
-        "geoip",
-        "url-rewrite"
-      ],
-      "static-filesystem": {
-        "prefix": "/demo/",
-        "path": "{{.conf_dir}}/demo/"
+    "url-rewrite": {
+      "literal": {
+        "/git-profile": "/git"
       },
-      "geoip": {
-        "citydb_path": "{{.conf_dir}}/geoip/GeoLite2-City.mmdb"
-      },
-      "url-rewrite": {
-        "literal": {
-          "/git-profile": "/git"
-        },
-        "regexp": [
-          [
-            "/git-profile/([a-z]{3})",
-            "/git/${1}"
-          ],
-          [
-            "/crypto-profile/([a-z]{3})",
-            "/cryptos/${1}"
-          ]
+      "regexp": [
+        [
+          "/git-profile/([a-z]{3})",
+          "/git/${1}"
+        ],
+        [
+          "/crypto-profile/([a-z]{3})",
+          "/cryptos/${1}"
         ]
-      }
-    },
-    "documentation/openapi": {
-      "version": "1",
-      "contact_name": "John Doe",
-      "contact_email": "contact@example.com",
-      "license_name": "MIT",
-      "license_url": "https://opensource.org/licenses/MIT"
-    },
-    "auth/api-keys": {
-      "keys": [
-        { "$ref": "extra_config/key_acme_inc.json" },
-        { "$ref": "extra_config/key_admin_inc.json" }
       ]
-    },
-    "telemetry/metrics": {
-      "collection_time": "30s",
-      "listen_address": ":8090"
-    },
-    "telemetry/influx": {
-      "address": "http://{{.servers.influxdb}}",
-      "ttl": "25s",
-      "buffer_size": 100,
-      "username": "krakend-dev",
-      "password": "pas5w0rd"
-    },
-    "telemetry/logging": {
-      "level": "DEBUG",
-      "prefix": "[KRAKEND]",
-      "syslog": false,
-      "stdout": true
-    },
-    "telemetry/gelf": {
-      "address": "{{.servers.logstash}}",
-      "enable_tcp": false
-    },
-    "telemetry/opencensus": {
-      "sample_rate": 100,
-      "reporting_period": 1,
-      "enabled_layers": {
-        "backend": true,
-        "router": true
-      },
-      "exporters": {
-        "jaeger": {
-          "endpoint": "http://jaeger:14268/api/traces",
-          "service_name": "krakend"
-        }
-      }
-    },
-    "security/cors": {
-      "allow_origins": ["*"],
-      "allow_methods": ["POST", "GET"],
-      "allow_headers": ["Origin", "Authorization", "Content-Type"],
-      "expose_headers": ["Content-Length"],
-      "max_age": "12h"
-    },
-    "auth/revoker": {
-      "N": 10000000,
-      "P": 0.0000001,
-      "hash_name": "optimal",
-      "TTL": 1500,
-      "port": 1234,
-      "token_keys": ["jti"]
     }
+  },
+  "documentation/openapi": {
+    "version": "1",
+    "contact_name": "John Doe",
+    "contact_email": "contact@example.com",
+    "license_name": "MIT",
+    "license_url": "https://opensource.org/licenses/MIT"
+  },
+  "auth/api-keys": {
+    "keys": [
+      {
+        "@description": "ACME Inc.",
+        "key": "4d2c61e1-34c4-e96c-9456-15bd983c5019",
+        "roles": [
+          "role1",
+          "role2"
+        ]
+      },
+      {
+        "key": "58427514-be32-0b52-b7c6-d01fada30497",
+        "roles": [
+          "admin",
+          "user"
+        ],
+        "@description": "Administrators Inc."
+      }
+    ]
+  },
+  "telemetry/metrics": {
+    "collection_time": "30s",
+    "listen_address": ":8090"
+  },
+  "telemetry/influx": {
+    "address": "http://{{.hosts.influxdb}}",
+    "ttl": "25s",
+    "buffer_size": 100,
+    "username": "krakend-dev",
+    "password": "pas5w0rd"
+  },
+  "telemetry/logging": {
+    "level": "DEBUG",
+    "prefix": "[KRAKEND]",
+    "syslog": false,
+    "stdout": true
+  },
+  "telemetry/gelf": {
+    "address": "{{.hosts.logstash}}",
+    "enable_tcp": false
+  },
+  "telemetry/opencensus": {
+    "sample_rate": 100,
+    "reporting_period": 1,
+    "enabled_layers": {
+      "backend": true,
+      "router": true
+    },
+    "exporters": {
+      "jaeger": {
+        "endpoint": "http://jaeger:14268/api/traces",
+        "service_name": "krakend"
+      }
+    }
+  },
+  "security/cors": {
+    "allow_origins": [
+      "*"
+    ],
+    "allow_methods": [
+      "POST",
+      "GET"
+    ],
+    "allow_headers": [
+      "Origin",
+      "Authorization",
+      "Content-Type"
+    ],
+    "expose_headers": [
+      "Content-Length"
+    ],
+    "max_age": "12h"
+  },
+  "auth/revoker": {
+    "hash_name": "optimal",
+    "N": 10000000,
+    "P": 1e-7,
+    "port": 1234,
+    "token_keys": [
+      "jti"
+    ],
+    "TTL": 1500,
+    "revoke_server_ping_url": "http://revoker:8081/instances",
+    "revoke_server_ping_interval": "30s",
+    "revoke_server_api_key": "639ee23f-f4c5-40c4-855c-912bf01fae87",
+    "revoke_server_max_workers": 5
+  }
 }

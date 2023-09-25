@@ -1,0 +1,279 @@
+{
+    "@comment": "EE only feature: Web Server - Static content",
+    "endpoint": "/demo/*",
+    "output_encoding": "no-op",
+    "backend":[
+        {
+            "url_pattern":"/",
+            "extra_config": {
+              "backend/static-filesystem": {
+                "directory_listing": false,
+                "path": "./demo/"
+              }
+            },
+            "host": [ "http://localhost:8080" ],
+            "encoding":"no-op"
+        }
+    ]
+},
+{
+    "@comment": "Feature: Expose a GET REST endpoint from POST to SOAP service",
+    "endpoint": "/capital-of/{country}",
+    "backend": [
+        {
+            "host": [
+                "http://webservices.oorsprong.org"
+            ],
+            "url_pattern": "/websamples.countryinfo/CountryInfoService.wso",
+            "encoding": "xml",
+            "method": "POST",
+            "target": "Envelope.Body.CapitalCityResponse",
+            "mapping": {
+                "CapitalCityResult": "capital"
+            },
+            "deny": [
+                "-m"
+            ],
+            "extra_config": {
+                "backend/soap": {
+                    "@comment": "The XML template with variables is in the following path:",
+                    "path": "./extended/templates/soap_request_capital_city.tmpl.xml"
+                }
+            }
+        }
+    ]
+},
+{
+    "@comment": "Feature: GraphQL to REST",
+    "endpoint": "/starwars_films/{movie_id}",
+    "@test_with": "curl http://localhost:8080/starwars_films/1",
+    "backend": [
+        {
+            "host": [
+                "https://swapi-graphql.netlify.app/"
+            ],
+            "url_pattern": "/.netlify/functions/index",
+            "target": "data.film",
+            "extra_config": {
+                "backend/graphql": {
+                    "type": "query",
+                    "query": "query Query ($movie_id: ID!) {\nfilm (filmID: $movie_id) {\nid\nepisodeID\ntitle\ndirector\nreleaseDate\nspeciesConnection {\nspecies {\nname\nclassification\nhomeworld {\nname\n}\n}\n}\n}\n}",
+                    "variables": {
+                        "movie_id": "{movie_id}"
+                    }
+                }
+            }
+        }
+    ]
+},
+{
+    "@comment": "EE only feature: GRPC",
+    "endpoint": "/travel",
+    "input_query_strings": [
+        "lat",
+        "lon"
+    ],
+    "backend": [
+        {
+            "host": [
+                "grpc_flights:4242"
+            ],
+            "group": "flights",
+            "url_pattern": "/flight_finder.Flights/FindFlight",
+            "extra_config": {
+                "backend/grpc": {
+                    "input_mapping": {
+                        "lat": "where.latitude",
+                        "lon": "where.longitude"
+                    }
+                }
+            }
+        },
+        {
+            "host": [
+                "grpc_trains:4243"
+            ],
+            "group": "trains",
+            "url_pattern": "/train_finder.Trains/FindTrains",
+            "extra_config": {
+                "backend/grpc": {
+                    "input_mapping": {
+                        "lat": "origin.position.latitude",
+                        "lon": "origin.position.longitude"
+                    },
+                    "response_naming_convention": "camelCase",
+                    "output_enum_as_string": true,
+                    "output_timestamp_as_string": true,
+                    "output_duration_as_string": true,
+                    "client_tls": {
+                        "allow_insecure_connections": true
+                    }
+                }
+            }
+        },
+        {
+            "group": "hotels",
+            "url_pattern": "/hotels/1.json"
+        },
+        {
+            "host": [
+                "grpc_trains:4243"
+            ],
+            "group": "trains_classes",
+            "url_pattern": "/train_finder.Trains/GetTrainClasses",
+            "extra_config": {
+                "backend/grpc": {
+                    "response_naming_convention": "camelCase",
+                    "output_remove_unset_values": true,
+                    "client_tls": {
+                        "allow_insecure_connections": true
+                    }
+                }
+            }
+        }
+    ]
+},
+{
+    "@comment": "EE only feature: GRPC Payload in Body",
+    "endpoint": "/travel_book_flight/{id_flight}/{main_passenger}",
+    "method": "POST",
+    "backend": [
+        {
+            "host": [
+                "grpc_flights:4242"
+            ],
+            "group": "flights",
+            "url_pattern": "/flight_finder.Flights/BookFlight",
+            "extra_config": {
+                "backend/grpc": {
+                    "input_mapping": {
+                        "Id_flight": "flight_id",
+                        "Main_passenger": "main_passenger.full_name"
+                    },
+                    "use_request_body": true
+                }
+            }
+        }
+    ]
+},
+{
+    "@comment": "EE only feature: WebSockets (chat example)",
+    "endpoint": "/chat/ws/{room}",
+    "input_query_strings": [
+        "*"
+    ],
+    "input_headers": [
+        "*"
+    ],
+    "backend": [
+        {
+            "url_pattern": "/ws/{room}",
+            "disable_host_sanitize": true,
+            "host": [
+                "ws://chat:8888"
+            ]
+        }
+    ],
+    "extra_config": {
+        "websocket": {
+            "input_headers": [
+                "Cookie",
+                "Authorization"
+            ],
+            "connect_event": true,
+            "disconnect_event": true,
+            "read_buffer_size": 4096,
+            "write_buffer_size": 4096,
+            "message_buffer_size": 4096,
+            "max_message_size": 3200000,
+            "write_wait": "10s",
+            "pong_wait": "60s",
+            "ping_period": "54s",
+            "max_retries": 0,
+            "backoff_strategy": "exponential"
+        }
+    }
+},
+{
+    "@comment": "EE only feature: WebSockets (chat example web interface)",
+    "endpoint": "/chat",
+    "output_encoding": "no-op",
+    "backend": [
+        {
+            "url_pattern": "/",
+            "host": [
+                "http://chat:8888"
+            ],
+            "encoding": "no-op"
+        }
+    ]
+},
+{
+    "@comment": "EE only feature: Wildcard to our fake API, open",
+    "endpoint": "/fake-api/*",
+    "backend": [
+      {
+        "url_pattern": "/"
+      }
+    ],
+    "extra_config": {
+      "documentation/openapi": {
+        "summary": "Calls to internal service with wildcard",
+        "description": "This endpoint will send all requests to a designed backend including everything after the /fake-api path",
+        "tags": [
+          "Wildcard"
+        ]
+      }
+    }
+  },
+
+  {
+    "@comment": "EE only feature: Wildcard with geofencing - Allow visits only from Spain",
+    "endpoint": "/fake-api-geofence/*",
+    "input_headers": [
+      "X-Geoip"
+    ],
+    "backend": [
+      {
+        "url_pattern": "/"
+      }
+    ],
+    "extra_config": {
+      "validation/cel": [
+        {
+          "check_expr": "req_headers['X-Geoip'][0].matches('\"IsoCode\":\"ES\"')"
+        }
+      ],
+      "documentation/openapi": {
+        "summary": "Calls to internal service with wildcard, using geofencing",
+        "description": "This endpoint will send all requests to a designed backend including everything after the /fake-api-geofence path, adding geofencing (allowing calls only from Spain)",
+        "tags": [
+          "Wildcard"
+        ]
+      }
+    }
+  },
+  {
+    "@comment": "EE only feature: Dynamic routing based on headers (token claim and cookie also available)",
+    "endpoint": "/dynamic/header",
+    "backend": [
+      {
+        "@comment": "We will route to the backend using the content of the 'X-Route' header",
+        "@test_with": "curl -iG -H 'X-Route: hello' 'http://localhost:8080/dynamic/header'",
+        "host": ["http://localhost:8080"],
+        "url_pattern": "/__debug/{input_headers.x-route}"
+      }
+    ]
+  },
+  {
+    "@comment": "EE only feature: Dynamic routing based on query strings",
+    "endpoint": "/dynamic/qs",
+    "backend": [
+      {
+        "@comment": "We will route to the backend using the content of the 'X-Route' header",
+        "@test_with": "curl -iG 'http://localhost:8080/dynamic/qs?route=hello'",
+        "host": ["http://localhost:8080"],
+        "url_pattern": "/__debug/{input_query_strings.route}"
+      }
+    ]
+  }

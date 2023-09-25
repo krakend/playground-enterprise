@@ -6,8 +6,9 @@
     "settings": {
         "allow_overwrite": true,
         "paths": [
-            "/etc/krakend/extended/root.vars.json",
-            "/etc/krakend/extended/vars"
+            "/etc/krakend/extended/settings/root.vars.json",
+            "/etc/krakend/extended/settings/all_environments",
+            "/etc/krakend/extended/settings/dev"
         ]
     },
     "templates": {
