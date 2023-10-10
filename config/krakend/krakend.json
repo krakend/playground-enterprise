@@ -693,7 +693,8 @@
         ]
     },
     "router": {
-      "return_error_msg": true
+      "return_error_msg": true,
+      "disable_gzip": true
     },
     "auth/basic": {
       "@comment": "Location of the password file for endpoints requiring basic auth",
