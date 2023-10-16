@@ -15,9 +15,11 @@ import (
 
 func main() {
 	fmt.Printf("this is a client...\n")
-	c := NewFlightsClient("localhost:4242")
+	// c := NewFlightsClient("localhost:4242")
+	// c := NewFlightsClient("localhost:41979")
+	c := NewFlightsClient("localhost:7979")
 	c.FindFlight()
-	c.BookFlight()
+	// c.BookFlight()
 }
 
 type FlightsClient struct {

@@ -2,15 +2,29 @@
     "catalog": [
         "{{.grpc_catalog}}"
     ],
-    "server" : {
-        "port": 8910,
+    "server": {
         "services": [
             {
-                "name": "Flights",
+                "name": "flight_finder.Flights",
                 "methods": [
-                    {"name": "FindFlight"}
+                    {
+                        "name": "FindFlight",
+                        "backend": [
+                            {
+                              "host": [
+                                "grpc://localhost:4242"
+                              ],
+                              "url_pattern": "/flight_finder.Flights/FindFlight",
+                              "extra_config": {
+                                "backend/grpc": {
+                                  "use_request_body": true
+                                }
+                              }
+                            }
+                        ]
+                    }
                 ]
             }
-        }
+        ]
     }
 }

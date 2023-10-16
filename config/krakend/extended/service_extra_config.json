@@ -1,11 +1,8 @@
 {
-  "grpc": {
-    "catalog": [
-      "{{.grpc_catalog}}"
-    ]
-  },
+  "grpc": { "$ref": "extra_config/grpc.json" },
   "router": {
     "return_error_msg": true,
+    "use_h2c": true,
     "disable_gzip": true
   },
   "auth/basic": {
