@@ -8,6 +8,7 @@ import (
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/grpc/metadata"
 
 	flightspb "github.com/krakendio/playground-enterprise/images/grpc/genlib/flights"
 	libpb "github.com/krakendio/playground-enterprise/images/grpc/genlib/lib"
@@ -47,7 +48,8 @@ func NewFlightsClient(addr string) *FlightsClient {
 }
 
 func (c *FlightsClient) FindFlight() {
-	ctx := context.Background()
+	ctx := metadata.AppendToOutgoingContext(context.Background(),
+		"X-My-Custom-Header", "ThisIsMyCustomValue")
 	resp, err := c.conn.FindFlight(ctx, &flightspb.FindFlightRequest{
 		Page: &libpb.Page{
 			Size:   20,
@@ -63,7 +65,8 @@ func (c *FlightsClient) FindFlight() {
 }
 
 func (c *FlightsClient) BookFlight() {
-	ctx := context.Background()
+	ctx := metadata.AppendToOutgoingContext(context.Background(),
+		"X-My-Custom-Header", "ThisIsMyCustomValue")
 	resp, err := c.conn.BookFlight(ctx, &flightspb.BookFlightRequest{
 		FlightId: "foobar",
 		Passengers: []*flightspb.Passenger{

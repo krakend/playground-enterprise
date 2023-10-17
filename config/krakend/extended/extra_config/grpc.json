@@ -9,6 +9,9 @@
                 "methods": [
                     {
                         "name": "FindFlight",
+                        "input_headers": [
+                            "x-my-custom-header"
+                        ],
                         "backend": [
                             {
                               "host": [
