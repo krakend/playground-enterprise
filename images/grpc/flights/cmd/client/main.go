@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"os"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -13,11 +14,19 @@ import (
 	// timestamppb "google.golang.org/protobuf/types/known/timestamppb"
 )
 
+const (
+	ENV_HOST string = "FLIGHTSCLIENT_HOST"
+)
+
 func main() {
 	fmt.Printf("this is a client...\n")
-	// c := NewFlightsClient("localhost:4242")
-	// c := NewFlightsClient("localhost:41979")
-	c := NewFlightsClient("localhost:7979")
+
+	host := os.Getenv(ENV_HOST)
+	if host == "" {
+		host = "localhost:4242"
+		fmt.Printf("env var %s not set, using HOST:  %s", ENV_HOST, host)
+	}
+	c := NewFlightsClient(host)
 	c.FindFlight()
 	// c.BookFlight()
 }
