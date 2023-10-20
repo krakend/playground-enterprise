@@ -12,7 +12,7 @@ import (
 
 	flightspb "github.com/krakendio/playground-enterprise/images/grpc/genlib/flights"
 	libpb "github.com/krakendio/playground-enterprise/images/grpc/genlib/lib"
-	// timestamppb "google.golang.org/protobuf/types/known/timestamppb"
+	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
 )
 
 const (
@@ -54,6 +54,9 @@ func (c *FlightsClient) FindFlight() {
 		Page: &libpb.Page{
 			Size:   20,
 			Cursor: "foo",
+		},
+		Departure: &libpb.TimeRange{
+			Start: timestamppb.Now(),
 		},
 	})
 

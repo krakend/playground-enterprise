@@ -12,7 +12,14 @@
                         "input_headers": [
                             "x-my-custom-header"
                         ],
+                        "payload_params": {
+                            "page.cursor": "cursor"
+                        },
                         "backend": [
+                            {
+                                "host": [ "http://localhost:8080" ],
+                                "url_pattern": "/__debug/foo/"
+                            },
                             {
                               "host": [
                                 "grpc://localhost:4242"
@@ -23,6 +30,11 @@
                                   "use_request_body": true
                                 }
                               }
+                            },
+                            {
+                                "method": "GET",
+                                "host": [ "http://localhost:7811" ],
+                                "url_pattern": "/fake.json?q={cursor}"
                             }
                         ]
                     }
