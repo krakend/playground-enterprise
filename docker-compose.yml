@@ -61,16 +61,17 @@ services:
     ports:
       - "16686:16686"
       - "14268:14268"
-# elasticsearch:
-#   image: elasticsearch:8.4.1
-#   environment:
-#     - "discovery.type=single-node"
-#     - "xpack.security.enabled=false"
-#     - "xpack.security.transport.ssl.enabled=false"
-#     - "xpack.security.http.ssl.enabled=false"
-#   ports:
-#     - "19200:9200"
-#     - "9300:9300"
+  elasticsearch:
+    image: elasticsearch:8.4.1
+    environment:
+      - "discovery.type=single-node"
+      - "xpack.security.enabled=false"
+      - "xpack.security.transport.ssl.enabled=false"
+      - "xpack.security.http.ssl.enabled=false"
+      - "ES_JAVA_OPTS=-Xms1024m -Xmx1024m"
+    ports:
+      - "19200:9200"
+      - "9300:9300"
   kibana:
     image: kibana:8.4.1
     ports:
@@ -92,7 +93,7 @@ services:
       - "15672:15672"
       - "5672:5672"
   fake_api:
-    image: ghcr.io/lpereira/lwan:latest
+    image: ghcr.io/lpereira/lwan:master
     volumes:
       - ./data:/wwwroot
     ports:
