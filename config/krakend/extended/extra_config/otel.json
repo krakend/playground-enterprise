@@ -1,0 +1,60 @@
+{
+    "service_name": "playground_enterprise_otel",
+    "metric_reporting_period": 1,
+    "trace_sample_rate": 0.5,
+    "exporters": { 
+        "prometheus": [
+            {
+                "name": "local_prometheus",
+                "port": 59091,
+                "process_metrics": true,
+                "go_metrics": true
+            }
+        ],
+        "otlp": [
+            {
+                "name": "local_tempo",
+                "host": "{{ .opentelemetry.tempogrpc.host }}",
+                "port": {{ .opentelemetry.tempogrpc.port }},
+                "use_http": false
+            }
+        ]
+    },
+    "layers": {
+        "global": {
+            "disable_metrics": false,
+            "disable_traces": false,
+            "disable_propagation": false
+        },
+        "pipe": {
+            "disable_metrics": false,
+            "disable_traces": false
+        }, 
+        "backend": {
+            "metrics": {
+                "disable_stage": false,
+                "round_trip": true,
+                "read_payload": true,
+                "detailed_connection": true,
+                "static_attributes": [
+                    {
+                        "key": "my_metric_attr",
+                        "value": "my_metric_val"
+                    }
+                ]
+            },
+            "traces": {
+                "disable_stage": false,
+                "round_trip": true,
+                "read_payload": true,
+                "detailed_connection": true,
+                "static_attributes": [
+                    {
+                        "key": "my_trace_attr",
+                        "value": "my_trace_val" 
+                    }
+                ]
+            }
+        }
+    }
+}

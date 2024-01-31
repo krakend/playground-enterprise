@@ -11,6 +11,12 @@
     "grpc_trains": "localhost:4243",
     "fake_api": "localhost:8000"
   },
+  "opentelemetry": {
+    "tempogrpc": {
+        "port": 54317,
+        "host": "127.0.0.1"
+    }
+  },
   "endpoints": {
     "ee_websockets": {
         "def": {
