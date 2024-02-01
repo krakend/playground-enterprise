@@ -5,6 +5,10 @@
     "tempogrpc": {
         "port": 4317,
         "host": "tempo"
+    },
+    "jaegergrpc": {
+        "port": 4317,
+        "host": "jaeger"
     }
   }
 }

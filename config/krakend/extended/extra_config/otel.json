@@ -17,6 +17,13 @@
                 "host": "{{ .opentelemetry.tempogrpc.host }}",
                 "port": {{ .opentelemetry.tempogrpc.port }},
                 "use_http": false
+            },
+            {
+                "name": "debug_jaeger",
+                "host": "{{ .opentelemetry.jaegergrpc.host }}",
+                "port": {{ .opentelemetry.jaegergrpc.port }},
+                "use_http": false,
+                "disable_traces": true
             }
         ]
     },
