@@ -2,6 +2,7 @@ version: "3"
 volumes:
   vol_tempo:
   vol_grafana:
+  vol_grafana10:
 services:
   krakend_ee:
     # The :watch image restarts the service automatically when the configuration files change.
@@ -39,6 +40,16 @@ services:
       - GF_SECURITY_ADMIN_PASSWORD=admin
       # The token below must match the one in influxdb
       - INFLUXDB_TOKEN=my-super-secret-auth-token
+  grafana10:
+    image: grafana/grafana:latest
+    domainname: grafana10
+    ports:
+      - "4010:3000"
+    volumes:
+      - "vol_grafana10:/var/lib/grafana"
+    environment:
+      - GF_SECURITY_ADMIN_USER=krakend
+      - GF_SECURITY_ADMIN_PASSWORD=krakend
   influxdb:
   #  image: influxdb:1.8.10
   #  environment:

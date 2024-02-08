@@ -22,7 +22,7 @@
                             },
                             {
                               "host": [
-                                "grpc://localhost:4242"
+                                "localhost:4242"
                               ],
                               "url_pattern": "/flight_finder.Flights/FindFlight",
                               "extra_config": {

@@ -123,7 +123,7 @@
       "jti"
     ],
     "TTL": 1500,
-    "revoke_server_ping_url": "http://revoker:8081/instances",
+    "revoke_server_ping_url": "http://{{.hosts.revoker}}/instances",
     "revoke_server_ping_interval": "30s",
     "revoke_server_api_key": "639ee23f-f4c5-40c4-855c-912bf01fae87",
     "revoke_server_max_workers": 5

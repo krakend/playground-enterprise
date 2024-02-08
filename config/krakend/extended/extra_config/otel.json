@@ -16,14 +16,31 @@
                 "name": "local_tempo",
                 "host": "{{ .opentelemetry.tempogrpc.host }}",
                 "port": {{ .opentelemetry.tempogrpc.port }},
+                "use_http": false,
+                "disable_metrics": true
+            },
+            {
+                "name": "datadog",
+                "host": "127.0.0.1",
+                "port": 14317,
                 "use_http": false
+            },
+            {
+                "name": "newrelic",
+                "host": "otlp.eu01.nr-data.net",
+                "port": 4318,
+                "use_http": true,
+                "http_headers": [
+                    {"key": "api-key", "value": "{{ env "NEWRELIC_API_KEY" }}" }
+                ]
             },
             {
                 "name": "debug_jaeger",
                 "host": "{{ .opentelemetry.jaegergrpc.host }}",
                 "port": {{ .opentelemetry.jaegergrpc.port }},
                 "use_http": false,
-                "disable_traces": true
+                "disable_traces": true,
+                "disable_metrics": true
             }
         ]
     },
