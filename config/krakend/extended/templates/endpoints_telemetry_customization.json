@@ -37,7 +37,7 @@
   ],
   "extra_config": {
     "telemetry/opentelemetry": {
-        "pipe": {
+        "proxy": {
             "disable_metrics": true,
             "disable_traces": true
         },
@@ -74,7 +74,7 @@
   ],
   "extra_config": {
     "telemetry/opentelemetry": {
-        "pipe": {
+        "proxy": {
             "disable_metrics": false,
             "disable_traces": false
         },

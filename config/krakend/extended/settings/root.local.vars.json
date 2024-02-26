@@ -9,6 +9,10 @@
     "jaegergrpc": {
         "port": 64317,
         "host": "127.0.0.1"
+    },
+    "datadog": {
+        "disable_metrics": true,
+        "disable_traces": true
     }
   }
 }

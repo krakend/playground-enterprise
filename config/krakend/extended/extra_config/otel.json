@@ -23,16 +23,15 @@
                 "name": "datadog",
                 "host": "127.0.0.1",
                 "port": 14317,
+                "disable_metrics": {{ .opentelemetry.datadog.disable_metrics }},
+                "disable_traces": {{ .opentelemetry.datadog.disable_traces }},
                 "use_http": false
             },
             {
                 "name": "newrelic",
                 "host": "otlp.eu01.nr-data.net",
                 "port": 4318,
-                "use_http": true,
-                "http_headers": [
-                    {"key": "api-key", "value": "{{ env "NEWRELIC_API_KEY" }}" }
-                ]
+                "use_http": true
             },
             {
                 "name": "debug_jaeger",
@@ -48,11 +47,13 @@
         "global": {
             "disable_metrics": false,
             "disable_traces": false,
-            "disable_propagation": false
+            "disable_propagation": false,
+            "report_headers": true
         },
-        "pipe": {
+        "proxy": {
             "disable_metrics": false,
-            "disable_traces": false
+            "disable_traces": false,
+            "report_headers": true
         }, 
         "backend": {
             "metrics": {
@@ -65,7 +66,8 @@
                         "key": "my_metric_attr",
                         "value": "my_metric_val"
                     }
-                ]
+                ],
+                "report_headers": true
             },
             "traces": {
                 "disable_stage": false,
@@ -77,7 +79,8 @@
                         "key": "my_trace_attr",
                         "value": "my_trace_val" 
                     }
-                ]
+                ],
+                "report_headers": true
             }
         }
     }

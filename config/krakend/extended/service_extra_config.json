@@ -1,6 +1,16 @@
 {
   "grpc": { "$ref": "extra_config/grpc.json" },
   "telemetry/opentelemetry": { "$ref": "extra_config/otel.json" },
+  "telemetry/opentelemetry-security": {
+        "otlp": [
+            {
+                "name": "newrelic",
+                "headers": {
+                    "api-key": "{{ env "NEWRELIC_API_KEY" }}"
+                }
+            }
+        ]
+  },
   "router": {
     "return_error_msg": true,
     "use_h2c": true,
@@ -91,7 +101,7 @@
     },
     "exporters": {
       "jaeger": {
-        "endpoint": "http://jaeger:14268/api/traces",
+        "endpoint": "http://{{.hosts.jaeger}}/api/traces",
         "service_name": "krakend"
       }
     }
