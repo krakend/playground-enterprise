@@ -1,7 +1,7 @@
 {
     "service_name": "playground_enterprise_otel",
     "metric_reporting_period": 1,
-    "trace_sample_rate": 0.5,
+    "trace_sample_rate": 0.1,
     "exporters": { 
         "prometheus": [
             {

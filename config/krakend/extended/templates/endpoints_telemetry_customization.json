@@ -82,7 +82,7 @@
             "metric_reporting_period": 10,
             "trace_sample_rate": 1,
             "metric_exporters": ["local_prometheus"],
-            "trace_exporters": ["debug_jaeger"]
+            "trace_exporters": ["debug_jaeger", "newrelic", "local_tempo" ]
         }
     },
     "modifier/jmespath": {
