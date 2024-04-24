@@ -1,14 +1,14 @@
 {
-    "out": "./extended/composed_conf.json",
+    "out": "./extended/priv_local_composed_conf.json",
     "partials": {
         "paths": ["./extended/partials"]
     },
     "settings": {
         "allow_overwrite": true,
         "paths": [
-            "./extended/root.vars.json",
-            "./extended/vars",
-            "./extended/root.local.vars.json"
+            "./extended/settings/root.vars.json",
+            "./extended/settings/environments/local",
+            "./extended/settings/root.local.vars.json"
         ]
     },
     "templates": {

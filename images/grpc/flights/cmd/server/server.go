@@ -11,6 +11,8 @@ import (
 	flightspb "github.com/krakendio/playground-enterprise/images/grpc/genlib/flights"
 	libpb "github.com/krakendio/playground-enterprise/images/grpc/genlib/lib"
 	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
+
+	"google.golang.org/grpc/metadata"
 )
 
 type FlightsEchoServer struct {
@@ -35,11 +37,27 @@ func prettyPrint(title string, i interface{}) {
 	fmt.Printf("* -> [ %s ]:\n%s\n\n", title, string(bytesOut))
 }
 
+func printMetadata(ctx context.Context) {
+	md, exists := metadata.FromIncomingContext(ctx)
+	if !exists {
+		fmt.Printf("NO metadata available\n")
+		return
+	}
+	fmt.Printf("* -> [ METADATA ]:\n")
+	for k, vs := range md {
+		fmt.Printf("    -> %s\n", k)
+		for _, v := range vs {
+			fmt.Printf("         %s\n", v)
+		}
+	}
+}
+
 func (s *FlightsEchoServer) FindFlight(ctx context.Context,
 	req *flightspb.FindFlightRequest) (*flightspb.FindFlightResponse, error) {
 
 	tm := time.Now()
 	fmt.Printf("\n-[FindFlight @ %v]-----\n", tm)
+	printMetadata(ctx)
 	prettyPrint("received", req)
 	resp := s.generateResponse(req)
 	prettyPrint("sending", resp)
@@ -52,6 +70,7 @@ func (s *FlightsEchoServer) BookFlight(ctx context.Context,
 
 	tm := time.Now()
 	fmt.Printf("\n-[BookFlight @ %v]-----\n", tm)
+	printMetadata(ctx)
 	prettyPrint("received", req)
 	resp := &flightspb.BookFlightResponse{
 		ConfirmationId: fmt.Sprintf("%v", tm),

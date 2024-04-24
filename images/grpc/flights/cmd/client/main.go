@@ -4,20 +4,32 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"os"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/grpc/metadata"
 
 	flightspb "github.com/krakendio/playground-enterprise/images/grpc/genlib/flights"
 	libpb "github.com/krakendio/playground-enterprise/images/grpc/genlib/lib"
-	// timestamppb "google.golang.org/protobuf/types/known/timestamppb"
+	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
+)
+
+const (
+	ENV_HOST string = "FLIGHTSCLIENT_HOST"
 )
 
 func main() {
 	fmt.Printf("this is a client...\n")
-	c := NewFlightsClient("localhost:4242")
+
+	host := os.Getenv(ENV_HOST)
+	if host == "" {
+		host = "localhost:4242"
+		fmt.Printf("env var %s not set, using HOST:  %s", ENV_HOST, host)
+	}
+	c := NewFlightsClient(host)
 	c.FindFlight()
-	c.BookFlight()
+	// c.BookFlight()
 }
 
 type FlightsClient struct {
@@ -36,11 +48,15 @@ func NewFlightsClient(addr string) *FlightsClient {
 }
 
 func (c *FlightsClient) FindFlight() {
-	ctx := context.Background()
+	ctx := metadata.AppendToOutgoingContext(context.Background(),
+		"X-My-Custom-Header", "ThisIsMyCustomValue")
 	resp, err := c.conn.FindFlight(ctx, &flightspb.FindFlightRequest{
 		Page: &libpb.Page{
 			Size:   20,
 			Cursor: "foo",
+		},
+		Departure: &libpb.TimeRange{
+			Start: timestamppb.Now(),
 		},
 	})
 
@@ -52,7 +68,8 @@ func (c *FlightsClient) FindFlight() {
 }
 
 func (c *FlightsClient) BookFlight() {
-	ctx := context.Background()
+	ctx := metadata.AppendToOutgoingContext(context.Background(),
+		"X-My-Custom-Header", "ThisIsMyCustomValue")
 	resp, err := c.conn.BookFlight(ctx, &flightspb.BookFlightRequest{
 		FlightId: "foobar",
 		Passengers: []*flightspb.Passenger{

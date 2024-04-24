@@ -1,0 +1,45 @@
+{
+    "catalog": [
+        "{{.grpc_catalog}}"
+    ],
+    "server": {
+        "services": [
+            {
+                "name": "flight_finder.Flights",
+                "methods": [
+                    {
+                        "name": "FindFlight",
+                        "input_headers": [
+                            "x-my-custom-header"
+                        ],
+                        "payload_params": {
+                            "page.cursor": "cursor"
+                        },
+                        "backend": [
+                            {
+                                "host": [ "http://localhost:8080" ],
+                                "url_pattern": "/__debug/foo/"
+                            },
+                            {
+                              "host": [
+                                "localhost:4242"
+                              ],
+                              "url_pattern": "/flight_finder.Flights/FindFlight",
+                              "extra_config": {
+                                "backend/grpc": {
+                                  "use_request_body": true
+                                }
+                              }
+                            },
+                            {
+                                "method": "GET",
+                                "host": [ "http://localhost:8000" ],
+                                "url_pattern": "/articles.json?q={cursor}"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    }
+}
