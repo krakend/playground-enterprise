@@ -1,7 +1,7 @@
 {
     "service_name": "playground_enterprise_otel",
     "metric_reporting_period": 1,
-    "trace_sample_rate": 0.1,
+    "trace_sample_rate": 1,
     "exporters": { 
         "prometheus": [
             {
@@ -31,7 +31,9 @@
                 "name": "newrelic",
                 "host": "otlp.eu01.nr-data.net",
                 "port": 4318,
-                "use_http": true
+                "use_http": true,
+                "disable_traces": true,
+                "disable_metrics": true
             },
             {
                 "name": "debug_jaeger",
