@@ -1,3 +1,0 @@
-[submodule "config/telemetry"]
-	path = config/telemetry
-	url = git@github.com:krakendio/telemetry-dashboards.git
