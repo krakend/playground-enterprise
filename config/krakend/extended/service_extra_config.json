@@ -84,20 +84,6 @@
     "address": "{{.hosts.logstash}}",
     "enable_tcp": false
   },
-  "telemetry/opencensus": {
-    "sample_rate": 100,
-    "reporting_period": 1,
-    "enabled_layers": {
-      "backend": true,
-      "router": true
-    },
-    "exporters": {
-      "jaeger": {
-        "endpoint": "http://jaeger:14268/api/traces",
-        "service_name": "krakend"
-      }
-    }
-  },
   "security/cors": {
     "allow_origins": [
       "*"
