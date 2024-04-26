@@ -23,44 +23,42 @@ services:
       - jaeger
       - chat
   grafana:
-    image: grafana/grafana:9.1.2
+    image: grafana/grafana:latest
     ports:
       - "4000:3000"
     volumes:
-      - "./config/telemetry/grafana/datasources/all.yml:/etc/grafana/provisioning/datasources/all.yml"
-      - "./config/telemetry/grafana/dashboards/all.yml:/etc/grafana/provisioning/dashboards/all.yml"
-      - "./config/telemetry/grafana/krakend:/var/lib/grafana/dashboards/krakend"
+      - "./config/telemetry-dashboards/grafana/datasources/prometheus-tempo.yml:/etc/grafana/provisioning/datasources/prometheus-tempo.yml"
+      - "./config/telemetry-dashboards/grafana/krakend/for-prometheus.json:/var/lib/grafana/dashboards/krakend/for-prometheus.json"
+      - "./config/telemetry-dashboards/grafana/dashboards/all.yml:/etc/grafana/provisioning/dashboards/all.yml"
     environment:
-      - GF_SECURITY_ADMIN_USER=admin
-      - GF_SECURITY_ADMIN_PASSWORD=admin
-      # The token below must match the one in influxdb
-      - INFLUXDB_TOKEN=my-super-secret-auth-token
-  influxdb:
-  #  image: influxdb:1.8.10
-  #  environment:
-  #    - "INFLUXDB_DB=krakend"
-  #    - "INFLUXDB_USER=krakend-dev"
-  #    - "INFLUXDB_USER_PASSWORD=pas5w0rd"
-  #    - "INFLUXDB_ADMIN_USER=admin"
-  #    - "INFLUXDB_ADMIN_PASSWORD=supersecretpassword"
-    image: influxdb:2.4
-    environment:
-      - "DOCKER_INFLUXDB_INIT_MODE=setup"
-      - "DOCKER_INFLUXDB_INIT_USERNAME=krakend-dev"
-      - "DOCKER_INFLUXDB_INIT_PASSWORD=pas5w0rd"
-      - "DOCKER_INFLUXDB_INIT_ORG=my-org"
-      - "DOCKER_INFLUXDB_INIT_BUCKET=krakend"
-      - "DOCKER_INFLUXDB_INIT_RETENTION=1w"
-      - "DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=my-super-secret-auth-token"
+      - GF_SECURITY_ADMIN_USER=krakend
+      - GF_SECURITY_ADMIN_PASSWORD=krakend
+  prometheus:
+    image: prom/prometheus:latest
     ports:
-      - "8086:8086"
+      - "9090:9090"
     volumes:
-      - "./config/telemetry/influx:/docker-entrypoint-initdb.d"
+      - "./config/telemetry-dashboards/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml"
+  tempo:
+    image: grafana/tempo:latest
+    domainname: tempo
+    command: [ "-config.file=/etc/tempo.yaml" ]
+    volumes:
+      - "./config/telemetry-dashboards/tempo/tempo.yaml:/etc/tempo.yaml"
+    ports:
+      - "3200:3200"     # tempo
+      - "9095:9095"     # tempo grpc
+      - "54317:4317"    # otlp grpc
+      - "54318:4318"    # otlp http
   jaeger:
     image: jaegertracing/all-in-one:1
+    environment:
+      - "COLLECTOR_OTLP_ENABLED=true"
     ports:
       - "16686:16686"
       - "14268:14268"
+      - "64317:4317"  # otlp grpc
+      - "64318:4318"  # otlp grpc
   elasticsearch:
     image: elasticsearch:8.4.1
     environment:
@@ -84,7 +82,7 @@ services:
     environment:
       - "xpack.monitoring.elasticsearch.url=http://elasticsearch:9200"
     volumes:
-      - ./config/telemetry/logstash/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
+      - ./config/telemetry-dashboards/logstash/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
     command: ["-f", "/usr/share/logstash/pipeline/logstash.conf"]
   rabbitmq:
     image: rabbitmq:3-management
