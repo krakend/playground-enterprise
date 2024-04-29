@@ -101,7 +101,7 @@ services:
     ports:
       - "3000:3000"
   revoker:
-    image: krakend/krakend-ee:2.4-watch
+    image: krakend/krakend-ee:2.6
     ports:
       - 8081:8081
     volumes:

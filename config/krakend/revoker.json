@@ -9,7 +9,7 @@
             "P": 1e-7,
             "port": 1234,
             "token_keys": [
-                "jti"
+                "jti","sub"
             ],
             "TTL": 1500,
             "revoke_server_ping_url": "http://revoker:8081/instances",
