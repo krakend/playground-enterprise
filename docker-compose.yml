@@ -1,6 +1,6 @@
 version: "3"
 services:
-  krakend_ee:
+  krakend:
     # The :watch image restarts the service automatically when the configuration files change.
     # Do not use this image in production, it's meant to speed up your testing and development.
     image: krakend/krakend-ee:2.6-watch
@@ -11,7 +11,6 @@ services:
     ports:
       - "1234:1234"
       - "8080:8080"
-      - "8090:8090"
     command: ["run", "-d", "-c", "krakend.json"]
     # Uncomment to automatically compile using flexible configuration
     #command: ["run", "-d", "-c", "./extended/krakend.tmpl"]
@@ -102,14 +101,14 @@ services:
     ports:
       - "3000:3000"
   revoker:
-    image: krakend/krakend-ee:2.4-watch
+    image: krakend/krakend-ee:2.6
     ports:
       - 8081:8081
     volumes:
       - "./config/krakend:/etc/krakend"
     command: ["revoker", "-c", "revoker.json"]
     depends_on:
-      - krakend_ee
+      - krakend
     restart: always
   grpc_flights:
     image: krakend/grpc_flights_fake:latest

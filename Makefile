@@ -34,4 +34,4 @@ audit:
         audit -c krakend.json
 
 elastic:
-	curl -X POST "localhost:5601/api/saved_objects/_import" -H "kbn-xsrf: true" --form file=@config/telemetry/kibana/dashboard.ndjson -H "kbn-xsrf: true"
+	curl -X POST "localhost:5601/api/saved_objects/_import" -H "kbn-xsrf: true" --form file=@config/telemetry-dashboards/kibana/dashboard.ndjson -H "kbn-xsrf: true"

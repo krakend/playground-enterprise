@@ -751,16 +751,19 @@
         }
       ]
     },
-    "telemetry/metrics": {
-      "collection_time": "30s",
-      "listen_address": ":8090"
-    },
-    "telemetry/influx": {
-      "address": "http://influxdb:8086",
-      "ttl": "25s",
-      "buffer_size": 100,
-      "username": "krakend-dev",
-      "password": "pas5w0rd"
+    "telemetry/opentelemetry": {
+      "service_name": "krakend_prometheus_service",
+      "metric_reporting_period": 1,
+      "exporters": {
+        "prometheus": [
+          {
+            "name": "local_prometheus",
+            "port": 9090,
+            "process_metrics": true,
+            "go_metrics": true
+          }
+        ]
+      }
     },
     "telemetry/logging": {
       "level": "DEBUG",
@@ -780,15 +783,15 @@
       "max_age": "12h"
     },
     "auth/revoker": {
+            "@comment": "The values in this section must match the ones used in the revoker.json file",
             "hash_name": "optimal",
             "N": 10000000,
             "P": 1e-7,
             "port": 1234,
             "token_keys": [
-                "jti"
+                "jti","sub"
             ],
             "TTL": 1500,
-            "@extra_comment": "here",
             "revoke_server_ping_url": "http://revoker:8081/instances",
             "revoke_server_ping_interval": "30s",
             "revoke_server_api_key": "639ee23f-f4c5-40c4-855c-912bf01fae87",
