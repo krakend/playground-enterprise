@@ -796,7 +796,51 @@
             "go_metrics": true
           }
         ]
-      }
+      },
+      "layers": {
+        "backend": {
+          "metrics": {
+            "detailed_connection": true,
+            "disable_stage": false,
+            "read_payload": true,
+            "report_headers": true,
+            "round_trip": true,
+            "static_attributes": [
+              {
+                "key": "my_metric_attr",
+                "value": "my_metric_val"
+              }
+            ]
+          },
+          "traces": {
+            "detailed_connection": true,
+            "disable_stage": false,
+            "read_payload": true,
+            "report_headers": true,
+            "round_trip": true,
+            "static_attributes": [
+              {
+                "key": "my_trace_attr",
+                "value": "my_trace_val"
+              }
+            ]
+          }
+        },
+        "global": {
+          "disable_metrics": false,
+          "disable_propagation": false,
+          "disable_traces": false,
+          "report_headers": true
+        },
+        "proxy": {
+          "disable_metrics": false,
+          "disable_traces": false,
+          "report_headers": true
+        }
+      },
+      "metric_reporting_period": 1,
+      "service_name": "playground_enterprise_otel",
+      "trace_sample_rate": 0.5
     },
     "telemetry/opentelemetry-security": {
       "otlp": [
