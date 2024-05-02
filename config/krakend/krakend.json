@@ -760,7 +760,7 @@
             "disable_metrics": true,
             "host": "tempo",
             "name": "local_tempo",
-            "port": 54317,
+            "port": 4317,
             "use_http": false
           },
           {
@@ -781,10 +781,10 @@
           },
           {
             "disable_metrics": true,
-            "disable_traces": true,
+            "disable_traces": false,
             "host": "jaeeger",
             "name": "debug_jaeger",
-            "port": 64317,
+            "port": 4317,
             "use_http": false
           }
         ],

@@ -3,11 +3,11 @@
   "grpc_catalog": "/etc/krakend/grpc_catalog",
   "opentelemetry": {
     "tempogrpc": {
-        "port": 54317,
+        "port": 4317,
         "host": "tempo"
     },
     "jaegergrpc": {
-        "port": 64317,
+        "port": 4317,
         "host": "jaeeger"
     },
     "datadog": {
