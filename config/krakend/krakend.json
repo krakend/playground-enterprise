@@ -755,6 +755,39 @@
       "service_name": "krakend_prometheus_service",
       "metric_reporting_period": 1,
       "exporters": {
+        "otlp": [
+          {
+            "disable_metrics": true,
+            "host": "tempo",
+            "name": "local_tempo",
+            "port": 54317,
+            "use_http": false
+          },
+          {
+            "disable_metrics": true,
+            "disable_traces": true,
+            "host": "127.0.0.1",
+            "name": "datadog",
+            "port": 14317,
+            "use_http": false
+          },
+          {
+            "disable_metrics": true,
+            "disable_traces": true,
+            "host": "otlp.eu01.nr-data.net",
+            "name": "newrelic",
+            "port": 4318,
+            "use_http": true
+          },
+          {
+            "disable_metrics": true,
+            "disable_traces": true,
+            "host": "jaeeger",
+            "name": "debug_jaeger",
+            "port": 64317,
+            "use_http": false
+          }
+        ],
         "prometheus": [
           {
             "name": "local_prometheus",
@@ -764,6 +797,16 @@
           }
         ]
       }
+    },
+    "telemetry/opentelemetry-security": {
+      "otlp": [
+        {
+          "headers": {
+            "api-key": ""
+          },
+          "name": "newrelic"
+        }
+      ]
     },
     "telemetry/logging": {
       "level": "DEBUG",
