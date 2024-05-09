@@ -789,6 +789,7 @@
     "telemetry/opentelemetry": {
       "service_name": "krakend_prometheus_service",
       "metric_reporting_period": 1,
+      "trace_sample_rate": 0.5,
       "exporters": {
         "otlp": [
           {
@@ -838,7 +839,6 @@
             "detailed_connection": true,
             "disable_stage": false,
             "read_payload": true,
-            "report_headers": true,
             "round_trip": true,
             "static_attributes": [
               {
@@ -872,16 +872,13 @@
           "disable_traces": false,
           "report_headers": true
         }
-      },
-      "metric_reporting_period": 1,
-      "service_name": "playground_enterprise_otel",
-      "trace_sample_rate": 0.5
+      }
     },
     "telemetry/opentelemetry-security": {
       "otlp": [
         {
           "headers": {
-            "api-key": ""
+            "api-key": "YOUR-API-KEY-HERE"
           },
           "name": "newrelic"
         }
