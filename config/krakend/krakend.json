@@ -794,31 +794,8 @@
         "otlp": [
           {
             "disable_metrics": true,
-            "host": "tempo",
-            "name": "local_tempo",
-            "port": 4317,
-            "use_http": false
-          },
-          {
-            "disable_metrics": true,
-            "disable_traces": true,
-            "host": "127.0.0.1",
-            "name": "datadog",
-            "port": 14317,
-            "use_http": false
-          },
-          {
-            "disable_metrics": true,
-            "disable_traces": true,
-            "host": "otlp.eu01.nr-data.net",
-            "name": "newrelic",
-            "port": 4318,
-            "use_http": true
-          },
-          {
-            "disable_metrics": true,
             "disable_traces": false,
-            "host": "jaeeger",
+            "host": "jaeger",
             "name": "debug_jaeger",
             "port": 4317,
             "use_http": false
@@ -873,16 +850,6 @@
           "report_headers": true
         }
       }
-    },
-    "telemetry/opentelemetry-security": {
-      "otlp": [
-        {
-          "headers": {
-            "api-key": "YOUR-API-KEY-HERE"
-          },
-          "name": "newrelic"
-        }
-      ]
     },
     "telemetry/logging": {
       "level": "DEBUG",
