@@ -90,7 +90,18 @@ Two microservices with gRPC are available for testing too:
  - A Flights service on gRPC port `4242`
  - A Trains service on gRPC port `4243`
 
-Their contracts are under `images/grpc/contracts`. KrakenD can aggregate and convert them as HTTP under [http://localhost:8080/travel](http://localhost:8080/travel)
+Their contracts are under `images/grpc/contracts`.
+
+You can either:
+- Convert gRPC to HTTP under [http://localhost:8080/travel](http://localhost:8080/travel)
+- Or consume gRPC directly from KrakenD:
+
+```
+cd clients/grpc
+./make_grpc_calls.sh
+# Requires having grpcurl locally
+# go install github.com/fullstorydev/grpcurl/cmd/grpcurl@latest
+```
 
 ## Start the service
 
