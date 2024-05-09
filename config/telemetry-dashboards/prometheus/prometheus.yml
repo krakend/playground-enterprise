@@ -9,6 +9,6 @@ scrape_configs:
     metrics_path: '/metrics'
     static_configs:
       - targets:
-        - 'krakend:9090'
+        - 'krakend_ee:9090'
         labels:
           app: krakend
