@@ -1,6 +1,6 @@
 version: "3"
 services:
-  krakend:
+  krakend_ee:
     # The :watch image restarts the service automatically when the configuration files change.
     # Do not use this image in production, it's meant to speed up your testing and development.
     image: krakend/krakend-ee:2.6-watch
@@ -108,7 +108,7 @@ services:
       - "./config/krakend:/etc/krakend"
     command: ["revoker", "-c", "revoker.json"]
     depends_on:
-      - krakend
+      - krakend_ee
     restart: always
   grpc_flights:
     image: krakend/grpc_flights_fake:latest

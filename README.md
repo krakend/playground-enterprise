@@ -2,12 +2,11 @@
 
 # KrakenD Enterprise Playground
 
-| _Note:_ **This playground requires a valid KrakenD Enterprise license file copied under `./config/krakend/LICENSE` to use Enterprise functionality.** |
+| _Note:_ **This playground requires a valid KrakenD Enterprise license file copied under `./config/krakend/LICENSE` to work.** |
 | --- |
 
-· _Without a LICENSE, all Enterprise features will be disabled_
 · _[Request a KrakenD EE demo or a trial license »](https://www.krakend.io/enterprise/#contact-sales)_ \
-· _See the [open-source edition of a similar environment »](https://github.com/devopsfaith/krakend-playground)_
+· _See the [open-source version of a similar environment »](https://github.com/krakend/playground-community)_
 
 The KrakenD Enterprise Playground is a demonstration environment that combines the necessary pieces to get you started with our API Gateway, using example use cases.
 
@@ -21,13 +20,9 @@ As KrakenD is an API gateway, we have added surrounding services:
 ![KrakenD Docker compose](assets/composer-env.png)
 
 ## Installation
-Clone this repository **recursively** (as it includes submodules)
+Clone this repository:
 
-    git clone git@github.com:krakendio/playground-enterprise.git --recursive
-
-If you didn't specify the `--recursive` flag you can later download the submodules with
-
-    git submodule update
+    git clone git@github.com:krakendio/playground-enterprise.git
 
 ## Demo video
 Click to play on Youtube (with subtitles)
@@ -52,7 +47,7 @@ KrakenD can export telemetry to several services; this demonstration has a few e
 | Metrics | Logging | Tracing |
 | --- | --- | --- |
 | **Grafana** shows the metrics stored by KrakenD on InfluxDB| **Kibana** shows the logs registered by Logstash and persisted in Elasticsearch | **Jaeger** shows the traces of the activity between the client and your end services, including times of hops.|
-| URL: [http://localhost:4000](http://localhost:4000)| URL: [http://localhost:5601](http://localhost:5601) | URL: [http://localhost:16686](http://localhost:16686) |
+| URL: [http://localhost:4000](http://localhost:4000) User: `krakend/krakend` | URL: [http://localhost:5601](http://localhost:5601) Run `make elastic` | URL: [http://localhost:16686](http://localhost:16686) |
 |![grafana screenshot](assets/grafana-screenshot.png)|![Kibana screenshot](assets/kibana-screenshot.png)|![jaeger screenshot](assets/jaeger-screenshot.png)|
 
 **NOTE**: To import a Kibana dashboard with some valuable metrics, run in the console the following command once all has started:
@@ -71,19 +66,31 @@ Visit [http://localhost:3000](http://localhost:3000)
 ### The async agent
 A RabbitMQ instance is ready to accept AMQP messages to be delivered to the gateway.
 
-You can insert messages in the `krakend` queue at [http://localhost:15672/#/queues/%2F/krakend](http://localhost:15672/#/queues/%2F/krakend) (credentials: `guest`/`guest`) and see how the async agent picks them and delivers them.
+You can insert messages in the `krakend` queue at [http://localhost:15672/#/queues/%2F/krakend](http://localhost:15672/#/queues/%2F/krakend) (credentials: `guest`/`guest`) and see how the async agent picks them and delivers them in the logs.
 
-### Metrics
-A Jaeger dashboard shows the traces of the activity you generate. Runs on [http://localhost:16686](http://localhost:16686)
+### The Revoke Server
+The [Revoke Server](https://www.krakend.io/docs/enterprise/authentication/revoke-server/) is a standalone server that coordinates JWT token revocation in a KrakenD Cluster. It is administered using an API ([See contract](https://www.krakend.io/docs/enterprise/authentication/revoke-server/#revoke-server-api-endpoints))
 
-A Grafana dashboard shows the metrics of the activity you generate. Runs on [http://localhost:3003](http://localhost:3003) (credentials: admin/admin). You must go to datasources and edit the `influx` datasource to write the Token `my-super-secret-auth-token` to connect to InfluxDB.
+It runs on [http://localhost:8081](http://localhost:8081). Examples of calls:
 
-### The JWT revoker
-A simple implementation of a JWT revoker using the KrakenD remote [bloomfilter client](https://github.com/krakendio/bloomfilter).
+```
+# Revoke a valid token for subject claim with value "jimmy"
+curl -iH'Authorization: bearer 639ee23f-f4c5-40c4-855c-912bf01fae87' -XPOST http://localhost:8081/tokens/sub/jimmy
 
-More information about JWT revoking is available at https://www.krakend.io/docs/authorization/revoking-tokens/
+# Check if jimmy's token is revoked
+curl -iH'Authorization: bearer 639ee23f-f4c5-40c4-855c-912bf01fae87'  http://localhost:8081/tokens/sub/jimmy
+```
 
-It runs on [http://localhost:9000](http://localhost:9000)
+### WebSockets
+A WebSocket server runs on [ws://localhost:8888](ws://localhost:8888), but you can access it through KrakenD on the page [http://localhost:8080/chat](http://localhost:8080/chat)
+
+### gRPC services
+Two microservices with gRPC are available for testing too:
+
+ - A Flights service on gRPC port `4242`
+ - A Trains service on gRPC port `4243`
+
+Their contracts are under `images/grpc/contracts`. KrakenD can aggregate and convert them as HTTP under [http://localhost:8080/travel](http://localhost:8080/travel)
 
 ## Start the service
 
@@ -103,7 +110,7 @@ To start the stack included in docker-compose
     $ make start
 ```
 
-To follow the KrakenD logs after the complete stack is up & running
+To follow the KrakenD logs after the complete stack is up & running (You also have Kibana)
 ```shell
     $ make logs
 ```
@@ -132,7 +139,7 @@ When you change the `krakend.json`, the changes are applied automatically.
 | The `krakend.json` file was automatically generated using the [extended flexible configuration](https://www.krakend.io/docs/enterprise/configuration/flexible-config/), and you will find the source code under `extended/krakend.tmpl`. <br><br> When working with the flexible configuration, you can optionally ask KrakenD to save the "compiled" output to a file. We've added a command `make compile-flexible-config` so you can see quickly and easily how KrakenD builds the final configuration file based on the existing templates.<br><br>Internally KrakenD's flexible configuration uses [Golang templating syntax](https://pkg.go.dev/text/template#hdr-Examples). |
 
 ## Editing the API Gateway endpoints
-To add or remove endpoints, edit the file `krakend/krakend.json`. The easiest way to do it is by **dragging this file to the [KrakenD Designer](https://designer.krakend.io/)** and downloading the edited file. If you move the downloaded file to `krakend/krakend.json` the server will apply the changes automatically.
+To add or remove endpoints, edit the file `krakend/krakend.json`. The easiest way to do it is by **dragging this file to the [KrakenD Designer](https://designer.krakend.io/)** and downloading the edited file. If you move the downloaded file to `krakend/krakend.json` the server will apply the changes automatically. If y ou use Chrome, you can edit it directly in the website.
 
 To change the data in the static server (simulating your backend API), edit, add or delete files in the **`data/`** folder.
 

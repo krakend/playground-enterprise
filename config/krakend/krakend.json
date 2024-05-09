@@ -789,7 +789,7 @@
     "telemetry/opentelemetry": {
       "service_name": "krakend_prometheus_service",
       "metric_reporting_period": 1,
-      "trace_sample_rate": 0.5,
+      "trace_sample_rate": 1,
       "exporters": {
         "otlp": [
           {
@@ -811,33 +811,6 @@
         ]
       },
       "layers": {
-        "backend": {
-          "metrics": {
-            "detailed_connection": true,
-            "disable_stage": false,
-            "read_payload": true,
-            "round_trip": true,
-            "static_attributes": [
-              {
-                "key": "my_metric_attr",
-                "value": "my_metric_val"
-              }
-            ]
-          },
-          "traces": {
-            "detailed_connection": true,
-            "disable_stage": false,
-            "read_payload": true,
-            "report_headers": true,
-            "round_trip": true,
-            "static_attributes": [
-              {
-                "key": "my_trace_attr",
-                "value": "my_trace_val"
-              }
-            ]
-          }
-        },
         "global": {
           "disable_metrics": false,
           "disable_propagation": false,
@@ -846,8 +819,23 @@
         },
         "proxy": {
           "disable_metrics": false,
-          "disable_traces": false,
+          "disable_traces": true,
           "report_headers": true
+        },
+        "backend": {
+          "metrics": {
+            "detailed_connection": true,
+            "disable_stage": false,
+            "read_payload": false,
+            "round_trip": false
+          },
+          "traces": {
+            "detailed_connection": false,
+            "disable_stage": false,
+            "read_payload": false,
+            "report_headers": false,
+            "round_trip": false
+          }
         }
       }
     },
