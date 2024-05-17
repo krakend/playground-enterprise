@@ -1,0 +1,89 @@
+{
+    "service_name": "playground_enterprise_otel",
+    "metric_reporting_period": 1,
+    "trace_sample_rate": 0.5,
+    "exporters": { 
+        "prometheus": [
+            {
+                "name": "local_prometheus",
+                "port": 9090,
+                "process_metrics": true,
+                "go_metrics": true
+            }
+        ],
+        "otlp": [
+            {
+                "name": "local_tempo",
+                "host": "{{ .opentelemetry.tempogrpc.host }}",
+                "port": {{ .opentelemetry.tempogrpc.port }},
+                "use_http": false,
+                "disable_metrics": true
+            },
+            {
+                "name": "datadog",
+                "host": "127.0.0.1",
+                "port": 14317,
+                "disable_metrics": {{ .opentelemetry.datadog.disable_metrics }},
+                "disable_traces": {{ .opentelemetry.datadog.disable_traces }},
+                "use_http": false
+            },
+            {
+                "name": "newrelic",
+                "host": "otlp.eu01.nr-data.net",
+                "port": 4318,
+                "use_http": true,
+                "disable_traces": true,
+                "disable_metrics": true
+            },
+            {
+                "name": "debug_jaeger",
+                "host": "{{ .opentelemetry.jaegergrpc.host }}",
+                "port": {{ .opentelemetry.jaegergrpc.port }},
+                "use_http": false,
+                "disable_traces": true,
+                "disable_metrics": true
+            }
+        ]
+    },
+    "layers": {
+        "global": {
+            "disable_metrics": false,
+            "disable_traces": false,
+            "disable_propagation": false,
+            "report_headers": true
+        },
+        "proxy": {
+            "disable_metrics": false,
+            "disable_traces": false,
+            "report_headers": true
+        }, 
+        "backend": {
+            "metrics": {
+                "disable_stage": false,
+                "round_trip": true,
+                "read_payload": true,
+                "detailed_connection": true,
+                "static_attributes": [
+                    {
+                        "key": "my_metric_attr",
+                        "value": "my_metric_val"
+                    }
+                ],
+                "report_headers": true
+            },
+            "traces": {
+                "disable_stage": false,
+                "round_trip": true,
+                "read_payload": true,
+                "detailed_connection": true,
+                "static_attributes": [
+                    {
+                        "key": "my_trace_attr",
+                        "value": "my_trace_val" 
+                    }
+                ],
+                "report_headers": true
+            }
+        }
+    }
+}

@@ -4,6 +4,17 @@
       "{{.grpc_catalog}}"
     ]
   },
+  "telemetry/opentelemetry": { "$ref": "extra_config/otel.json" },
+  "telemetry/opentelemetry-security": {
+        "otlp": [
+            {
+                "name": "newrelic",
+                "headers": {
+                    "api-key": "{{ env "NEWRELIC_API_KEY" }}"
+                }
+            }
+        ]
+  },
   "router": {
     "return_error_msg": true,
     "disable_gzip": true
@@ -63,17 +74,6 @@
       }
     ]
   },
-  "telemetry/metrics": {
-    "collection_time": "30s",
-    "listen_address": ":8090"
-  },
-  "telemetry/influx": {
-    "address": "http://{{.hosts.influxdb}}",
-    "ttl": "25s",
-    "buffer_size": 100,
-    "username": "krakend-dev",
-    "password": "pas5w0rd"
-  },
   "telemetry/logging": {
     "level": "DEBUG",
     "prefix": "[KRAKEND]",
@@ -83,20 +83,6 @@
   "telemetry/gelf": {
     "address": "{{.hosts.logstash}}",
     "enable_tcp": false
-  },
-  "telemetry/opencensus": {
-    "sample_rate": 100,
-    "reporting_period": 1,
-    "enabled_layers": {
-      "backend": true,
-      "router": true
-    },
-    "exporters": {
-      "jaeger": {
-        "endpoint": "http://jaeger:14268/api/traces",
-        "service_name": "krakend"
-      }
-    }
   },
   "security/cors": {
     "allow_origins": [

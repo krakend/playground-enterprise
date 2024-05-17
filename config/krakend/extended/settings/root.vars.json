@@ -1,4 +1,18 @@
 {
   "conf_dir": "/etc/krakend",
-  "grpc_catalog": "/etc/krakend/grpc_catalog"
+  "grpc_catalog": "/etc/krakend/grpc_catalog",
+  "opentelemetry": {
+    "tempogrpc": {
+        "port": 4317,
+        "host": "tempo"
+    },
+    "jaegergrpc": {
+        "port": 4317,
+        "host": "jaeeger"
+    },
+    "datadog": {
+        "disable_metrics": true,
+        "disable_traces": true
+    }
+  }
 }

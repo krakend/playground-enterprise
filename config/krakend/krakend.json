@@ -690,7 +690,42 @@
     "grpc": {
         "catalog": [
             "./grpc_catalog"
-        ]
+        ],
+        "server": {
+            "services": [
+                {
+                    "name": "flight_finder.Flights",
+                    "methods": [
+                        {
+                            "name": "FindFlight",
+                            "input_headers": [
+                                "x-my-custom-header"
+                            ],
+                            "payload_params": {
+                                "page.cursor": "cursor"
+                            },
+                            "backend": [
+                                {
+                                    "host": [ "http://localhost:8080" ],
+                                    "url_pattern": "/__debug/{cursor}/"
+                                },
+                                {
+                                  "host": [
+                                    "grpc_flights:4242"
+                                  ],
+                                  "url_pattern": "/flight_finder.Flights/FindFlight",
+                                  "extra_config": {
+                                    "backend/grpc": {
+                                      "use_request_body": true
+                                    }
+                                  }
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
     },
     "router": {
       "return_error_msg": true,
@@ -751,16 +786,58 @@
         }
       ]
     },
-    "telemetry/metrics": {
-      "collection_time": "30s",
-      "listen_address": ":8090"
-    },
-    "telemetry/influx": {
-      "address": "http://influxdb:8086",
-      "ttl": "25s",
-      "buffer_size": 100,
-      "username": "krakend-dev",
-      "password": "pas5w0rd"
+    "telemetry/opentelemetry": {
+      "service_name": "krakend_prometheus_service",
+      "metric_reporting_period": 1,
+      "trace_sample_rate": 1,
+      "exporters": {
+        "otlp": [
+          {
+            "disable_metrics": true,
+            "disable_traces": false,
+            "host": "jaeger",
+            "name": "debug_jaeger",
+            "port": 4317,
+            "use_http": false
+          }
+        ],
+        "prometheus": [
+          {
+            "name": "local_prometheus",
+            "port": 9090,
+            "process_metrics": true,
+            "go_metrics": true
+          }
+        ]
+      },
+      "layers": {
+        "global": {
+          "disable_metrics": false,
+          "disable_propagation": false,
+          "disable_traces": false,
+          "report_headers": true
+        },
+        "proxy": {
+          "disable_metrics": false,
+          "disable_traces": true,
+          "report_headers": true
+        },
+        "backend": {
+          "metrics": {
+            "detailed_connection": true,
+            "disable_stage": false,
+            "read_payload": false,
+            "round_trip": false
+          },
+          "traces": {
+            "detailed_connection": false,
+            "disable_stage": false,
+            "read_payload": false,
+            "report_headers": false,
+            "round_trip": false
+          }
+        }
+      }
     },
     "telemetry/logging": {
       "level": "DEBUG",
@@ -772,20 +849,6 @@
       "address": "logstash:12201",
       "enable_tcp": false
     },
-    "telemetry/opencensus": {
-      "sample_rate": 100,
-      "reporting_period": 1,
-      "enabled_layers": {
-        "backend": true,
-        "router": true
-      },
-      "exporters": {
-        "jaeger": {
-          "endpoint": "http://jaeger:14268/api/traces",
-          "service_name": "krakend"
-        }
-      }
-    },
     "security/cors": {
       "allow_origins": ["*"],
       "allow_methods": ["POST", "GET"],
@@ -794,15 +857,15 @@
       "max_age": "12h"
     },
     "auth/revoker": {
+            "@comment": "The values in this section must match the ones used in the revoker.json file",
             "hash_name": "optimal",
             "N": 10000000,
             "P": 1e-7,
             "port": 1234,
             "token_keys": [
-                "jti"
+                "jti","sub"
             ],
             "TTL": 1500,
-            "@extra_comment": "here",
             "revoke_server_ping_url": "http://revoker:8081/instances",
             "revoke_server_ping_interval": "30s",
             "revoke_server_api_key": "639ee23f-f4c5-40c4-855c-912bf01fae87",
