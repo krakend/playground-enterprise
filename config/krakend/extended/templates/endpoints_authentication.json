@@ -86,7 +86,7 @@
                 "role_a",
                 "role_c"
             ],
-            "jwk_url": "http://fake_api:8080/jwk/symmetric.json",
+            "jwk_url": "http://{{.hosts.fake_api}}/jwk/symmetric.json",
             "disable_jwk_security": true
         }
     }
@@ -107,7 +107,7 @@
                 "access_token",
                 "refresh_token"
             ],
-            "jwk_url": "http://fake_api:8080/jwk/symmetric.json",
+            "jwk_url": "http://{{.hosts.fake_api}}/jwk/symmetric.json",
             "disable_jwk_security": true
         }
     }
