@@ -113,7 +113,7 @@
         },
         {
             "group": "hotels",
-            "url_pattern": "/hotels/1.json"
+            "url_pattern": "/static/hotels/1.json"
         },
         {
             "host": [
@@ -213,7 +213,7 @@
     "endpoint": "/fake-api/*",
     "backend": [
       {
-        "url_pattern": "/"
+        "url_pattern": "/static/"
       }
     ],
     "extra_config": {
@@ -235,7 +235,7 @@
     ],
     "backend": [
       {
-        "url_pattern": "/"
+        "url_pattern": "/static/"
       }
     ],
     "extra_config": {

@@ -77,7 +77,7 @@
   "endpoint": "/user/creditcard",
   "backend": [
     {
-      "url_pattern": "/user/1.json",
+      "url_pattern": "/static/user/1.json",
       "allow": [
         "credit_card"
       ],
@@ -156,11 +156,11 @@
   "endpoint": "/sequential",
   "backend": [
     {
-      "url_pattern": "/hotels/1.json",
+      "url_pattern": "/static/hotels/1.json",
       "allow": [ "destination_id" ]
     },
     {
-      "url_pattern": "/destinations/{resp0_destination_id}.json"
+      "url_pattern": "/static/destinations/{resp0_destination_id}.json"
     }
   ],
   "extra_config": {

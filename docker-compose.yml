@@ -8,6 +8,7 @@ services:
       - ./config/krakend:/etc/krakend
       - ./dumps:/tmp/krakend-http-logger
       - ./images/grpc/defs:/etc/krakend/grpc_catalog
+      - ./data:/wwwroot
     ports:
       - "1234:1234"
       - "8080:8080"
@@ -18,7 +19,6 @@ services:
     #  - "FC_CONFIG=/etc/krakend/fc_config.json"
     #  - "FC_DEBUG=true"
     depends_on:
-      - fake_api
       - jaeger
       - chat
   grafana:
@@ -89,12 +89,6 @@ services:
     ports:
       - "15672:15672"
       - "5672:5672"
-  fake_api:
-    image: ghcr.io/lpereira/lwan:latest
-    volumes:
-      - ./data:/wwwroot
-    ports:
-      - "8000:8080"
   web:
     build:
       context: images/spa-auth-web

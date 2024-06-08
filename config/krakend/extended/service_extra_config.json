@@ -4,6 +4,10 @@
       "{{.grpc_catalog}}"
     ]
   },
+  "server/static-filesystem": {
+    "prefix": "/static",
+    "path": "/wwwroot"
+  },
   "telemetry/opentelemetry": { "$ref": "extra_config/otel.json" },
   "telemetry/opentelemetry-security": {
         "otlp": [
