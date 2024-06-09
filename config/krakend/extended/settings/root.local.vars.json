@@ -1,15 +1,10 @@
 {
   "conf_dir": "./",
+  "name": "Local KrakenD EE",
+  "host": ["http://localhost:7979"],
+  "port": 7979,
   "grpc_catalog": "../../images/grpc/defs",
-  "host": ["http://localhost:8666"],
-  "servers": {
-    "influxdb": "localhost:8086",
-    "logstash": "localhost:12201",
-    "chat": "localhost:8888",
-    "rabbitmq": "localhost:5672",
-    "grpc_flights": "localhost:4242",
-    "grpc_trains": "localhost:4243"
-  },
+  "static_files_dir": "../../data",
   "endpoints": {
     "ee_websockets": {
         "def": {
