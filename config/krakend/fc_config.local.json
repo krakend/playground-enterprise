@@ -6,8 +6,9 @@
     "settings": {
         "allow_overwrite": true,
         "paths": [
-            "./extended/root.vars.json",
-            "./extended/vars",
+            "./extended/settings/root.vars.json",
+            "./extended/settings/root.local.vars.json",
+            "./extended/settings/all_environments",
             "./extended/root.local.vars.json"
         ]
     },

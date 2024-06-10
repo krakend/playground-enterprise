@@ -3,13 +3,13 @@
     "endpoint": "/shop",
     "backend": [
         {
-            "url_pattern": "/shop/campaigns.json",
+            "url_pattern": "/static/shop/campaigns.json",
             "allow": [
                 "campaigns"
             ]
         },
         {
-            "url_pattern": "/shop/products.json",
+            "url_pattern": "/static/shop/products.json",
             "allow": [
                 "products"
             ],

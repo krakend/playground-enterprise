@@ -3,7 +3,7 @@
     "endpoint": "/public",
     "backend": [
         {
-            "url_pattern": "/hotels/1.json"
+            "url_pattern": "/static/hotels/1.json"
         }
     ]
 },
@@ -12,7 +12,7 @@
     "endpoint": "/private/auth0",
     "backend": [
         {
-            "url_pattern": "/user/1.json"
+            "url_pattern": "/static/user/1.json"
         }
     ],
     "extra_config": {
@@ -46,9 +46,6 @@
     ],
     "backend": [
         {
-            "host": [
-                "http://localhost:8080"
-            ],
             "url_pattern": "/__debug/cookie"
         }
     ],
@@ -71,7 +68,7 @@
     "endpoint": "/private/custom",
     "backend": [
         {
-            "url_pattern": "/user/1.json"
+            "url_pattern": "/static/user/1.json"
         }
     ],
     "extra_config": {
@@ -86,7 +83,7 @@
                 "role_a",
                 "role_c"
             ],
-            "jwk_url": "http://fake_api:8080/jwk/symmetric.json",
+            "jwk_url": "{{.host}}/static/jwk/symmetric.json",
             "disable_jwk_security": true
         }
     }
@@ -96,7 +93,7 @@
     "endpoint": "/token",
     "backend": [
         {
-            "url_pattern": "/token.json"
+            "url_pattern": "/static/token.json"
         }
     ],
     "extra_config": {
@@ -107,7 +104,7 @@
                 "access_token",
                 "refresh_token"
             ],
-            "jwk_url": "http://fake_api:8080/jwk/symmetric.json",
+            "jwk_url": "{{.host}}/static/jwk/symmetric.json",
             "disable_jwk_security": true
         }
     }
@@ -118,10 +115,7 @@
     "@test_with": "curl -iG -H'Authorization: Bearer 58427514-be32-0b52-b7c6-d01fada30497' http://localhost:8080/api-key",
     "backend": [
         {
-            "url_pattern": "/__debug/admin",
-            "host": [
-                "http://localhost:8080"
-            ]
+            "url_pattern": "/__debug/admin"
         }
     ],
     "extra_config": {
@@ -144,7 +138,7 @@
     "@test_with": "curl -iG 'http://admin:admin@localhost:8080/fake-api-auth/articles.json'",
     "backend": [
         {
-            "url_pattern": "/"
+            "url_pattern": "/static/"
         }
     ],
     "endpoint": "/fake-api-auth/*",

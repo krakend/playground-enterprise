@@ -3,7 +3,7 @@
   "version": 3,
   "name": "KrakenD Enterprise API Gateway",
   "port": 8080,
-  "host": ["http://fake_api:8080"],
+  "host": ["http://localhost:8080"],
   "timeout": "3000ms",
   "cache_ttl": "300s",
   "debug_endpoint": true,
@@ -85,7 +85,7 @@
       "endpoint": "/user/creditcard",
       "backend": [
         {
-          "url_pattern": "/user/1.json",
+          "url_pattern": "/static/user/1.json",
           "allow": ["credit_card"],
             "extra_config": {
                 "plugin/req-resp-modifier": {
@@ -135,11 +135,11 @@
       "endpoint": "/shop",
       "backend": [
         {
-          "url_pattern": "/shop/campaigns.json",
+          "url_pattern": "/static/shop/campaigns.json",
           "allow": [ "campaigns" ]
         },
         {
-          "url_pattern": "/shop/products.json",
+          "url_pattern": "/static/shop/products.json",
           "allow": [ "products" ],
           "extra_config": {
             "qos/ratelimit/proxy": {
@@ -246,11 +246,11 @@
       "endpoint": "/sequential",
       "backend": [
         {
-          "url_pattern": "/hotels/1.json",
+          "url_pattern": "/static/hotels/1.json",
           "allow": [ "destination_id" ]
         },
         {
-          "url_pattern": "/destinations/{resp0_destination_id}.json"
+          "url_pattern": "/static/destinations/{resp0_destination_id}.json"
         }
       ],
       "extra_config": {
@@ -264,7 +264,7 @@
       "endpoint": "/fail",
       "backend": [
         {
-          "url_pattern": "/user/1.json",
+          "url_pattern": "/static/user/1.json",
           "group": "user"
         },
         {
@@ -302,7 +302,7 @@
       "endpoint": "/fake-api/*",
       "backend": [
         {
-          "url_pattern": "/"
+          "url_pattern": "/static"
         }
       ],
       "extra_config": {
@@ -322,7 +322,7 @@
       "output_encoding": "no-op",
       "backend": [
         {
-          "url_pattern": "/"
+          "url_pattern": "/static"
         }
       ],
       "extra_config": {
@@ -345,7 +345,7 @@
       ],
       "backend": [
         {
-          "url_pattern": "/"
+          "url_pattern": "/static"
         }
       ],
       "extra_config": {
@@ -370,7 +370,6 @@
         {
           "@comment": "We will route to the backend using the content of the 'X-Route' header",
           "@test_with": "curl -iG -H 'X-Route: hello' 'http://localhost:8080/dynamic/header'",
-          "host": ["http://localhost:8080"],
           "url_pattern": "/__debug/{input_headers.x-route}"
         }
       ]
@@ -382,7 +381,6 @@
         {
           "@comment": "We will route to the backend using the content of the 'X-Route' header",
           "@test_with": "curl -iG 'http://localhost:8080/dynamic/qs?route=hello'",
-          "host": ["http://localhost:8080"],
           "url_pattern": "/__debug/{input_query_strings.route}"
         }
       ]
@@ -392,7 +390,7 @@
       "endpoint": "/public",
       "backend": [
         {
-          "url_pattern": "/hotels/1.json"
+          "url_pattern": "/static/hotels/1.json"
         }
       ]
     },
@@ -436,7 +434,7 @@
           "roles_key": "roles",
           "issuer": "https://krakend.io",
           "roles": ["role_a", "role_c"],
-          "jwk_url": "http://fake_api:8080/jwk/symmetric.json",
+          "jwk_url": "http://localhost:8080/static/jwk/symmetric.json",
           "disable_jwk_security": true
         }
       }
@@ -454,7 +452,7 @@
           "alg": "HS256",
           "kid": "sim2",
           "keys_to_sign": ["access_token", "refresh_token"],
-          "jwk_url": "http://fake_api:8080/jwk/symmetric.json",
+          "jwk_url": "http://localhost:8080/static/jwk/symmetric.json",
           "disable_jwk_security": true
         }
       }
@@ -726,6 +724,10 @@
                 }
             ]
         }
+    },
+    "server/static-filesystem": {
+      "prefix": "/static",
+      "path": "/wwwroot"
     },
     "router": {
       "return_error_msg": true,

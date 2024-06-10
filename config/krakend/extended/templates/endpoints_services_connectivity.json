@@ -113,7 +113,7 @@
         },
         {
             "group": "hotels",
-            "url_pattern": "/hotels/1.json"
+            "url_pattern": "/static/hotels/1.json"
         },
         {
             "host": [
@@ -170,7 +170,7 @@
             "url_pattern": "/ws/{room}",
             "disable_host_sanitize": true,
             "host": [
-                "ws://chat:8888"
+                "ws://{{.hosts.chat}}"
             ]
         }
     ],
@@ -202,7 +202,7 @@
         {
             "url_pattern": "/",
             "host": [
-                "http://chat:8888"
+                "http://{{.hosts.chat}}"
             ],
             "encoding": "no-op"
         }
@@ -213,7 +213,7 @@
     "endpoint": "/fake-api/*",
     "backend": [
       {
-        "url_pattern": "/"
+        "url_pattern": "/static/"
       }
     ],
     "extra_config": {
@@ -235,7 +235,7 @@
     ],
     "backend": [
       {
-        "url_pattern": "/"
+        "url_pattern": "/static/"
       }
     ],
     "extra_config": {
