@@ -32,7 +32,7 @@
         "extra_config": {
             "signer": {
                 "val": {
-                    "jwk_url": "http://localhost:8000/jwk/symmetric.json"
+                    "jwk_url": "http://localhost:8080/jwk/symmetric.json"
                 }
             }
         }

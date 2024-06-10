@@ -434,7 +434,7 @@
           "roles_key": "roles",
           "issuer": "https://krakend.io",
           "roles": ["role_a", "role_c"],
-          "jwk_url": "http://localhost:8000/static/jwk/symmetric.json",
+          "jwk_url": "http://localhost:8080/static/jwk/symmetric.json",
           "disable_jwk_security": true
         }
       }
@@ -452,7 +452,7 @@
           "alg": "HS256",
           "kid": "sim2",
           "keys_to_sign": ["access_token", "refresh_token"],
-          "jwk_url": "http://localhost:8000/static/jwk/symmetric.json",
+          "jwk_url": "http://localhost:8080/static/jwk/symmetric.json",
           "disable_jwk_security": true
         }
       }
