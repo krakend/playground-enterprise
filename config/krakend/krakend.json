@@ -726,8 +726,9 @@
         }
     },
     "server/static-filesystem": {
-      "prefix": "/static",
-      "path": "/wwwroot"
+      "prefix": "/static/",
+      "path": "/wwwroot",
+      "directory_listing": true
     },
     "router": {
       "return_error_msg": true,
