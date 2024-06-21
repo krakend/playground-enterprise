@@ -9,7 +9,11 @@
   "timeout": "3000ms",
   "cache_ttl": "300s",
   "static_files_dir": "/wwwroot",
+  "qos_rate_shards": 20480,
   "opentelemetry": {
+    "prometheus": {
+        "port": 9090
+    },
     "tempogrpc": {
         "port": 4317,
         "host": "tempo"

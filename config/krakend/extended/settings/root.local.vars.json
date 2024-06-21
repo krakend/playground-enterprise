@@ -5,6 +5,15 @@
   "port": 7979,
   "grpc_catalog": "../../images/grpc/defs",
   "static_files_dir": "../../data",
+  "opentelemetry": {
+    "prometheus": {
+       "port": 9091
+    },
+    "tempogrpc": {
+        "port": 5317,
+        "host": "localhost"
+    }
+  },
   "endpoints": {
     "ee_websockets": {
         "def": {

@@ -6,7 +6,7 @@
         "prometheus": [
             {
                 "name": "local_prometheus",
-                "port": 9090,
+                "port": {{.opentelemetry.prometheus.port}},
                 "process_metrics": true,
                 "go_metrics": true
             }

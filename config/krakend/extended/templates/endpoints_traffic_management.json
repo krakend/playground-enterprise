@@ -77,4 +77,25 @@
             ]
         }
     }
+},
+{
+    "@comment": "Feature: Rate Limit using URL param",
+    "endpoint": "/rate_limit_feature/param/{foo}/shop",
+    "backend": [
+        {
+            "url_pattern": "/static/shop/campaigns.json",
+            "allow": [
+                "campaigns"
+            ]
+        }
+    ],
+    "extra_config": {
+        "qos/ratelimit/router": {
+            "max_rate": 2,
+            "client_max_rate": 2,
+            "strategy": "param",
+            "key": "lol", 
+            "max_rate_concurrency": {{.qos_rate_shards}}
+        }
+    }
 }

@@ -151,7 +151,9 @@
       ],
       "extra_config": {
         "qos/ratelimit/router": {
-          "max_rate": 2
+          "strategy": "header",
+          "key": "Myratelimit",
+          "client_max_rate": 2
         }
       }
     },
@@ -593,6 +595,47 @@
           }
         }
       ]
+    },
+    {
+        "@comment": "EE only feature: one to one websocket",
+        "endpoint": "/one2one/",
+        "input_query_strings":[ "*" ],
+        "input_headers":[ "*" ],
+        "backend": [
+            {
+                "url_pattern": "/",
+                "disable_host_sanitize": true,
+                "host": [ "wss://echo.websocket.org" ]
+            }
+        ],
+        "extra_config":{
+            "websocket": {
+                "input_headers":["Cookie", "Authorization"],
+                "enable_direct_communication": true,
+                "backoff_strategy": "exponential"
+            }
+        }
+    },
+    {
+      "@comment": "Feature: endpoint param limiting",
+      "endpoint": "/param/{myparam}/shop",
+      "backend": [
+        {
+          "url_pattern": "/static/shop/campaigns.json",
+          "allow": [ "campaigns" ]
+        },
+        {
+          "url_pattern": "/static/shop/products.json",
+          "allow": [ "products" ]
+        }
+      ],
+      "extra_config": {
+        "qos/ratelimit/router": {
+          "strategy": "param",
+          "key": "myparam",
+          "client_max_rate": 2
+        }
+      }
     },
     {
         "@comment": "EE only feature: WebSockets (chat example)",
