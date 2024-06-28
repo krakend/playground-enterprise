@@ -85,7 +85,8 @@
       "endpoint": "/user/creditcard",
       "backend": [
         {
-          "url_pattern": "/static/user/1.json",
+          "host": ["fake_api:80"],
+          "url_pattern": "/user/1.json",
           "allow": ["credit_card"],
             "extra_config": {
                 "plugin/req-resp-modifier": {
@@ -135,11 +136,13 @@
       "endpoint": "/shop",
       "backend": [
         {
-          "url_pattern": "/static/shop/campaigns.json",
+          "host": ["fake_api:80"],
+          "url_pattern": "/shop/campaigns.json",
           "allow": [ "campaigns" ]
         },
         {
-          "url_pattern": "/static/shop/products.json",
+          "host": ["fake_api:80"],
+          "url_pattern": "/shop/products.json",
           "allow": [ "products" ],
           "extra_config": {
             "qos/ratelimit/proxy": {
@@ -246,11 +249,13 @@
       "endpoint": "/sequential",
       "backend": [
         {
-          "url_pattern": "/static/hotels/1.json",
+          "host": ["fake_api:80"],
+          "url_pattern": "/hotels/1.json",
           "allow": [ "destination_id" ]
         },
         {
-          "url_pattern": "/static/destinations/{resp0_destination_id}.json"
+          "host": ["fake_api:80"],
+          "url_pattern": "/destinations/{resp0_destination_id}.json"
         }
       ],
       "extra_config": {
@@ -264,7 +269,8 @@
       "endpoint": "/fail",
       "backend": [
         {
-          "url_pattern": "/static/user/1.json",
+          "host": ["fake_api:80"],
+          "url_pattern": "/user/1.json",
           "group": "user"
         },
         {
@@ -302,7 +308,8 @@
       "endpoint": "/fake-api/*",
       "backend": [
         {
-          "url_pattern": "/static"
+          "host": ["fake_api:80"],
+          "url_pattern": "/"
         }
       ],
       "extra_config": {
@@ -322,7 +329,8 @@
       "output_encoding": "no-op",
       "backend": [
         {
-          "url_pattern": "/static"
+          "host": ["fake_api:80"],
+          "url_pattern": "/"
         }
       ],
       "extra_config": {
@@ -345,7 +353,8 @@
       ],
       "backend": [
         {
-          "url_pattern": "/static"
+          "host": ["fake_api:80"],
+          "url_pattern": "/"
         }
       ],
       "extra_config": {
@@ -390,7 +399,8 @@
       "endpoint": "/public",
       "backend": [
         {
-          "url_pattern": "/static/hotels/1.json"
+          "host": ["fake_api:80"],
+          "url_pattern": "/hotels/1.json"
         }
       ]
     },
@@ -434,7 +444,7 @@
           "roles_key": "roles",
           "issuer": "https://krakend.io",
           "roles": ["role_a", "role_c"],
-          "jwk_url": "http://localhost:8080/static/jwk/symmetric.json",
+          "jwk_url": "http://fake_api/jwk/symmetric.json",
           "disable_jwk_security": true
         }
       }
@@ -452,7 +462,7 @@
           "alg": "HS256",
           "kid": "sim2",
           "keys_to_sign": ["access_token", "refresh_token"],
-          "jwk_url": "http://localhost:8080/static/jwk/symmetric.json",
+          "jwk_url": "http://fake_api/jwk/symmetric.json",
           "disable_jwk_security": true
         }
       }

@@ -3,13 +3,15 @@
     "endpoint": "/shop",
     "backend": [
         {
-            "url_pattern": "/static/shop/campaigns.json",
+            "host": ["fake_api:80"],
+            "url_pattern": "/shop/campaigns.json",
             "allow": [
                 "campaigns"
             ]
         },
         {
-            "url_pattern": "/static/shop/products.json",
+            "host": ["fake_api:80"],
+            "url_pattern": "/shop/products.json",
             "allow": [
                 "products"
             ],
