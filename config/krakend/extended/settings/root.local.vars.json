@@ -2,9 +2,9 @@
   "conf_dir": "./",
   "name": "Local KrakenD EE",
   "host": ["http://localhost:7979"],
+  "fake_api": "http://fake_api",
   "port": 7979,
   "grpc_catalog": "../../images/grpc/defs",
-  "static_files_dir": "../../data",
   "endpoints": {
     "ee_websockets": {
         "def": {

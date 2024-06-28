@@ -89,6 +89,13 @@ services:
     ports:
       - "15672:15672"
       - "5672:5672"
+  fake_api:
+    image: busybox:latest
+    volumes:
+      - ./data:/var/www
+    ports:
+      - "8000:80"
+    command: httpd -f -h /var/www/
   web:
     build:
       context: images/spa-auth-web
