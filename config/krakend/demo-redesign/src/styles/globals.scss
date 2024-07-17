@@ -1,0 +1,10 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import "./components/_container";
+@import "./components/_section";
+@import "./components/_buttons";
+@import "./components/_gradient";
+@import "./components/_testimonials";
+@import "./components/_shadow";
