@@ -399,7 +399,7 @@
       "endpoint": "/private/auth0",
       "backend": [
         {
-          "url_pattern": "/user/1.json"
+          "url_pattern": "/static/user/1.json"
         }
       ],
       "extra_config": {
@@ -408,6 +408,10 @@
           "audience": ["http://api.example.com"],
           "roles_key": "http://api.example.com/custom/roles",
           "roles": ["user", "admin"],
+          "propagate_claims": [
+            ["http://api.example.com/custom/roles", "x-jwt-role"],
+            ["sub", "x-jwt-sub"]
+          ],
           "jwk_url": "https://albert-test.auth0.com/.well-known/jwks.json"
         },
         "documentation/openapi": {
@@ -416,8 +420,42 @@
           "tags": [
             "Authentication"
           ]
+        },
+        "qos/ratelimit/tiered": {
+          "tier_key": "X-Jwt-Role",
+          "tiers": [
+              {
+                "tier_value": "user",
+                "tier_value_as": "literal",
+                "ratelimit": {
+                    "client_max_rate": 2,
+                    "client_max_capacity": 2,
+                    "strategy": "header",
+                    "key": "X-Jwt-Sub"
+                }
+              },
+              {
+                "tier_value": "admin",
+                "tier_value_as": "literal",
+                "ratelimit": {
+                    "client_max_rate": 10,
+                    "client_max_capacity": 10,
+                    "strategy": "header",
+                    "key": "X-Jwt-Sub"
+                }
+              },
+              {
+                "tier_value": "*",
+                "ratelimit": {
+                    "client_max_rate": 1,
+                    "client_max_capacity": 1,
+                    "strategy": "header",
+                    "key": "X-Jwt-Sub"
+                }
+              }
+            ]
+          }
         }
-      }
     },
     {
       "@comment": "Feature: Authorization based on JWT (using KrakenD JOSE signer)",
