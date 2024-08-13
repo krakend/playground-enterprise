@@ -412,6 +412,7 @@
             ["http://api.example.com/custom/roles", "x-jwt-role"],
             ["sub", "x-jwt-sub"]
           ],
+          "cache": true,
           "jwk_url": "https://albert-test.auth0.com/.well-known/jwks.json"
         },
         "documentation/openapi": {
