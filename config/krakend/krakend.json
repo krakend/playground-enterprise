@@ -409,6 +409,7 @@
       "endpoint": "/private/auth0",
       "backend": [
         {
+          "host": ["fake_api:80"],
           "url_pattern": "/user/1.json"
         }
       ],
@@ -434,6 +435,7 @@
       "endpoint": "/private/custom",
       "backend": [
         {
+          "host": ["fake_api:80"],
           "url_pattern": "/user/1.json"
         }
       ],
@@ -454,6 +456,7 @@
       "endpoint": "/token",
       "backend": [
         {
+          "host": ["fake_api:80"],
           "url_pattern": "/token.json"
         }
       ],
