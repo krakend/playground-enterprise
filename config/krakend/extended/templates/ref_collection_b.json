@@ -1,0 +1,28 @@
+{
+    "endpoints": [
+        {
+            "endpoint": "/public/from_b_file/first",
+            "backend": [
+                {
+                    "url_pattern": "/static/hotels/1.json"
+                }
+            ]
+        },
+        {
+            "endpoint": "/public/from_b_file/second",
+            "backend": [
+                {
+                    "url_pattern": "/static/hotels/1.json"
+                }
+            ]
+        },
+        {
+            "endpoint": "/public/from_b_file/third",
+            "backend": [
+                {
+                    "url_pattern": "/static/hotels/1.json"
+                }
+            ]
+        }
+    ]
+}

@@ -1,0 +1,12 @@
+{
+    "gatherendpoints": [
+        { 
+            "name": "ref_collection_a.json",
+            "num": 2
+        },
+        {
+            "name": "ref_collection_b.json",
+            "num": 3
+        }
+    ]
+}

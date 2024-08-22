@@ -8,6 +8,7 @@
         "paths": [
             "./extended/settings/root.vars.json",
             "./extended/settings/root.local.vars.json",
+            "./extended/settings/endpoints_collection.json",
             "./extended/settings/all_environments",
             "./extended/root.local.vars.json"
         ]

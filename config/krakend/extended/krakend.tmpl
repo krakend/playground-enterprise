@@ -17,6 +17,16 @@
     }
   ],
   "endpoints": [
+      {{ range .gatherendpoints }}
+          {{$filename := .name}}
+
+          {{ range $n, $k := until (int .num) }}
+          {
+            "$ref": "./templates/{{ $filename }}#/endpoints/{{ $n }}"
+          }
+          ,
+          {{ end }}
+      {{ end }}
       {{ template "endpoints_req_resp_transformations.json" . }},
       {{ template "endpoints_authentication.json" . }},
       {{ template "endpoints_traffic_management.json" . }},
