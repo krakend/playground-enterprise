@@ -1,7 +1,7 @@
 {
     "endpoints": [
         {
-            "endpoint": "/public/from_a_file/first",
+            "endpoint": "/public/from_a_file/first/{{.futurama.zoidberg}}",
             "backend": [
                 {
                     "url_pattern": "/static/hotels/1.json"
@@ -9,7 +9,7 @@
             ]
         },
         {
-            "endpoint": "/public/from_a_file/second",
+            "endpoint": "/public/from_a_file/second/{{.futurama.bender}}",
             "backend": [
                 {
                     "url_pattern": "/static/hotels/1.json"

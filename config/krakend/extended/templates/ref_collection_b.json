@@ -1,7 +1,7 @@
 {
     "endpoints": [
         {
-            "endpoint": "/public/from_b_file/first",
+            "endpoint": "/public/from_b_file/first/{{.simpsons.homer}}",
             "backend": [
                 {
                     "url_pattern": "/static/hotels/1.json"
@@ -9,7 +9,7 @@
             ]
         },
         {
-            "endpoint": "/public/from_b_file/second",
+            "endpoint": "/public/from_b_file/second/{{.simpsons.marge}}",
             "backend": [
                 {
                     "url_pattern": "/static/hotels/1.json"
@@ -17,7 +17,7 @@
             ]
         },
         {
-            "endpoint": "/public/from_b_file/third",
+            "endpoint": "/public/from_b_file/third/{{.simpsons.bart}}",
             "backend": [
                 {
                     "url_pattern": "/static/hotels/1.json"
