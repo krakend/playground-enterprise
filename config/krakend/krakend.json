@@ -15,7 +15,7 @@
     {
       "@comment": "Feature EE: Conditional Routing With Workflows",
       "endpoint": "/conditional/{user}",
-      "allow_headers": [
+      "input_headers": [
         "X-Role",
         "X-Token"
       ],
@@ -25,6 +25,7 @@
           "extra_config": {
              "workflow": {
                 "ignore_errors": true,
+                "output_encoding": "json",
                 "endpoint": "/__workflow/new_backends",
                 "backend": [
                     {
@@ -32,7 +33,7 @@
                         "extra_config": {
                              "validation/cel": [
                                 {
-                                    "check_expr": "req_headers['X-Role'].size() != 0"
+                                    "check_expr": "'X-Role' in req_headers && req_headers['X-Role'].size() != 0"
                                 }
                               ]
                         }
@@ -42,7 +43,7 @@
                         "extra_config": {
                              "validation/cel": [
                                 {
-                                    "check_expr": "req_headers['X-Role'].size() != 0"
+                                    "check_expr": "'X-Role' in req_headers && req_headers['X-Role'].size() != 0"
                                 }
                               ]
                         }
@@ -52,7 +53,7 @@
                         "extra_config": {
                              "validation/cel": [
                                 {
-                                    "check_expr": "req_headers['X-Role'].size() != 0"
+                                    "check_expr": "'X-Role' not in req_headers && req_headers['X-Role'].size() == 0"
                                 }
                               ]
                         }
