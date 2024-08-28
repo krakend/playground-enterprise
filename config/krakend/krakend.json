@@ -828,6 +828,31 @@
         }
       ]
     },
+    "qos/ratelimit/tiered": {
+      "tier_key": "X-Limit-Me",
+      "tiers": [
+          {
+            "tier_value": "value.size() != 0",
+            "tier_value_as": "policy",
+            "ratelimit": {
+                "client_max_rate": 1,
+                "client_max_capacity": 1,
+                "strategy": "header",
+                "key": "X-Limit-Me"
+            }
+          },
+          {
+            "tier_value": "*",
+            "ratelimit": {
+                "client_max_rate": 2,
+                "client_max_capacity": 2,
+                "strategy": "ip",
+                "key": ""
+            }
+          }
+        ]
+      }
+    ,
     "telemetry/opentelemetry": {
       "service_name": "krakend_prometheus_service",
       "metric_reporting_period": 1,
