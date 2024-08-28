@@ -13,6 +13,57 @@
   },
   "endpoints": [
     {
+      "@comment": "Feature EE: Conditional Routing With Workflows",
+      "endpoint": "/conditional/{user}",
+      "allow_headers": [
+        "X-Role",
+        "X-Token"
+      ],
+      "backend": [
+        {
+          "url_pattern": "/__workflow/unused_pattern",
+          "extra_config": {
+             "workflow": {
+                "ignore_errors": true,
+                "endpoint": "/__workflow/new_backends",
+                "backend": [
+                    {
+                        "url_pattern": "/static/conditional_new/partial_a.json",
+                        "extra_config": {
+                             "validation/cel": [
+                                {
+                                    "check_expr": "req_headers['X-Role'].size() != 0"
+                                }
+                              ]
+                        }
+                    },
+                    {
+                        "url_pattern": "/static/conditional_new/partial_b.json",
+                        "extra_config": {
+                             "validation/cel": [
+                                {
+                                    "check_expr": "req_headers['X-Role'].size() != 0"
+                                }
+                              ]
+                        }
+                    },
+                    {
+                        "url_pattern": "/static/conditional_old/full.json",
+                        "extra_config": {
+                             "validation/cel": [
+                                {
+                                    "check_expr": "req_headers['X-Role'].size() != 0"
+                                }
+                              ]
+                        }
+                    }
+                ]
+             }
+          }
+        }
+      ]
+    },
+    {
       "@comment": "Feature: Aggregation + Basic transformation (filtering & mapping) + grouping",
       "endpoint": "/git/{user}",
       "backend": [
