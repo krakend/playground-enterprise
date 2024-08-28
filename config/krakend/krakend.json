@@ -652,6 +652,30 @@
               "encoding":"no-op"
           }
       ]
+  },
+  {
+      "@comment": "EE only feature: Proxied / Cached JWK Aggregator",
+      "endpoint": "/jwk_cached_aggregator",
+      "output_encoding": "no-op",
+      "backend":[
+          {
+              "host": ["http://localhost:7913"],
+              "url_pattern": "/",
+              "extra_config": {
+                  "qos/http-cache": {
+                      "shared": true
+                  },
+                  "modifier/martian": { 
+                      "header.Modifier": {
+                          "scope": ["response"],
+                          "name": "Cache-Control",
+                          "value": "max-age=300, public"
+                      }
+                  }
+              },
+              "encoding":"no-op"
+          }
+      ]
   }
   ],
   "sequential_start": true,
@@ -740,9 +764,18 @@
     },
     "plugin/http-server": {
       "name": [
+        "jwk-aggregator",
         "geoip",
         "url-rewrite"
       ],
+      "jwk-aggregator": {
+        "port": 7913,
+        "cache": true,
+        "origins": [
+            "https://albert-test.auth0.com/.well-known/jwks.json",
+            "http://localhost:8080/static/jwk/symmetric.json"
+        ]
+      },
       "geoip": {
         "citydb_path": "./geoip/GeoLite2-City.mmdb"
       },
