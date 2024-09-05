@@ -3,14 +3,14 @@
     "endpoint": "/shop",
     "backend": [
         {
-            "host": ["fake_api:80"],
+            "host": ["http://fake_api"],
             "url_pattern": "/shop/campaigns.json",
             "allow": [
                 "campaigns"
             ]
         },
         {
-            "host": ["fake_api:80"],
+            "host": ["http://fake_api"],
             "url_pattern": "/shop/products.json",
             "allow": [
                 "products"

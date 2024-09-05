@@ -85,7 +85,7 @@
       "endpoint": "/user/creditcard",
       "backend": [
         {
-          "host": ["fake_api:80"],
+          "host": ["http://fake_api"],
           "url_pattern": "/user/1.json",
           "allow": ["credit_card"],
             "extra_config": {
@@ -136,12 +136,12 @@
       "endpoint": "/shop",
       "backend": [
         {
-          "host": ["fake_api:80"],
+          "host": ["http://fake_api"],
           "url_pattern": "/shop/campaigns.json",
           "allow": [ "campaigns" ]
         },
         {
-          "host": ["fake_api:80"],
+          "host": ["http://fake_api"],
           "url_pattern": "/shop/products.json",
           "allow": [ "products" ],
           "extra_config": {
@@ -249,12 +249,12 @@
       "endpoint": "/sequential",
       "backend": [
         {
-          "host": ["fake_api:80"],
+          "host": ["http://fake_api"],
           "url_pattern": "/hotels/1.json",
           "allow": [ "destination_id" ]
         },
         {
-          "host": ["fake_api:80"],
+          "host": ["http://fake_api"],
           "url_pattern": "/destinations/{resp0_destination_id}.json"
         }
       ],
@@ -269,7 +269,7 @@
       "endpoint": "/fail",
       "backend": [
         {
-          "host": ["fake_api:80"],
+          "host": ["http://fake_api"],
           "url_pattern": "/user/1.json",
           "group": "user"
         },
@@ -308,7 +308,7 @@
       "endpoint": "/fake-api/*",
       "backend": [
         {
-          "host": ["fake_api:80"],
+          "host": ["http://fake_api"],
           "url_pattern": "/"
         }
       ],
@@ -329,7 +329,7 @@
       "output_encoding": "no-op",
       "backend": [
         {
-          "host": ["fake_api:80"],
+          "host": ["http://fake_api"],
           "url_pattern": "/"
         }
       ],
@@ -353,7 +353,7 @@
       ],
       "backend": [
         {
-          "host": ["fake_api:80"],
+          "host": ["http://fake_api"],
           "url_pattern": "/"
         }
       ],
@@ -399,7 +399,7 @@
       "endpoint": "/public",
       "backend": [
         {
-          "host": ["fake_api:80"],
+          "host": ["http://fake_api"],
           "url_pattern": "/hotels/1.json"
         }
       ]
@@ -409,7 +409,7 @@
       "endpoint": "/private/auth0",
       "backend": [
         {
-          "host": ["fake_api:80"],
+          "host": ["http://fake_api"],
           "url_pattern": "/user/1.json"
         }
       ],
@@ -435,7 +435,7 @@
       "endpoint": "/private/custom",
       "backend": [
         {
-          "host": ["fake_api:80"],
+          "host": ["http://fake_api"],
           "url_pattern": "/user/1.json"
         }
       ],
@@ -456,7 +456,7 @@
       "endpoint": "/token",
       "backend": [
         {
-          "host": ["fake_api:80"],
+          "host": ["http://fake_api"],
           "url_pattern": "/token.json"
         }
       ],

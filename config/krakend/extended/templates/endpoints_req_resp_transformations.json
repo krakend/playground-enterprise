@@ -77,7 +77,7 @@
   "endpoint": "/user/creditcard",
   "backend": [
     {
-      "host": ["fake_api:80"],
+      "host": ["http://fake_api"],
       "url_pattern": "/user/1.json",
       "allow": [
         "credit_card"
@@ -157,7 +157,7 @@
   "endpoint": "/sequential",
   "backend": [
     {
-      "host": ["fake_api:80"],
+      "host": ["http://fake_api"],
       "url_pattern": "/hotels/1.json",
       "allow": [ "destination_id" ]
     },
