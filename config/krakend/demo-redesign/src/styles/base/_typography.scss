@@ -1,0 +1,41 @@
+@layer base {
+  .heading--h1 {
+    @apply text-4xl md:text-5xl lg:text-7xl font-bold;
+  }
+
+  .heading--h2 {
+    @apply text-2xl md:text-4xl lg:text-5xl font-bold;
+  }
+
+  .heading--h3 {
+    @apply text-2xl md:text-3.5xl font-bold;
+  }
+
+  .text--xl {
+    @apply md:text-xl font-normal;
+  }
+
+  .text--lg {
+    @apply text-lg font-normal;
+  }
+
+  .text--base {
+    @apply text-base font-normal;
+  }
+
+  .text--sm {
+    @apply text-sm font-normal;
+  }
+}
+
+.prose--mdx {
+  @apply prose prose-invert;
+
+  h2 {
+    @apply text-base font-semibold first-of-type:mt-0;
+  }
+
+  .button--primary {
+    @apply text-brand-neutral-900 no-underline hover:scale-105;
+  }
+}

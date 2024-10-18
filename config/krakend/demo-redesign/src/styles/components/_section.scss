@@ -1,0 +1,16 @@
+@layer components {
+  .section--xxl {
+    @apply py-20 lg:py-36 xl:py-60;
+  }
+
+  .section--xl {
+    @apply py-20 lg:py-36;
+  }
+  .section--md {
+    @apply py-10 lg:py-14 xl:py-20;
+  }
+
+  .section--sm {
+    @apply py-10 lg:py-12;
+  }
+}

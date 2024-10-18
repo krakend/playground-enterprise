@@ -1,0 +1,7 @@
+.container--boxed {
+  @apply px-4 md:px-6 mx-auto w-full;
+  max-width: 1248px;
+}
+.container--boxed-xl {
+  @apply max-w-[1420px] px-4 md:px-6 mx-auto w-full;
+}

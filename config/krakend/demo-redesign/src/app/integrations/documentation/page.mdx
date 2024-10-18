@@ -1,0 +1,12 @@
+## About this demo
+OpenAPI/Swagger documentation can be generated with `krakend generate openapi.`
+
+## Endpoint
+```
+http://localhost:16686/search
+```
+
+## Command
+```
+docker-compose exec krakend_ee krakend openapi export -c /etc/krakend/krakend.json -o /etc/krakend/demo/swagger.json
+```
