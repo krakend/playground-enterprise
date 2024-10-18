@@ -3,7 +3,7 @@ const Architecture = () => (
     xmlns="http://www.w3.org/2000/svg"
     viewBox="0 0 715 910"
     fill="none"
-    className="h-auto w-full"
+    className="h-full w-auto"
   >
     <rect
       width={229}
