@@ -1,0 +1,33 @@
+.text-gradient--lavender {
+  background-image: linear-gradient(1deg, #4177fd 5%, #ab83ff 114%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.gradient--square {
+  background-image: linear-gradient(157deg, #8383ff 0%, #4177fd00 100%);
+}
+
+.bg-gradient--lavender {
+  background-image: linear-gradient(106deg, #ab83ff 0%, #4177fd 79%);
+}
+
+.gradient--border-background {
+  border-image-source: linear-gradient(100deg, #ab83ff 0%, #4177fd 75%);
+  border-image-slice: 1;
+  background-image: linear-gradient(100deg, #ab83ff 0%, #4177fd 75%),
+    linear-gradient(100deg, #ab83ff 0%, #4177fd 75%);
+  background-origin: border-box;
+  background-clip: content-box, border-box;
+}
+
+.gradient--border {
+  box-shadow: 0 2px 6px 4px rgba(11, 12, 16, 0.4);
+  border-image-source: linear-gradient(98deg, #ab83ff 0%, #4177fd 75%);
+  border-image-slice: 1;
+  background-image: linear-gradient(to bottom, #13151d, #13151d),
+    linear-gradient(98deg, #ab83ff 0%, #4177fd 75%);
+  background-origin: border-box;
+  background-clip: content-box, border-box;
+}

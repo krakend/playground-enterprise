@@ -1,0 +1,19 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import './base/base';
+@import "./base/typography";
+@import "./base/utils";
+
+@import "./components/_container";
+@import "./components/_section";
+@import "./components/_buttons";
+@import "./components/_gradient";
+@import "./components/_testimonials";
+@import "./components/_shadow";
+
+/* Vendor */
+// @import 'vendor/prism-material-dark.css';
+@import 'vendor/prism-atom-dark.css';
+// @import 'vendor/prism-vsc-dark.css';

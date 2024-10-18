@@ -1,0 +1,13 @@
+.shadow--lg {
+    box-shadow:
+        0 51px 96px 0 rgba(11, 12, 16, 0.1),
+        0 26px 51px 0 rgba(11, 12, 16, 0.15),
+        0 13px 26px 0 rgba(11, 12, 16, 0.1),
+        0 6px 13px 0 rgba(11, 12, 16, 0.1),
+        0 3px 6px 0 rgba(11, 12, 16, 0.2),
+        0 2px 3px 1px rgba(11, 12, 16, 0.2);
+}
+
+.shadow--xs {
+  box-shadow: 0 2px 6px 4px rgba(11, 12, 16, 0.4);
+}
