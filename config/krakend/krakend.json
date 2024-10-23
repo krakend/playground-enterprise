@@ -14,6 +14,33 @@
   "endpoints": [
     {
       "@comment": "Feature EE: Conditional Routing With Workflows",
+      "endpoint": "/__private/pub_and_priv/{resource}",
+      "input_headers": [
+        "Authorization"
+      ],
+       "input_headers": [
+        "Authorization"
+       ],
+       "ignore_errors": false, 
+       "output_encoding": "json",
+       "extra_config": {
+           "auth/api-keys": {
+                "roles": ["role1"],
+                "strategy": "header",
+                "identifier": "Authorization"
+           }
+       },
+       "backend": [
+           {
+                "url_pattern": "/static/public_and_private/this_is_private.json"
+           },
+            {
+              "url_pattern": "/__debug/post"
+            }
+        ]
+    },
+    {
+      "@comment": "Feature EE: Conditional Routing With Workflows",
       "endpoint": "/pub_and_priv/{resource}",
       "input_headers": [
         "Authorization"
@@ -25,33 +52,16 @@
              "workflow": {
                 "ignore_errors": true,
                 "output_encoding": "json",
-                "endpoint": "/__workflow/select_what_to_serve_depending_on_existing_jwt",
+                "endpoint": "/__workflow/select_what_to_serve_depending_on_existing_jwt/{resource}",
                 "backend": [
                     {
-                        "url_pattern": "/__workflow/unused_pattern/this_backend_has_a_nested_workflow",
+                        "url_pattern": "/__private/pub_and_priv/{resource}",
                         "extra_config": {
                              "validation/cel": [
                                 {
-                                    "check_expr": "'Authorization' in req_headers && req_headers['Autorization'].size() != 0"
+                                    "check_expr": "'Authorization' in req_headers && req_headers['Authorization'].size() != 0"
                                 }
-                              ],
-                              "workflow": {
-                                   "ignore_errors": false, 
-                                   "output_encoding": "json",
-                                   "endpoint": "/__workflow/jwt_works_at_endpoint_level_so_we_need_a_nested_workflow",
-                                   "extra_config": {
-                                       "auth/api-keys": {
-                                            "roles": ["role1"],
-                                            "strategy": "header",
-                                            "identifier": "Authorization"
-                                       }
-                                   },
-                                   "backend": [
-                                       {
-                                            "url_pattern": "/static/public_and_private/this_is_private.json"
-                                       }
-                                    ]
-                              }
+                              ]
                         }
                     },
                     {
