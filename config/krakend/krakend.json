@@ -40,14 +40,10 @@
                                    "output_encoding": "json",
                                    "endpoint": "/__workflow/jwt_works_at_endpoint_level_so_we_need_a_nested_workflow",
                                    "extra_config": {
-                                       "auth/validator": {
-                                           "alg": "HS256",
-                                           "audience": ["http://api.example.com"],
-                                           "roles_key": "roles",
-                                           "issuer": "https://krakend.io",
-                                           "roles": ["role_a", "role_c"],
-                                           "jwk_url": "http://localhost:8080/static/jwk/symmetric.json",
-                                           "disable_jwk_security": true
+                                       "auth/api-keys": {
+                                            "roles": ["role1"],
+                                            "strategy": "header",
+                                            "identifier": "Authorization"
                                        }
                                    },
                                    "backend": [
@@ -63,7 +59,7 @@
                         "extra_config": {
                              "validation/cel": [
                                 {
-                                    "check_expr": "'Authorization' not in req_headers || req_headers['Authorization'].size() == 0"
+                                    "check_expr": "!('Authorization' in req_headers) || req_headers['Authorization'].size() == 0"
                                 }
                               ]
                         }

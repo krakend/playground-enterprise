@@ -1,4 +1,4 @@
 {
-    "source": "new",
-    "from_internal_service_a": "this comes from partial a"
+    "source": "this_is_private",
+    "private_data": "this is private data"
 }
