@@ -33,11 +33,8 @@
        "backend": [
            {
                 "url_pattern": "/static/public_and_private/this_is_private.json"
-           },
-            {
-              "url_pattern": "/__debug/post"
-            }
-        ]
+           }
+       ]
     },
     {
       "@comment": "Feature EE: Conditional Routing With Workflows",
@@ -59,7 +56,7 @@
                         "extra_config": {
                              "validation/cel": [
                                 {
-                                    "check_expr": "'Authorization' in req_headers && req_headers['Authorization'].size() != 0"
+                                    "check_expr": "hasHeader('Authorization')"
                                 }
                               ]
                         }
