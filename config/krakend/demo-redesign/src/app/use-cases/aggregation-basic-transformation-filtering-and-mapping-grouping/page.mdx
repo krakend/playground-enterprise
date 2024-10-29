@@ -5,6 +5,18 @@ import URLInputBox from '@/components/URLInputBox'
 /git/{user}
 ```
 
-## About this demo
+## How aggregation works
+When a user calls `/git/{user}`, KrakenD connects in parallel to the two `backend` objects defined, which are:
 
-<URLInputBox endpoint="http://localhost:8080/git/" placeholder="your GitHub username" />
+1. `https://api.github.com/users/{user}`
+2. `https://api.github.com/users/{user}/repos`
+
+The first backend returns information about the `{user}`, and the second their associated repositories. The information of the two backends is merged into a single response.
+
+## Basic manipulation
+In addition, the first backend only takes a few properties from the response, and the rest are discarded, thanks to the `allow` manipulation. It also renames the field `blog` to `website`, and finally puts the whole response under a new object `user`, thanks to the `group` modifier.
+
+The second backend does not return an object, but an array, so we tell KrakenD that this is a collection of elements.
+
+Write an existing GitHub username below, and open the link in the browser or cURL:
+<URLInputBox endpoint="http://localhost:8080/git/" placeholder="username" />
