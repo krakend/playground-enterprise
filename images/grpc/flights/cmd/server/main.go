@@ -16,7 +16,7 @@ func main() {
 	flightspb.RegisterFlightsServer(s, fes)
 
 	// TODO: select the listen port
-	fmt.Printf("binding to :4242")
+	fmt.Printf("binding to :4242\n")
 	ls, err := net.Listen("tcp", ":4242")
 	if err != nil {
 		fmt.Printf("cannot bind to port: %s\n", err.Error())
