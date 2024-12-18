@@ -7,7 +7,7 @@ services:
       - ./config/krakend:/etc/krakend
       - ./dumps:/tmp/krakend-http-logger
       - ./images/grpc/defs:/etc/krakend/grpc_catalog
-      - ./data:/wwwroot
+      - ./data/jwk-symmetric.json:/opt/krakend/jwk-symmetric.json
     ports:
       - "1234:1234"
       - "8080:8080"
