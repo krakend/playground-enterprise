@@ -2,6 +2,8 @@ module github.com/playground-enterprise/images/grpc/trains
 
 go 1.20
 
+replace github.com/krakendio/playground-enterprise/images/grpc/genlib/trains => ../genlib/trains
+
 require (
 	github.com/krakendio/playground-enterprise/images/grpc/genlib v0.0.0-20230919101031-fce6544db29e
 	google.golang.org/grpc v1.54.0

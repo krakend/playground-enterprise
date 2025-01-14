@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net"
+	"os"
+	"strings"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
@@ -18,10 +20,15 @@ import (
 func main() {
 	fes := NewTrainsEchoServer()
 
-	s := grpc.NewServer(
-		grpc.Creds(loadCredentials()),
-		grpc.UnaryInterceptor(checkClientCert),
-	)
+	opts := make([]grpc.ServerOption, 0, 4)
+
+	strUseTLS := os.Getenv("GRPC_TRAINS_USE_TLS")
+	if strings.ToLower(strUseTLS) == "true" {
+		opts = append(opts, grpc.Creds(loadCredentials()))
+		opts = append(opts, grpc.UnaryInterceptor(checkClientCert))
+	}
+
+	s := grpc.NewServer(opts...)
 	trainspb.RegisterTrainsServer(s, fes)
 
 	// TODO: select the listen port

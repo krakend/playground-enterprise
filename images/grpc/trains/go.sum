@@ -3,8 +3,6 @@ github.com/golang/protobuf v1.5.2 h1:ROPKBNFfQgOUMifHyP+KYbvpjbdoFNs+aK7DXlji0Tw
 github.com/golang/protobuf v1.5.2/go.mod h1:XVQd3VNwM+JqD3oG2Ue2ip4fOMUkwXdXDdiuN0vRsmY=
 github.com/google/go-cmp v0.5.5/go.mod h1:v8dTdLbMG2kIc/vJvl+f65V22dbkXbowE6jgT/gNBxE=
 github.com/google/go-cmp v0.5.9 h1:O2Tfq5qg4qc4AmwVlvv0oLiVAGB7enBSJ2x2DqQFi38=
-github.com/krakendio/playground-enterprise/images/grpc/genlib v0.0.0-20230518154016-798be9f2e364 h1:yWVZqUyUHNqnanA3QmKk+vJYqN1VUFY7uewz5a76i+k=
-github.com/krakendio/playground-enterprise/images/grpc/genlib v0.0.0-20230518154016-798be9f2e364/go.mod h1:L22KcqLCsbT0Wb7e0PTZm2cpEetRapzvoI438nddgIw=
 github.com/krakendio/playground-enterprise/images/grpc/genlib v0.0.0-20230919101031-fce6544db29e h1:8/gU+Tsk4v/fC3kpLIBLGd+JyUd2IvFZtCtDHGF0DAU=
 github.com/krakendio/playground-enterprise/images/grpc/genlib v0.0.0-20230919101031-fce6544db29e/go.mod h1:L22KcqLCsbT0Wb7e0PTZm2cpEetRapzvoI438nddgIw=
 golang.org/x/net v0.8.0 h1:Zrh2ngAOFYneWTAIAPethzeaQLuHwhuBkuV6ZiRnUaQ=
