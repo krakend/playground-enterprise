@@ -1,0 +1,19 @@
+<svg class="h-6 w-6 icon text-brand-neutral-200" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="h-6 w-6 inline">
+    <g fill="none" fill-rule="evenodd">
+        <path d="M0 .13h24v24H0z" />
+        <g
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            stroke="currentColor"
+        >
+            <path
+                d="M16.2 7.538v-.91a1.2 1.2 0 0 0-.351-.849L13.55 3.482a1.2 1.2 0 0 0-.848-.352H6.2A1.2 1.2 0 0 0 5 4.33v11.2a1.2 1.2 0 0 0 1.2 1.2h2.397"
+                opacity=".7"
+            />
+            <path
+                d="M19.8 19.93a1.2 1.2 0 0 1-1.2 1.2H9.8a1.2 1.2 0 0 1-1.2-1.2V8.73a1.2 1.2 0 0 1 1.2-1.2h6.504a1.2 1.2 0 0 1 .848.352l2.297 2.297a1.2 1.2 0 0 1 .351.848v8.903h0z"
+            />
+        </g>
+    </g>
+</svg> 

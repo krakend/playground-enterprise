@@ -1,5 +1,5 @@
 {
-  "@comment": "Feature: Aggregation + Basic transformation (filtering & mapping) + grouping",
+  "@comment": "Feature: Aggregation and basic transformation",
   "endpoint": "/git/{user}",
   "backend": [
     {
@@ -46,7 +46,7 @@
   }
 },
 {
-  "@comment": "Feature: One-liner advanced data manipulation (filter, sorting & remapping) with JMESPath Query Language",
+  "@comment": "EE only feature: Advanced transformation with query language",
   "endpoint": "/cryptos/{currency}",
   "output_encoding": "json-collection",
   "backend": [
@@ -73,7 +73,7 @@
   }
 },
 {
-  "@comment": "Feature: Regular expression manipulation",
+  "@comment": "EE only feature: Regular expression manipulation",
   "endpoint": "/user/creditcard",
   "backend": [
     {
