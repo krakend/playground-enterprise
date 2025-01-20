@@ -104,7 +104,12 @@ func (s *TrainsEchoServer) generateResponseTrains(req *trainspb.FindTrainRequest
 func (s *TrainsEchoServer) generateResponseTrain(req *trainspb.FindTrainRequest,
 	seed int) *trainspb.TrainInfo {
 
+	var ptrStopovers *int32
 	stopovers := int32(seed + 5)
+	if seed&1 == 0 {
+		ptrStopovers = &stopovers
+	}
+
 	classes := []trainspb.Class{
 		trainspb.Class_NATIONAL,
 		trainspb.Class_REGIONAL,
@@ -116,7 +121,7 @@ func (s *TrainsEchoServer) generateResponseTrain(req *trainspb.FindTrainRequest,
 		Destination: s.generateLocation(req, seed+1),
 		Departure:   timestamppb.New(time.Now()),
 		Arrival:     timestamppb.New(time.Date(2023, 11, 33, 14, 49, 51, 42, time.UTC)),
-		Stopovers:   &stopovers,
+		Stopovers:   ptrStopovers,
 		Class:       &class,
 	}
 }
