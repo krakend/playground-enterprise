@@ -133,28 +133,20 @@
     },
     {
       "@comment": "Feature: Aggregation + backend rate limiting + endpoint rate limiting",
-      "endpoint": "/shop",
+      "endpoint": "/shop/{shop_id}",
       "backend": [
         {
           "host": ["http://fake_api"],
           "url_pattern": "/shop/campaigns.json",
           "allow": [ "campaigns" ]
-        },
-        {
-          "host": ["http://fake_api"],
-          "url_pattern": "/shop/products.json",
-          "allow": [ "products" ],
-          "extra_config": {
-            "qos/ratelimit/proxy": {
-              "max_rate": 1,
-              "capacity": 1
-            }
-          }
         }
       ],
       "extra_config": {
         "qos/ratelimit/router": {
-          "max_rate": 2
+          "client_max_rate": 5,
+          "every": "5s",
+          "strategy": "param",
+          "key": "shop_id"
         }
       }
     },
