@@ -3,7 +3,9 @@
   "version": 3,
   "name": "KrakenD Enterprise API Gateway",
   "port": 8080,
-  "host": ["http://localhost:8080"],
+  "host": [
+    "http://localhost:8080"
+  ],
   "timeout": "3000ms",
   "cache_ttl": "300s",
   "debug_endpoint": true,
@@ -17,7 +19,9 @@
       "endpoint": "/git/{user}",
       "backend": [
         {
-          "host": ["https://api.github.com"],
+          "host": [
+            "https://api.github.com"
+          ],
           "url_pattern": "/users/{user}",
           "allow": [
             "avatar_url",
@@ -37,7 +41,9 @@
           "group": "user"
         },
         {
-          "host": ["https://api.github.com"],
+          "host": [
+            "https://api.github.com"
+          ],
           "url_pattern": "/users/{user}/repos",
           "mapping": {
             "collection": "repos"
@@ -50,7 +56,7 @@
           "summary": "Merges two calls from github and serves under a single endpoint",
           "description": "This endpoint fetches in parallel the user information and the repository information from Githuib and returns it together. Non interesting fields are removed.",
           "tags": [
-            "Aggregation"
+            "API composition"
           ]
         }
       }
@@ -61,7 +67,9 @@
       "output_encoding": "json-collection",
       "backend": [
         {
-          "host": ["https://api.coingecko.com"],
+          "host": [
+            "https://api.coingecko.com"
+          ],
           "url_pattern": "/api/v3/coins/markets?vs_currency={currency}&order=market_cap_desc&per_page=100&page=1&sparkline=false",
           "encoding": "safejson"
         }
@@ -75,34 +83,48 @@
           "summary": "Get TOP 5 crypto capitalization & price data for a given currency",
           "description": "This endpoint fetches some crypto capitalization data from Coingecko for a given currency.",
           "tags": [
-            "Aggregation"
+            "Content Manipulation"
           ]
         }
       }
     },
     {
-      "@comment": "EE only feature: Regular expression manipulation",
+      "@comment": "Feature: Regular expression manipulation",
       "endpoint": "/user/creditcard",
       "backend": [
         {
-          "host": ["http://fake_api"],
+          "host": [
+            "http://fake_api"
+          ],
           "url_pattern": "/user/1.json",
-          "allow": ["credit_card"],
-            "extra_config": {
-                "plugin/req-resp-modifier": {
-                "name": ["content-replacer"],
-                "content-replacer": {
-                  "credit_card.number": {
+          "allow": [
+            "credit_card"
+          ],
+          "extra_config": {
+            "modifier/response-body": {
+              "modifiers": [
+                {
+                  "regexp": {
+                    "field": "credit_card.number",
                     "@comment": "Ridiculous card masking. Show last 4 digits and remove the rest. Credit card number is nested.",
                     "find": "^.*(\\d{4})",
-                    "replace": "XXXX-${1}",
-                    "regexp": true
+                    "replace": "XXXX-${1}"
                   }
                 }
+              ]
             }
           }
         }
-      ]
+      ],
+      "extra_config": {
+        "documentation/openapi": {
+          "summary": "Mask the credit card number",
+          "description": "This endpoint fetches the user information and masks the credit card number",
+          "tags": [
+            "Content Manipulation"
+          ]
+        }
+      }
     },
     {
       "@comment": "Feature: Security policy engine for requests, responses and claim checking",
@@ -113,7 +135,9 @@
       ],
       "backend": [
         {
-          "host": ["http://localhost:8080"],
+          "host": [
+            "http://localhost:8080"
+          ],
           "url_pattern": "/__debug/cookie"
         }
       ],
@@ -128,22 +152,37 @@
               "status": 403
             }
           }
+        },
+        "documentation/openapi": {
+          "summary": "Tracks user activity when the GDPR cookie is accepted",
+          "description": "Example on how to abort a request based on a security policy. If the user does not have the GDPR cookie set to 'yes', the request will be aborted.",
+          "tags": [
+            "Security Policies"
+          ]
         }
       }
     },
     {
-      "@comment": "Feature: Aggregation + backend rate limiting + endpoint rate limiting",
+      "@comment": "Feature: Two types of rate limiting on aggregated content",
       "endpoint": "/shop",
       "backend": [
         {
-          "host": ["http://fake_api"],
+          "host": [
+            "http://fake_api"
+          ],
           "url_pattern": "/shop/campaigns.json",
-          "allow": [ "campaigns" ]
+          "allow": [
+            "campaigns"
+          ]
         },
         {
-          "host": ["http://fake_api"],
+          "host": [
+            "http://fake_api"
+          ],
           "url_pattern": "/shop/products.json",
-          "allow": [ "products" ],
+          "allow": [
+            "products"
+          ],
           "extra_config": {
             "qos/ratelimit/proxy": {
               "max_rate": 1,
@@ -155,15 +194,33 @@
       "extra_config": {
         "qos/ratelimit/router": {
           "max_rate": 2
+        },
+        "documentation/openapi": {
+          "summary": "Aggregates campaigns and products from the shop using different ratelimits",
+          "description": "This endpoint fetches the campaigns and products from the shop. The campaigns are fetched without ratelimit, but the products are fetched with a rate limit of 1 request per second. The endpoint itself has a rate limit of 2 requests per second.",
+          "tags": [
+            "Throttling and Acceleration"
+          ]
         }
       }
     },
     {
       "@comment": "Feature: Backend cache",
       "endpoint": "/market/cached",
+      "extra_config": {
+        "documentation/openapi": {
+          "summary": "Local cache for the crypto market information",
+          "description": "This endpoint caches the responses from the Coingecko API for the time returned in the Cache-Control header.",
+          "tags": [
+            "Throttling and Acceleration"
+          ]
+        }
+      },
       "backend": [
         {
-          "host": ["https://api.coingecko.com"],
+          "host": [
+            "https://api.coingecko.com"
+          ],
           "url_pattern": "/api/v3/coins/markets?vs_currency=eur&ids=bitcoin%2Cethereum&order=market_cap_desc&per_page=100&page=1&sparkline=false",
           "encoding": "safejson",
           "mapping": {
@@ -180,9 +237,20 @@
     {
       "@comment": "Feature: GraphQL to REST",
       "endpoint": "/starwars_films/{movie_id}",
+      "extra_config": {
+        "documentation/openapi": {
+          "summary": "Connect to a GraphQL server and fetch the film information",
+          "description": "This endpoint connects to a GraphQL server and offers the interaction as a regular REST endpoint.",
+          "tags": [
+            "Non-REST Connectivity"
+          ]
+        }
+      },
       "backend": [
         {
-          "host": ["https://swapi-graphql.netlify.app/"],
+          "host": [
+            "https://swapi-graphql.netlify.app/"
+          ],
           "url_pattern": "/.netlify/functions/index",
           "target": "data.film",
           "extra_config": {
@@ -198,11 +266,13 @@
       ]
     },
     {
-      "@comment": "Feature: Concurrent calls - Not enabled",
+      "@comment": "Feature: Concurrent calls - Initial example with no concurrent calls enabled (normal)",
       "endpoint": "/market/simple",
       "backend": [
         {
-          "host": ["https://api.coingecko.com"],
+          "host": [
+            "https://api.coingecko.com"
+          ],
           "url_pattern": "/api/v3/coins/markets?vs_currency=eur&ids=bitcoin%2Cethereum&order=market_cap_desc&per_page=100&page=1&sparkline=false",
           "encoding": "safejson",
           "mapping": {
@@ -212,21 +282,23 @@
       ],
       "extra_config": {
         "documentation/openapi": {
-          "summary": "Get crypto market information with a single call",
+          "summary": "Simple fetch of external data without concurrent calls enabled",
           "description": "This endpoint fetches crypto market information from Coingecko using a single non-concurrent call.",
           "tags": [
-            "Concurrent calls"
+            "Throttling and Acceleration"
           ]
         }
       }
     },
     {
-      "@comment": "Feature: Concurrent calls - Enabled",
+      "@comment": "Feature: Concurrent calls - Example with concurrent calls enabled (more speed, less errors)",
       "endpoint": "/market/concurrent",
       "concurrent_calls": 3,
       "backend": [
         {
-          "host": ["https://api.coingecko.com"],
+          "host": [
+            "https://api.coingecko.com"
+          ],
           "url_pattern": "/api/v3/coins/markets?vs_currency=eur&ids=bitcoin%2Cethereum&order=market_cap_desc&per_page=100&page=1&sparkline=false",
           "encoding": "safejson",
           "mapping": {
@@ -237,9 +309,9 @@
       "extra_config": {
         "documentation/openapi": {
           "summary": "Get crypto market information with 3 concurrent calls",
-          "description": "This endpoint fetches crypto market information from Coingecko using 3 concurrent calls.",
+          "description": "This endpoint fetches crypto market information from Coingecko using 3 concurrent calls. Returns the fastest successful response and discards the rest",
           "tags": [
-            "Concurrent calls"
+            "Throttling and Acceleration"
           ]
         }
       }
@@ -247,34 +319,60 @@
     {
       "@comment": "Feature: Sequential calls, using values from 1st call response into 2nd call request",
       "endpoint": "/sequential",
-      "backend": [
-        {
-          "host": ["http://fake_api"],
-          "url_pattern": "/hotels/1.json",
-          "allow": [ "destination_id" ]
-        },
-        {
-          "host": ["http://fake_api"],
-          "url_pattern": "/destinations/{resp0_destination_id}.json"
-        }
-      ],
       "extra_config": {
         "proxy": {
           "sequential": true
+        },
+        "documentation/openapi": {
+          "summary": "Get crypto market information with 3 concurrent calls",
+          "description": "This endpoint fetches crypto market information from Coingecko using 3 concurrent calls. Returns the fastest successful response and discards the rest",
+          "tags": [
+            "API composition"
+          ]
         }
-      }
+      },
+      "backend": [
+        {
+          "host": [
+            "http://fake_api"
+          ],
+          "url_pattern": "/hotels/1.json",
+          "allow": [
+            "destination_id"
+          ]
+        },
+        {
+          "host": [
+            "http://fake_api"
+          ],
+          "url_pattern": "/destinations/{resp0_destination_id}.json"
+        }
+      ]
     },
     {
       "@comment": "Feature: A failing request from a non-existent backend",
       "endpoint": "/fail",
+      "extra_config": {
+        "documentation/openapi": {
+          "summary": "Example of response with a failing backend",
+          "description": "This endpoint attempts to fetch data from a non-existent backend and returns the standard 500 status code",
+          "tags": [
+            "Error Handling"
+          ]
+        }
+      },
       "backend": [
         {
-          "host": ["http://fake_api"],
+          "host": [
+            "http://fake_api"
+          ],
           "url_pattern": "/user/1.json",
           "group": "user"
         },
         {
-          "host": [ "http://fake_url_that_should_not_resolve.tld" ],
+          "host": [
+            "http://fake_url_that_should_not_resolve.tld"
+          ],
           "url_pattern": "/",
           "group": "none"
         }
@@ -283,9 +381,20 @@
     {
       "@comment": "Feature: Expose a GET REST endpoint from POST to SOAP service",
       "endpoint": "/capital-of/{country}",
+      "extra_config": {
+        "documentation/openapi": {
+          "summary": "Interact with a SOAP server as a regular REST API",
+          "description": "This endpoint interacts with a SOAP server but offers a pure REST interface to the consumer",
+          "tags": [
+            "Non-REST Connectivity"
+          ]
+        }
+      },
       "backend": [
         {
-          "host": ["http://webservices.oorsprong.org"],
+          "host": [
+            "http://webservices.oorsprong.org"
+          ],
           "url_pattern": "/websamples.countryinfo/CountryInfoService.wso",
           "encoding": "xml",
           "method": "POST",
@@ -293,7 +402,9 @@
           "mapping": {
             "CapitalCityResult": "capital"
           },
-          "deny": ["-m"],
+          "deny": [
+            "-m"
+          ],
           "extra_config": {
             "backend/soap": {
               "@comment": "The XML template with variables is in the following path:",
@@ -308,7 +419,9 @@
       "endpoint": "/fake-api/*",
       "backend": [
         {
-          "host": ["http://fake_api"],
+          "host": [
+            "http://fake_api"
+          ],
           "url_pattern": "/"
         }
       ],
@@ -317,7 +430,7 @@
           "summary": "Calls to internal service with wildcard",
           "description": "This endpoint will send all requests to a designed backend including everything after the /fake-api path",
           "tags": [
-            "Wildcard"
+            "Routing"
           ]
         }
       }
@@ -329,7 +442,9 @@
       "output_encoding": "no-op",
       "backend": [
         {
-          "host": ["http://fake_api"],
+          "host": [
+            "http://fake_api"
+          ],
           "url_pattern": "/"
         }
       ],
@@ -340,7 +455,7 @@
           "summary": "Calls to internal service with wildcard, adding auth",
           "description": "This endpoint will send all requests to a designed backend including everything after the /fake-api-auth path, adding Basic Authentication",
           "tags": [
-            "Wildcard"
+            "Routing"
           ]
         }
       }
@@ -353,7 +468,9 @@
       ],
       "backend": [
         {
-          "host": ["http://fake_api"],
+          "host": [
+            "http://fake_api"
+          ],
           "url_pattern": "/"
         }
       ],
@@ -367,7 +484,7 @@
           "summary": "Calls to internal service with wildcard, using geofencing",
           "description": "This endpoint will send all requests to a designed backend including everything after the /fake-api-geofence path, adding geofencing (allowing calls only from Spain)",
           "tags": [
-            "Wildcard"
+            "Routing"
           ]
         }
       }
@@ -375,6 +492,15 @@
     {
       "@comment": "EE only feature: Dynamic routing based on headers (token claim and cookie also available)",
       "endpoint": "/dynamic/header",
+      "extra_config": {
+        "documentation/openapi": {
+          "summary": "Calls to internal service with wildcard, using geofencing",
+          "description": "This endpoint will send all requests to a designed backend including everything after the /fake-api-geofence path, adding geofencing (allowing calls only from Spain)",
+          "tags": [
+            "Routing"
+          ]
+        }
+      },
       "backend": [
         {
           "@comment": "We will route to the backend using the content of the 'X-Route' header",
@@ -386,10 +512,17 @@
     {
       "@comment": "EE only feature: Dynamic routing based on query strings",
       "endpoint": "/dynamic/qs",
+      "extra_config": {
+        "documentation/openapi": {
+          "summary": "Route to the backend using the content of the 'X-Route' header",
+          "description": "You can test this routing with the command curl -iG 'http://localhost:8080/dynamic/qs?route=hello'",
+          "tags": [
+            "Routing"
+          ]
+        }
+      },
       "backend": [
         {
-          "@comment": "We will route to the backend using the content of the 'X-Route' header",
-          "@test_with": "curl -iG 'http://localhost:8080/dynamic/qs?route=hello'",
           "url_pattern": "/__debug/{input_query_strings.route}"
         }
       ]
@@ -397,9 +530,20 @@
     {
       "@comment": "Feature: A public endpoint that requires no authentication",
       "endpoint": "/public",
+      "extra_config": {
+        "documentation/openapi": {
+          "summary": "Public endpoint",
+          "description": "This endpoint is public and requires no authentication",
+          "tags": [
+            "Authentication"
+          ]
+        }
+      },
       "backend": [
         {
-          "host": ["http://fake_api"],
+          "host": [
+            "http://fake_api"
+          ],
           "url_pattern": "/hotels/1.json"
         }
       ]
@@ -409,16 +553,23 @@
       "endpoint": "/private/auth0",
       "backend": [
         {
-          "host": ["http://fake_api"],
+          "host": [
+            "http://fake_api"
+          ],
           "url_pattern": "/user/1.json"
         }
       ],
       "extra_config": {
         "auth/validator": {
           "alg": "RS256",
-          "audience": ["http://api.example.com"],
+          "audience": [
+            "http://api.example.com"
+          ],
           "roles_key": "http://api.example.com/custom/roles",
-          "roles": ["user", "admin"],
+          "roles": [
+            "user",
+            "admin"
+          ],
           "jwk_url": "https://albert-test.auth0.com/.well-known/jwks.json"
         },
         "documentation/openapi": {
@@ -435,19 +586,33 @@
       "endpoint": "/private/custom",
       "backend": [
         {
-          "host": ["http://fake_api"],
+          "host": [
+            "http://fake_api"
+          ],
           "url_pattern": "/user/1.json"
         }
       ],
       "extra_config": {
         "auth/validator": {
           "alg": "HS256",
-          "audience": ["http://api.example.com"],
+          "audience": [
+            "http://api.example.com"
+          ],
           "roles_key": "roles",
           "issuer": "https://krakend.io",
-          "roles": ["role_a", "role_c"],
+          "roles": [
+            "role_a",
+            "role_c"
+          ],
           "jwk_local_path": "/opt/krakend/jwk-symmetric.json",
           "disable_jwk_security": true
+        },
+        "documentation/openapi": {
+          "summary": "Sign a token cryptographically (KrakenD JOSE signer)",
+          "description": "This endpoint uses the KrakenD JOSE signer to sign plain tokens coming from the backend and helpiong you to adopt cryptography easily",
+          "tags": [
+            "Authentication"
+          ]
         }
       }
     },
@@ -456,15 +621,27 @@
       "endpoint": "/token",
       "backend": [
         {
-          "host": ["http://fake_api"] ,
+          "host": [
+            "http://fake_api"
+          ],
           "url_pattern": "/token.json"
         }
       ],
       "extra_config": {
+        "documentation/openapi": {
+          "description": "This endpoint uses JWT signing",
+          "summary": "Some information behind JWT signing",
+          "tags": [
+            "Authentication"
+          ]
+        },
         "auth/signer": {
           "alg": "HS256",
           "kid": "sim2",
-          "keys_to_sign": ["access_token", "refresh_token"],
+          "keys_to_sign": [
+            "access_token",
+            "refresh_token"
+          ],
           "jwk_local_path": "/opt/krakend/jwk-symmetric.json",
           "disable_jwk_security": true
         }
@@ -483,7 +660,9 @@
       ],
       "extra_config": {
         "auth/api-keys": {
-          "roles": ["admin"]
+          "roles": [
+            "admin"
+          ]
         },
         "documentation/openapi": {
           "summary": "Some information behind API-Keys authentication protection",
@@ -502,14 +681,30 @@
         {
           "url_pattern": "/__debug/post"
         }
-      ]
+      ],
+      "extra_config": {
+        "documentation/openapi": {
+          "summary": "Only POST method allowed",
+          "description": "This endpoint only allows POST requests",
+          "tags": [
+            "Routing"
+          ]
+        }
+      }
     },
     {
       "@comment": "Feature: Mocked response",
       "endpoint": "/mocked-response",
       "method": "GET",
       "output_encoding": "json",
-      "backend": [{"host": ["http://unexistent_backend"], "url_pattern": "/"}],
+      "backend": [
+        {
+          "host": [
+            "http://unexistent_backend"
+          ],
+          "url_pattern": "/"
+        }
+      ],
       "extra_config": {
         "proxy": {
           "static": {
@@ -525,44 +720,67 @@
             },
             "strategy": "always"
           }
+        },
+        "documentation/openapi": {
+          "summary": "Mocked response",
+          "description": "This endpoint returns a mocked response when the backend is not available",
+          "tags": [
+            "Content Manipulation"
+          ]
         }
       }
     },
     {
       "@comment": "EE only feature: GRPC",
       "endpoint": "/travel",
-      "input_query_strings": ["lat", "lon"],
+      "extra_config": {
+        "documentation/openapi": {
+          "summary": "Find flights, trains and hotels",
+          "description": "This endpoint fetches flights, trains and hotels information from different backends",
+          "tags": [
+            "Non-REST Connectivity"
+          ]
+        }
+      },
+      "input_query_strings": [
+        "lat",
+        "lon"
+      ],
       "backend": [
         {
-          "host": ["grpc_flights:4242"],
+          "host": [
+            "grpc_flights:4242"
+          ],
           "group": "flights",
           "url_pattern": "/flight_finder.Flights/FindFlight",
           "extra_config": {
             "backend/grpc": {
-                "input_mapping" : {
-                    "lat": "where.latitude",
-                    "lon": "where.longitude"
-                }
+              "input_mapping": {
+                "lat": "where.latitude",
+                "lon": "where.longitude"
+              }
             }
           }
         },
         {
-          "host": ["grpc_trains:4243"],
+          "host": [
+            "grpc_trains:4243"
+          ],
           "group": "trains",
           "url_pattern": "/train_finder.Trains/FindTrains",
           "extra_config": {
             "backend/grpc": {
-                "input_mapping" : {
-                    "lat": "origin.position.latitude",
-                    "lon": "origin.position.longitude"
-                },
-                "response_naming_convention": "camelCase",
-                "output_enum_as_string": true,
-                "output_timestamp_as_string": true,
-                "output_duration_as_string": true,
-                "client_tls": {
-                    "allow_insecure_connections": true
-                }
+              "input_mapping": {
+                "lat": "origin.position.latitude",
+                "lon": "origin.position.longitude"
+              },
+              "response_naming_convention": "camelCase",
+              "output_enum_as_string": true,
+              "output_timestamp_as_string": true,
+              "output_duration_as_string": true,
+              "client_tls": {
+                "allow_insecure_connections": true
+              }
             }
           }
         },
@@ -571,16 +789,18 @@
           "url_pattern": "/hotels/1.json"
         },
         {
-          "host": ["grpc_trains:4243"],
+          "host": [
+            "grpc_trains:4243"
+          ],
           "group": "trains_classes",
           "url_pattern": "/train_finder.Trains/GetTrainClasses",
           "extra_config": {
             "backend/grpc": {
-                "response_naming_convention": "camelCase",
-                "output_remove_unset_values": true,
-                "client_tls": {
-                    "allow_insecure_connections": true
-                }
+              "response_naming_convention": "camelCase",
+              "output_remove_unset_values": true,
+              "client_tls": {
+                "allow_insecure_connections": true
+              }
             }
           }
         }
@@ -589,83 +809,132 @@
     {
       "@comment": "EE only feature: GRPC Payload in Body",
       "endpoint": "/travel_book_flight/{id_flight}/{main_passenger}",
+      "extra_config": {
+        "documentation/openapi": {
+          "summary": "Book a flight",
+          "description": "This endpoint books a flight using a GRPC backend",
+          "tags": [
+            "Non-REST Connectivity"
+          ]
+        }
+      },
       "method": "POST",
       "backend": [
         {
-          "host": ["grpc_flights:4242"],
+          "host": [
+            "grpc_flights:4242"
+          ],
           "group": "flights",
           "url_pattern": "/flight_finder.Flights/BookFlight",
           "extra_config": {
             "backend/grpc": {
-                "input_mapping": {
-                    "Id_flight": "flight_id",
-                    "Main_passenger": "main_passenger.full_name"
-                },
-                "use_request_body": true
+              "input_mapping": {
+                "Id_flight": "flight_id",
+                "Main_passenger": "main_passenger.full_name"
+              },
+              "use_request_body": true
             }
           }
         }
       ]
     },
     {
-        "@comment": "EE only feature: WebSockets (chat example)",
-        "endpoint": "/chat/ws/{room}",
-        "input_query_strings":[ "*" ],
-        "input_headers":[ "*" ],
-        "backend": [
-            {
-                "url_pattern": "/ws/{room}",
-                "disable_host_sanitize": true,
-                "host": [ "ws://chat:8888" ]
-            }
-        ],
-        "extra_config":{
-            "websocket": {
-                "input_headers":["Cookie", "Authorization"],
-                "connect_event": true,
-                "disconnect_event": true,
-                "read_buffer_size": 4096,
-                "write_buffer_size": 4096,
-                "message_buffer_size": 4096,
-                "max_message_size": 3200000,
-                "write_wait": "10s",
-                "pong_wait": "60s",
-                "ping_period": "54s",
-                "max_retries": 0,
-                "backoff_strategy": "exponential"
-            }
+      "@comment": "EE only feature: WebSockets (chat example)",
+      "endpoint": "/chat/ws/{room}",
+      "input_query_strings": [
+        "*"
+      ],
+      "input_headers": [
+        "*"
+      ],
+      "backend": [
+        {
+          "url_pattern": "/ws/{room}",
+          "disable_host_sanitize": true,
+          "host": [
+            "ws://chat:8888"
+          ]
         }
+      ],
+      "extra_config": {
+        "websocket": {
+          "input_headers": [
+            "Cookie",
+            "Authorization"
+          ],
+          "connect_event": true,
+          "disconnect_event": true,
+          "read_buffer_size": 4096,
+          "write_buffer_size": 4096,
+          "message_buffer_size": 4096,
+          "max_message_size": 3200000,
+          "write_wait": "10s",
+          "pong_wait": "60s",
+          "ping_period": "54s",
+          "max_retries": 0,
+          "backoff_strategy": "exponential"
+        },
+        "documentation/openapi": {
+          "summary": "Chat room using WebSockets",
+          "description": "This endpoint connects to a chat server using WebSockets",
+          "tags": [
+            "Non-REST Connectivity"
+          ]
+        }
+      }
     },
     {
-        "@comment": "EE only feature: WebSockets (chat example web interface)",
-        "endpoint": "/chat",
-        "output_encoding": "no-op",
-        "backend":[
-            {
-                "url_pattern":"/",
-                "host": [ "http://chat:8888" ],
-                "encoding":"no-op"
-            }
-        ]
+      "@comment": "EE only feature: WebSockets (chat example web interface)",
+      "endpoint": "/chat",
+      "extra_config": {
+        "documentation/openapi": {
+          "summary": "Chat room User Interface",
+          "description": "This endpoint offers a web interface to present a chat room",
+          "tags": [
+            "Non-REST Connectivity"
+          ]
+        }
+      },
+      "output_encoding": "no-op",
+      "backend": [
+        {
+          "url_pattern": "/",
+          "host": [
+            "http://chat:8888"
+          ],
+          "encoding": "no-op"
+        }
+      ]
     },
     {
       "@comment": "EE only feature: Web Server - Static content",
       "endpoint": "/demo/*",
       "output_encoding": "no-op",
-      "backend":[
-          {
-              "url_pattern":"/",
-              "extra_config": {
-                "backend/static-filesystem": {
-                  "directory_listing": false,
-                  "path": "./demo/"
-                }
-              },
-              "host": [ "http://localhost:8080" ],
-              "encoding":"no-op"
-          }
-      ]
-  }
+      "backend": [
+        {
+          "url_pattern": "/",
+          "extra_config": {
+            "backend/static-filesystem": {
+              "directory_listing": false,
+              "path": "./demo/"
+            }
+          },
+          "host": [
+            "http://localhost:8080"
+          ],
+          "encoding": "no-op"
+        }
+      ],
+      "extra_config": {
+        "documentation/openapi": {
+          "summary": "Serve static content",
+          "description": "This endpoint serves static content from the demo folder",
+          "tags": [
+            "Non-REST Connectivity"
+          ]
+        }
+      }
+    }
   ],
   "sequential_start": true,
   "async_agent": [
@@ -673,7 +942,9 @@
       "name": "async-agent-demo",
       "backend": [
         {
-          "host":[ "http://127.0.0.1:8080" ],
+          "host": [
+            "http://127.0.0.1:8080"
+          ],
           "url_pattern": "/__debug/async-agent-demo",
           "method": "POST"
         }
@@ -699,44 +970,46 @@
   ],
   "extra_config": {
     "grpc": {
-        "catalog": [
-            "./grpc_catalog"
-        ],
-        "server": {
-            "services": [
-                {
-                    "name": "flight_finder.Flights",
-                    "methods": [
-                        {
-                            "name": "FindFlight",
-                            "input_headers": [
-                                "x-my-custom-header"
-                            ],
-                            "payload_params": {
-                                "page.cursor": "cursor"
-                            },
-                            "backend": [
-                                {
-                                    "host": [ "http://localhost:8080" ],
-                                    "url_pattern": "/__debug/{cursor}/"
-                                },
-                                {
-                                  "host": [
-                                    "grpc_flights:4242"
-                                  ],
-                                  "url_pattern": "/flight_finder.Flights/FindFlight",
-                                  "extra_config": {
-                                    "backend/grpc": {
-                                      "use_request_body": true
-                                    }
-                                  }
-                                }
-                            ]
-                        }
-                    ]
-                }
+      "catalog": [
+        "./grpc_catalog"
+      ],
+      "server": {
+        "services": [
+          {
+            "name": "flight_finder.Flights",
+            "methods": [
+              {
+                "name": "FindFlight",
+                "input_headers": [
+                  "x-my-custom-header"
+                ],
+                "payload_params": {
+                  "page.cursor": "cursor"
+                },
+                "backend": [
+                  {
+                    "host": [
+                      "http://localhost:8080"
+                    ],
+                    "url_pattern": "/__debug/{cursor}/"
+                  },
+                  {
+                    "host": [
+                      "grpc_flights:4242"
+                    ],
+                    "url_pattern": "/flight_finder.Flights/FindFlight",
+                    "extra_config": {
+                      "backend/grpc": {
+                        "use_request_body": true
+                      }
+                    }
+                  }
+                ]
+              }
             ]
-        }
+          }
+        ]
+      }
     },
     "router": {
       "return_error_msg": true,
@@ -861,27 +1134,38 @@
       "enable_tcp": false
     },
     "security/cors": {
-      "allow_origins": ["*"],
-      "allow_methods": ["POST", "GET"],
-      "allow_headers": ["Origin", "Authorization", "Content-Type"],
-      "expose_headers": ["Content-Length"],
+      "allow_origins": [
+        "*"
+      ],
+      "allow_methods": [
+        "POST",
+        "GET"
+      ],
+      "allow_headers": [
+        "Origin",
+        "Authorization",
+        "Content-Type"
+      ],
+      "expose_headers": [
+        "Content-Length"
+      ],
       "max_age": "12h"
     },
     "auth/revoker": {
-            "@comment": "The values in this section must match the ones used in the revoker.json file",
-            "hash_name": "optimal",
-            "N": 10000000,
-            "P": 1e-7,
-            "port": 1234,
-            "token_keys": [
-                "jti","sub"
-            ],
-            "TTL": 1500,
-            "revoke_server_ping_url": "http://revoker:8081/instances",
-            "revoke_server_ping_interval": "30s",
-            "revoke_server_api_key": "639ee23f-f4c5-40c4-855c-912bf01fae87",
-            "revoke_server_max_workers":5
-        }
-
+      "@comment": "The values in this section must match the ones used in the revoker.json file",
+      "hash_name": "optimal",
+      "N": 10000000,
+      "P": 1e-7,
+      "port": 1234,
+      "token_keys": [
+        "jti",
+        "sub"
+      ],
+      "TTL": 1500,
+      "revoke_server_ping_url": "http://revoker:8081/instances",
+      "revoke_server_ping_interval": "30s",
+      "revoke_server_api_key": "639ee23f-f4c5-40c4-855c-912bf01fae87",
+      "revoke_server_max_workers": 5
+    }
   }
 }

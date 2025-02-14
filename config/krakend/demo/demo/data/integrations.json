@@ -6,7 +6,6 @@
       "description": [
         "Jaeger collects traces and shows the complete funnel from user request to the impact in the backend"
       ],
-      "url": "http://localhost:16686/search",
       "iconUrl": "/demo/demo/images/icons/jaegertracingio.svg",
       "slug": "tracing-dashboard",
       "license": [
@@ -20,7 +19,6 @@
       "description": [
         "Kibana stores KrakenD logs and allows analysis"
       ],
-      "url": "http://localhost:5601/app/home#/",
       "iconUrl": "/demo/demo/images/icons/kibana.svg",
       "slug": "logging",
       "license": [
@@ -34,7 +32,6 @@
       "description": [
         "Grafana Monitoring shows the usage of KrakenD and reveals low-level metrics."
       ],
-      "url": "http://localhost:4000",
       "iconUrl": "/demo/demo/images/icons/grafana.svg",
       "slug": "monitoring-and-metrics",
       "license": [
@@ -46,14 +43,12 @@
       "name": "OpenAPI",
       "title": "Documentation",
       "description": [
-        "OpenAPI/Swagger documentation can be generated with <code>krakend generate openapi</code>"
+        "Create automatically OpenAPI documentation with <code>krakend openapi export</code>, or create the gateway configuration from an existing OpenAPI file with <code>krakend openapi import</code>."
       ],
-      "url": "http://localhost:16686/search",
       "command": "docker-compose exec krakend_ee krakend openapi export -c /etc/krakend/krakend.json -o /etc/krakend/demo/swagger.json",
       "iconUrl": "/demo/demo/images/icons/openapis.svg",
       "slug": "documentation",
       "license": [
-        "open-source",
         "enterprise"
       ]
     },
@@ -61,14 +56,12 @@
       "name": "Postman",
       "title": "Postman",
       "description": [
-        "OpenAPI/Swagger documentation can be generated with <code>krakend generate openapi</code>"
+        "Generate Postman collections to use the gateway endpoints with <code>krakend generate postman</code>"
       ],
-      "url": "http://localhost:16686/search",
       "command": "docker-compose exec krakend_ee krakend generate postman -c /etc/krakend/krakend.json -o /etc/krakend/demo/postman.json",
       "iconUrl": "/demo/demo/images/icons/postman.svg",
       "slug": "postman",
       "license": [
-        "open-source",
         "enterprise"
       ]
     },
@@ -78,24 +71,8 @@
       "description": [
         "Keycloak and many other identity providers can be integrated with KrakenD."
       ],
-      "url": "",
       "iconUrl": "/demo/demo/images/icons/keyclock.svg",
       "slug": "identity-providers",
-      "license": [
-        "open-source",
-        "enterprise"
-      ]
-    },
-    {
-      "name": "API-Key authentication",
-      "title": "API-Key authentication",
-      "description": [
-        "The API key authentication enables a Role-Based Access Control (RBAC) mechanism by reading the Authorization header of incoming requests."
-      ],
-      "url": "http://localhost:16686/search",
-      "command": "curl -iG -H 'Authorization: Bearer 58427514-be32-0b52-b7c6-d01fada30497' http://localhost:8080/api-key",
-      "iconUrl": "/demo/demo/images/icons/apikey.png",
-      "slug": "api-key-authentication",
       "license": [
         "open-source",
         "enterprise"

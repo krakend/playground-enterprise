@@ -138,7 +138,7 @@ Fire up your browser, curl, postman, httpie, or anything else you like to intera
 - Demo static website: [http://localhost:8080/demo/](http://localhost:8080/demo/)
 - Jaeger (tracing): [http://localhost:16686](http://localhost:16686)
 - Kibana (logs): [http://localhost:5601](http://localhost:5601)
-- Grafana (metrics): [http://localhost:4000](http://localhost:4000)
+- Grafana (metrics): [http://localhost:4000](http://localhost:4000) (krakend/krakend)
 - Sample SPA for auth: [http://localhost:3000](http://localhost:3000)
 - JWT revoker: [http://localhost:9000](http://localhost:9000)
 
@@ -182,7 +182,7 @@ You will find more examples with comments in `config/krakend/krakend.json`
 ## Integration tests
 You can run the integration tests defined under the folder `config/krakend/specs/` by executing the following once the server is ready:
 
-    $ docker-compose run krakend e2e
+    $ docker compose run krakend e2e
 
 To add more tests, add more files in the folder following the syntax of the existing files.
 
