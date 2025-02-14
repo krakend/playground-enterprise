@@ -350,35 +350,6 @@
       ]
     },
     {
-      "@comment": "Feature: A failing request from a non-existent backend",
-      "endpoint": "/fail",
-      "extra_config": {
-        "documentation/openapi": {
-          "summary": "Example of response with a failing backend",
-          "description": "This endpoint attempts to fetch data from a non-existent backend and returns the standard 500 status code",
-          "tags": [
-            "Error Handling"
-          ]
-        }
-      },
-      "backend": [
-        {
-          "host": [
-            "http://fake_api"
-          ],
-          "url_pattern": "/user/1.json",
-          "group": "user"
-        },
-        {
-          "host": [
-            "http://fake_url_that_should_not_resolve.tld"
-          ],
-          "url_pattern": "/",
-          "group": "none"
-        }
-      ]
-    },
-    {
       "@comment": "Feature: Expose a GET REST endpoint from POST to SOAP service",
       "endpoint": "/capital-of/{country}",
       "extra_config": {
