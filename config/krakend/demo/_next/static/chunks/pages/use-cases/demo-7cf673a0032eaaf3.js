@@ -1765,7 +1765,7 @@ const Header = ()=>{
                                 children: [
                                     /*#__PURE__*/ (0,jsx_runtime.jsx)("li", {
                                         children: /*#__PURE__*/ (0,jsx_runtime.jsxs)((link_default()), {
-                                            href: "https://www.krakend.io/docs/",
+                                            href: "https://www.krakend.io/docs/enterprise/",
                                             className: "font-medium text-base hover:underline flex items-end gap-2.5",
                                             target: "_blank",
                                             rel: "noopener",
