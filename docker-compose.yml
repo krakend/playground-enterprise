@@ -97,7 +97,7 @@ services:
     command: httpd -f -h /var/www/
   web:
     build:
-      context: images/spa-auth-web
+      context: images/demo-app
     ports:
       - "3000:3000"
   revoker:
@@ -123,3 +123,13 @@ services:
       context: images/websocket/chat
     ports:
       - "4245:8888"
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.0
+    ports:
+      - "8085:8080"
+    volumes:
+      - ./config/keycloak/realms:/opt/keycloak/data/import
+    environment:
+      - KEYCLOAK_ADMIN=admin
+      - KEYCLOAK_ADMIN_PASSWORD=admin
+    command: ["start-dev", "--import-realm"]
