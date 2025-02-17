@@ -138,7 +138,7 @@ Fire up your browser, curl, postman, httpie, or anything else you like to intera
 - Demo static website: [http://localhost:8080/demo/](http://localhost:8080/demo/)
 - Jaeger (tracing): [http://localhost:16686](http://localhost:16686)
 - Kibana (logs): [http://localhost:5601](http://localhost:5601)
-- Grafana (metrics): [http://localhost:4000](http://localhost:4000)
+- Grafana (metrics): [http://localhost:4000](http://localhost:4000) (krakend/krakend)
 - Sample SPA for auth: [http://localhost:3000](http://localhost:3000)
 - JWT revoker: [http://localhost:9000](http://localhost:9000)
 
@@ -169,7 +169,6 @@ The following endpoints are worth noticing:
 | Caching backend responses                               | [`/market/cached`](http://localhost:8080/market/cached)                       | Caching a backend response (based on cache headers provided by the backend)                                                                                                                                                                                                                                                          |
 | Concurrent requests                                     | [`/market/concurrent`](http://localhost:8080/market/concurrent)               | Using [concurrent requests](https://www.krakend.io/docs/endpoints/concurrent-requests/) to gather data from Coingecko API                                                                                                                                                                                                            |
 | Sequential calls                                        | [`/sequential`](http://localhost:8080/sequential)                             | Using [sequential proxy](https://www.krakend.io/docs/endpoints/sequential-proxy/) to build a pipe of sequential calls, using values from 1st call response into 2nd call request                                                                                                                                                     |
-| An aggregated requests with a failing backend           | [`/fail`](http://localhost:8080/fail)                                         | An example of how the `X-KrakenD-complete` header works when a backend fails on an aggregated response                                                                                                                                                                                                                               |
 | Convert a legacy SOAP XML into REST JSON                | [`/capital-of/{country-code}`](http://localhost:8080/capital-of/US)           | Convert the XML returned by a SOAP service that requires a POST of an XML body and answers with a complex XML into a GET REST endpoint answering with a simple JSON                                                                                                                                                                  |
 | Wildcards                                               | [`/fake-api/*`](http://localhost:8080/fake-api/user/1.json)                   | Expose all sub-paths under a common location using a single endpoint definition                                                                                                                                                                                                                                                      |
 | Basic authentication                                    | [`/fake-api-auth/*`](http://localhost:8080/fake-api-auth/user/1.json)         | Expose information from internal service at fake API using wildcard and adding Basic Authentication                                                                                                                                                                                                                                  |
@@ -182,7 +181,7 @@ You will find more examples with comments in `config/krakend/krakend.json`
 ## Integration tests
 You can run the integration tests defined under the folder `config/krakend/specs/` by executing the following once the server is ready:
 
-    $ docker-compose run krakend e2e
+    $ docker compose run krakend e2e
 
 To add more tests, add more files in the folder following the syntax of the existing files.
 
