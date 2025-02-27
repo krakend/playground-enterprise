@@ -84,25 +84,6 @@ curl -iH'Authorization: bearer 639ee23f-f4c5-40c4-855c-912bf01fae87'  http://loc
 ### WebSockets
 A WebSocket server runs on [ws://localhost:8888](ws://localhost:8888), but you can access it through KrakenD on the page [http://localhost:8080/chat](http://localhost:8080/chat)
 
-### gRPC services
-Two microservices with gRPC are available for testing too:
-
- - A Flights service on gRPC port `4242`
- - A Trains service on gRPC port `4243`
-
-Their contracts are under `images/grpc/contracts`.
-
-You can either:
-- Convert gRPC to HTTP under [http://localhost:8080/travel](http://localhost:8080/travel)
-- Or consume gRPC directly from KrakenD:
-
-```
-cd clients/grpc
-./make_grpc_calls.sh
-# Requires having grpcurl locally
-# go install github.com/fullstorydev/grpcurl/cmd/grpcurl@latest
-```
-
 ## Start the service
 
 ### Only if you want to try the Auth0 integration...
@@ -164,7 +145,6 @@ The following endpoints are worth noticing:
 | Dynamic routing based on Headers                        | [`/dynamic/header`](http://localhost:8080/dynamic/header)                     | Use information coming in the headers to dynamically route your request to internal service. You can use `curl -iG -H 'X-Route: hello' 'http://localhost:8080/dynamic/header'` to test it.                                                                                                                                           |
 | GraphQL to REST transformation                          | [`/starwars_films/{movie_id}`](http://localhost:8080/starwars_films/1)        | Transforming a GraphQL query into a regular REST API endpoint                                                                                                                                                                                                                                                                        |
 | Applying Security Policies                              | [`/track-user`](http://localhost:8080/track-user)                             | Enforce security policies at your discretion for any request. You can use `curl -iG -H'Cookie: GDPR=yes' 'http://localhost:8080/track-user'` to test it.                                                                                                                                                                             |
-| Request to gRPC backends                                | [`/travel`](http://localhost:8080/travel?lat=1.2&lon=3.4)                     | Aggregates flights and trains data from two different gRPC services.                                                                                                                                                                                                                                                                 |
 | Connection to WebSockets                                | [`/chat/ws/{room}`](ws://localhost:8080/chat/ws/foo)                          | Example WebSockets implementation to illustrate WS connectivity. The WS service will broadcast received messages to all connected users in the chat. Use the [Chat UI](http://localhost:8080/chat) to test how it works.                                                                                                             |
 | Caching backend responses                               | [`/market/cached`](http://localhost:8080/market/cached)                       | Caching a backend response (based on cache headers provided by the backend)                                                                                                                                                                                                                                                          |
 | Concurrent requests                                     | [`/market/concurrent`](http://localhost:8080/market/concurrent)               | Using [concurrent requests](https://www.krakend.io/docs/endpoints/concurrent-requests/) to gather data from Coingecko API                                                                                                                                                                                                            |
