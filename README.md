@@ -17,7 +17,7 @@ As KrakenD is an API gateway, we have added surrounding services:
 - Static assets to test them by KrakenD Static Server based on disk content
 - Integrations with Grafana+Prometheus (metrics), ELK (log storing and visualization), Jaeger (tracing), and RabbitMQ (for async agents).
 
-![KrakenD Docker compose](assets/composer-env.png)
+![KrakenD Docker compose](config/krakend/demo/demo/images/diagram/hero-playground-diagram-new.png)
 
 ## Installation
 Clone this repository:
