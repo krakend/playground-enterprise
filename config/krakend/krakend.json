@@ -500,6 +500,7 @@
     },
     {
       "@comment": "Feature: A public endpoint that requires no authentication",
+      "cache_ttl": "1s",
       "endpoint": "/public",
       "extra_config": {
         "documentation/openapi": {
@@ -520,8 +521,9 @@
       ]
     },
     {
-      "@comment": "Feature: Authorization based on JWT (using Auth0)",
-      "endpoint": "/private/auth0",
+      "@comment": "Feature: Authorization based on JWT (using Keycloak)",
+      "endpoint": "/private/moderate",
+      "cache_ttl": "1s",
       "backend": [
         {
           "host": [
@@ -534,18 +536,19 @@
         "auth/validator": {
           "alg": "RS256",
           "audience": [
-            "http://api.example.com"
+            "playground"
           ],
-          "roles_key": "http://api.example.com/custom/roles",
+          "roles_key_is_nested": true,
+          "roles_key": "realm_access.roles",
           "roles": [
-            "user",
-            "admin"
+            "moderator"
           ],
-          "jwk_url": "https://albert-test.auth0.com/.well-known/jwks.json"
+          "jwk_url": "http://keycloak:8080/realms/krakend/protocol/openid-connect/certs",
+          "disable_jwk_security": true
         },
         "documentation/openapi": {
-          "summary": "Some information behind JWT authentication protection (Auth0)",
-          "description": "This endpoint uses JWT authentication with Auth0",
+          "summary": "Some information behind JWT authentication protection (Keycloak)",
+          "description": "This endpoint uses JWT authentication with Keycloak",
           "tags": [
             "Authentication"
           ]
