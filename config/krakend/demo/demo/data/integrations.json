@@ -67,7 +67,7 @@
     },
     {
       "name": "Keycloak",
-      "title": "Identity Providers",
+      "title": "Keycloak",
       "description": [
         "Keycloak and many other identity providers can be integrated with KrakenD."
       ],
