@@ -101,7 +101,7 @@
     </svg>
         by KrakenD team</p>
     <p>
-        <a href="https://www.krakend.io/" target="_blank" class="hover:underline">Website</a> | <a href="https://www.krakend.io/docs/" target="_blank" class="hover:underline">Docs</a> | <a href="https://github.com/krakend/playground-community" target="_blank" class="hover:underline">Playground community</a>
+        <a href="https://www.krakend.io/" target="_blank" class="hover:underline">krakend.io</a> | <a href="https://www.krakend.io/docs/enterprise/websockets/" target="_blank" class="hover:underline">WebSockets Docs</a> | <a href="https://www.krakend.io/contact-sales/" target="_blank" class="hover:underline">Contact with sales</a>
     </p>
 </footer>
 
@@ -176,24 +176,24 @@
     ws.onmessage = function(msg) {
         var timestamp = now();
         var messageText = msg.data;
-        
+
         // Create safe DOM elements instead of using innerHTML
         var messageContainer = document.createElement('div');
-        
+
         // Create timestamp element
         var timestampSpan = document.createElement('span');
         timestampSpan.className = "text-gray-400";
         timestampSpan.textContent = `[${timestamp}]`;
         messageContainer.appendChild(timestampSpan);
         messageContainer.appendChild(document.createTextNode(' '));
-        
+
         // Check if message contains a username format <Username>
         var usernameMatch = messageText.match(/^<([^>]+)>\s(.*)/);
         if (usernameMatch) {
             // Format with username highlighted
             var username = usernameMatch[1];
             var content = usernameMatch[2];
-            
+
             // Add username element
             var usernameSpan = document.createElement('span');
             usernameSpan.className = "text-blue-400";
@@ -204,7 +204,7 @@
             // System message or non-standard format
             messageContainer.appendChild(document.createTextNode(messageText));
         }
-        
+
         // Add the new line
         chat.appendChild(messageContainer);
         chat.appendChild(document.createTextNode('\n'));
@@ -220,17 +220,17 @@
 
     function appendMessage(sender, message) {
         var timestamp = now();
-        
+
         // Create safe DOM elements instead of using innerHTML
         var messageContainer = document.createElement('div');
-        
+
         // Create timestamp element
         var timestampSpan = document.createElement('span');
         timestampSpan.className = "text-gray-400";
         timestampSpan.textContent = `[${timestamp}]`;
         messageContainer.appendChild(timestampSpan);
         messageContainer.appendChild(document.createTextNode(' '));
-        
+
         if (sender) {
             // Add sender element
             var senderSpan = document.createElement('span');
@@ -242,7 +242,7 @@
             // Just the message
             messageContainer.appendChild(document.createTextNode(message));
         }
-        
+
         // Add the new line
         chat.appendChild(messageContainer);
         chat.appendChild(document.createTextNode('\n'));

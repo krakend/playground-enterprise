@@ -140,7 +140,7 @@ Fire up your browser, curl, postman, httpie, or anything else you like to intera
 - Jaeger (tracing): [http://localhost:16686](http://localhost:16686)
 - Kibana (logs): [http://localhost:5601](http://localhost:5601)
 - Grafana (metrics): [http://localhost:4000](http://localhost:4000) (krakend/krakend)
-- Sample SPA for auth: [http://localhost:3000](http://localhost:3000)
+- Sample SPA for auth: [http://localhost:8080/auth/](http://localhost:8080/auth/)
 - JWT revoker: [http://localhost:9000](http://localhost:9000)
 - Keycloak (IdP): [http://localhost:8085](http://localhost:8085)
 
