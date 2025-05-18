@@ -109,24 +109,29 @@
     var room = 'foo'
     if(window.location.search.length > 0) {
         // select the room with the room query param
-        var qParams = window.location.search.substr(1);
-        qParams.split('&').forEach((x) => {
-            let kv = x.split('=');
-            if(kv.length == 2 && kv[0] == 'room' && kv[1].length > 0) {
-                room = kv[1];
+        try {
+            // Use URLSearchParams for safer URL parameter handling
+            const urlParams = new URLSearchParams(window.location.search);
+            const roomParam = urlParams.get('room');
+            if(roomParam && roomParam.trim().length > 0) {
+                // Apply length restriction as additional security measure
+                room = roomParam.trim().substring(0, 50); // Limit to 50 chars
             }
-        });
+        } catch (e) {
+            console.error("Error parsing URL parameters:", e);
+        }
     }
 
-    // Update room display
-    document.getElementById("id_roomname").innerHTML = room;
-    document.getElementById("room_display").innerHTML = room;
+    // Update room display - using textContent instead of innerHTML for security
+    document.getElementById("id_roomname").textContent = room;
+    document.getElementById("room_display").textContent = room;
 
     // Create join another room link
     document.getElementById("roomlink").addEventListener('click', function() {
         let newRoom = prompt("Enter a room name to join:", room);
         if(newRoom && newRoom.trim() !== '') {
-            window.location.href = `?room=${newRoom.trim()}`;
+            // Use encodeURIComponent to safely encode parameters in URLs
+            window.location.href = `?room=${encodeURIComponent(newRoom.trim())}`;
         }
     });
 
@@ -135,7 +140,8 @@
     if(!url.endsWith('/')) {
         url = url + '/';
     }
-    url = url + 'ws/' + room;
+    // Use encodeURIComponent to safely encode the room parameter
+    url = url + 'ws/' + encodeURIComponent(room);
 
     var ws = new WebSocket(url);
     var name = "Guest" + Math.floor(Math.random() * 1000);
@@ -171,18 +177,37 @@
         var timestamp = now();
         var messageText = msg.data;
         
+        // Create safe DOM elements instead of using innerHTML
+        var messageContainer = document.createElement('div');
+        
+        // Create timestamp element
+        var timestampSpan = document.createElement('span');
+        timestampSpan.className = "text-gray-400";
+        timestampSpan.textContent = `[${timestamp}]`;
+        messageContainer.appendChild(timestampSpan);
+        messageContainer.appendChild(document.createTextNode(' '));
+        
         // Check if message contains a username format <Username>
         var usernameMatch = messageText.match(/^<([^>]+)>\s(.*)/);
         if (usernameMatch) {
             // Format with username highlighted
             var username = usernameMatch[1];
             var content = usernameMatch[2];
-            var formattedMessage = `<span class="text-gray-400">[${timestamp}]</span> <span class="text-blue-400">${username}:</span> ${content}`;
-            chat.innerHTML += formattedMessage + "\n";
+            
+            // Add username element
+            var usernameSpan = document.createElement('span');
+            usernameSpan.className = "text-blue-400";
+            usernameSpan.textContent = `${username}:`;
+            messageContainer.appendChild(usernameSpan);
+            messageContainer.appendChild(document.createTextNode(' ' + content));
         } else {
             // System message or non-standard format
-            chat.innerHTML += `<span class="text-gray-400">[${timestamp}]</span> ${messageText}\n`;
+            messageContainer.appendChild(document.createTextNode(messageText));
         }
+        
+        // Add the new line
+        chat.appendChild(messageContainer);
+        chat.appendChild(document.createTextNode('\n'));
         chat.scrollTop = chat.scrollHeight;
     };
 
@@ -195,11 +220,32 @@
 
     function appendMessage(sender, message) {
         var timestamp = now();
-        var formattedMessage = sender ? 
-            `<span class="text-gray-400">[${timestamp}]</span> <span class="text-blue-400">${sender}:</span> ${message}` : 
-            `<span class="text-gray-400">[${timestamp}]</span> ${message}`;
         
-        chat.innerHTML += formattedMessage + "\n";
+        // Create safe DOM elements instead of using innerHTML
+        var messageContainer = document.createElement('div');
+        
+        // Create timestamp element
+        var timestampSpan = document.createElement('span');
+        timestampSpan.className = "text-gray-400";
+        timestampSpan.textContent = `[${timestamp}]`;
+        messageContainer.appendChild(timestampSpan);
+        messageContainer.appendChild(document.createTextNode(' '));
+        
+        if (sender) {
+            // Add sender element
+            var senderSpan = document.createElement('span');
+            senderSpan.className = "text-blue-400";
+            senderSpan.textContent = `${sender}:`;
+            messageContainer.appendChild(senderSpan);
+            messageContainer.appendChild(document.createTextNode(' ' + message));
+        } else {
+            // Just the message
+            messageContainer.appendChild(document.createTextNode(message));
+        }
+        
+        // Add the new line
+        chat.appendChild(messageContainer);
+        chat.appendChild(document.createTextNode('\n'));
         chat.scrollTop = chat.scrollHeight;
     }
 </script>
