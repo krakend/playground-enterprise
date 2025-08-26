@@ -7,7 +7,7 @@ import "lib/time_range.proto";
 
 package flight_finder;
 
-option go_package = "github.com/krakendio/playground-enterprise/images/grpc/genlib/flights";
+option go_package = "github.com/krakend/playground-enterprise/images/grpc/genlib/flights";
 
 service Flights {
     rpc FindFlight(FindFlightRequest) returns (FindFlightResponse) {}

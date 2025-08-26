@@ -1,4 +1,4 @@
-module github.com/krakendio/playground-enterprise/images/grpc/genlib
+module github.com/krakend/playground-enterprise/images/grpc/genlib
 
 go 1.20
 

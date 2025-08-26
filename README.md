@@ -22,7 +22,7 @@ As KrakenD is an API gateway, we have added surrounding services:
 ## Installation
 Clone this repository:
 
-    git clone git@github.com:krakendio/playground-enterprise.git
+    git clone git@github.com:krakend/playground-enterprise.git
 
 ## Demo video
 Click to play on Youtube (with subtitles)
@@ -220,4 +220,4 @@ If you have any questions or doubts, you can find our support resources at [http
 
 ---
 
-_Note: if you're looking for the KrakenD Community Edition Playground, you'll find it here: https://github.com/krakendio/krakend-playground_
+_Note: if you're looking for the KrakenD Community Edition Playground, you'll find it here: https://github.com/krakend/krakend-playground_
