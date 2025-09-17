@@ -4,7 +4,7 @@ import "google/protobuf/timestamp.proto";
 
 package krakend_playground;
 
-option go_package = "github.com/krakendio/playground-enterprise/images/grpc/genlib/lib";
+option go_package = "github.com/krakend/playground-enterprise/images/grpc/genlib/lib";
 
 message TimeRange {
     google.protobuf.Timestamp start = 1;

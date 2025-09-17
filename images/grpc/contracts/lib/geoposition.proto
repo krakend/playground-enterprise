@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package krakend_playground;
 
-option go_package = "github.com/krakendio/playground-enterprise/images/grpc/genlib/lib";
+option go_package = "github.com/krakend/playground-enterprise/images/grpc/genlib/lib";
 
 message GeoPosition {
     float latitude = 1;

@@ -7,7 +7,7 @@ import "lib/location.proto";
 
 package train_finder;
 
-option go_package = "github.com/krakendio/playground-enterprise/images/grpc/genlib/trains";
+option go_package = "github.com/krakend/playground-enterprise/images/grpc/genlib/trains";
 
 service Trains {
     rpc FindTrains(FindTrainRequest) returns (FindTrainResponse) {}
