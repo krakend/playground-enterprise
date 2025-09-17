@@ -71,7 +71,15 @@
             "https://api.coingecko.com"
           ],
           "url_pattern": "/api/v3/coins/markets?vs_currency={currency}&order=market_cap_desc&per_page=100&page=1&sparkline=false",
-          "encoding": "safejson"
+          "encoding": "safejson",
+          "extra_config": {
+            "modifier/martian": {
+              "header.Blacklist": {
+                "scope": ["request"],
+                "names": ["X-Forwarded-Host"]
+              }
+            }
+          }
         }
       ],
       "extra_config": {
@@ -229,6 +237,12 @@
           "extra_config": {
             "qos/http-cache": {
               "shared": true
+            },
+            "modifier/martian": {
+              "header.Blacklist": {
+                "scope": ["request"],
+                "names": ["X-Forwarded-Host"]
+              }
             }
           }
         }
@@ -277,6 +291,14 @@
           "encoding": "safejson",
           "mapping": {
             "collection": "coins"
+          },
+          "extra_config": {
+            "modifier/martian": {
+              "header.Blacklist": {
+                "scope": ["request"],
+                "names": ["X-Forwarded-Host"]
+              }
+            }
           }
         }
       ],
@@ -303,6 +325,14 @@
           "encoding": "safejson",
           "mapping": {
             "collection": "coins"
+          },
+          "extra_config": {
+            "modifier/martian": {
+              "header.Blacklist": {
+                "scope": ["request"],
+                "names": ["X-Forwarded-Host"]
+              }
+            }
           }
         }
       ],
