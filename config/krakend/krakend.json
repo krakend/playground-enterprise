@@ -551,6 +551,25 @@
       ]
     },
     {
+      "@comment": "Feature: Authentication and authorization",
+      "endpoint": "/auth/*",
+      "extra_config": {
+        "documentation/openapi": {
+          "summary": "Full example for JWT based authentication / authorization with Keycloack",
+          "description": "This endpoint offers a web interface to present auth/authz flow with Keycloack.",
+          "tags": ["Authentication"]
+        }
+      },
+      "output_encoding": "no-op",
+      "backend": [
+        {
+          "url_pattern": "/",
+          "host": ["http://web:3000/"],
+          "encoding": "no-op"
+        }
+      ]
+    },
+    {
       "@comment": "Feature: Authorization based on JWT (using Keycloak)",
       "endpoint": "/private/moderate",
       "cache_ttl": "1s",
