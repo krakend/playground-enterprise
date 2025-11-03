@@ -1,445 +1,459 @@
 {
-    "@comment": "EE only feature: Web Server - Static content",
-    "endpoint": "/demo/*",
-    "output_encoding": "no-op",
-    "backend":[
-        {
-            "url_pattern":"/",
-            "extra_config": {
-              "backend/static-filesystem": {
-                "directory_listing": false,
-                "path": "./demo/"
-              }
+        "@comment": "EE only feature: Web Server - Static content",
+        "endpoint": "/demo/*",
+        "output_encoding": "no-op",
+        "backend": [
+            {
+                "url_pattern": "/",
+                "extra_config": {
+                    "backend/static-filesystem": {
+                        "directory_listing": false,
+                        "path": "./demo/"
+                    }
+                },
+                "host": [
+                    "http://localhost:8080"
+                ],
+                "encoding": "no-op"
+            }
+        ],
+        "extra_config": {
+            "documentation/postman": {
+                "name": "Serve Static Website Files",
+                "description": "Serves static HTML/CSS/JS files from the demo directory for the playground demo website",
+                "folder": "/Utilities"
             },
-            "host": [ "http://localhost:8080" ],
-            "encoding":"no-op"
+            "documentation/openapi": {
+                "summary": "Static file server for demo website",
+                "description": "Serves static HTML, CSS, JavaScript, and image files from the demo directory for the playground demo website",
+                "tags": [
+                    "Utilities"
+                ]
+            }
         }
-    ],
-    "extra_config": {
-        "documentation/postman": {
-            "name": "Serve Static Website Files",
-            "description": "Serves static HTML/CSS/JS files from the demo directory for the playground demo website",
-            "folder": "/Static Content"
-        },
-        "documentation/openapi": {
-            "summary": "Static file server for demo website",
-            "description": "Serves static HTML, CSS, JavaScript, and image files from the demo directory for the playground demo website",
-            "tags": [
-                "Static Files"
-            ]
-        }
-    }
-},
-{
-    "@comment": "Feature: Expose a GET REST endpoint from POST to SOAP service",
-    "endpoint": "/capital-of/{country}",
-    "backend": [
-        {
-            "host": [
-                "http://webservices.oorsprong.org"
-            ],
-            "url_pattern": "/websamples.countryinfo/CountryInfoService.wso",
-            "encoding": "xml",
-            "method": "POST",
-            "target": "Envelope.Body.CapitalCityResponse",
-            "mapping": {
-                "CapitalCityResult": "capital"
+    },
+    {
+        "@comment": "Feature: Expose a GET REST endpoint from POST to SOAP service",
+        "endpoint": "/capital-of/{country}",
+        "backend": [
+            {
+                "host": [
+                    "http://webservices.oorsprong.org"
+                ],
+                "url_pattern": "/websamples.countryinfo/CountryInfoService.wso",
+                "encoding": "xml",
+                "method": "POST",
+                "target": "Envelope.Body.CapitalCityResponse",
+                "mapping": {
+                    "CapitalCityResult": "capital"
+                },
+                "deny": [
+                    "-m"
+                ],
+                "extra_config": {
+                    "backend/soap": {
+                        "@comment": "The XML template with variables is in the following path:",
+                        "path": "./extended/templates/soap_request_capital_city.tmpl.xml"
+                    }
+                }
+            }
+        ],
+        "extra_config": {
+            "documentation/postman": {
+                "name": "SOAP to REST Conversion",
+                "description": "Converts SOAP XML web service to REST JSON endpoint (country capital lookup)",
+                "folder": "/Protocol Conversion"
             },
-            "deny": [
-                "-m"
-            ],
-            "extra_config": {
-                "backend/soap": {
-                    "@comment": "The XML template with variables is in the following path:",
-                    "path": "./extended/templates/soap_request_capital_city.tmpl.xml"
-                }
+            "documentation/openapi": {
+                "summary": "SOAP to REST conversion for country capital lookup",
+                "description": "Converts SOAP XML web service to REST JSON endpoint, fetching country capital information from a legacy SOAP service",
+                "tags": [
+                    "Protocol Conversion"
+                ]
             }
         }
-    ],
-    "extra_config": {
-        "documentation/postman": {
-            "name": "SOAP to REST Conversion",
-            "description": "Converts SOAP XML web service to REST JSON endpoint (country capital lookup)",
-            "folder": "/Protocol Conversion/SOAP"
-        },
-        "documentation/openapi": {
-            "summary": "SOAP to REST conversion for country capital lookup",
-            "description": "Converts SOAP XML web service to REST JSON endpoint, fetching country capital information from a legacy SOAP service",
-            "tags": [
-                "SOAP Integration"
-            ]
-        }
-    }
-},
-{
-    "@comment": "Feature: GraphQL to REST",
-    "endpoint": "/starwars_films/{movie_id}",
-    "@test_with": "curl http://localhost:8080/starwars_films/1",
-    "backend": [
-        {
-            "host": [
-                "https://swapi-graphql.netlify.app/"
-            ],
-            "url_pattern": "/.netlify/functions/index",
-            "target": "data.film",
-            "extra_config": {
-                "backend/graphql": {
-                    "type": "query",
-                    "query": "query Query ($movie_id: ID!) {\nfilm (filmID: $movie_id) {\nid\nepisodeID\ntitle\ndirector\nreleaseDate\nspeciesConnection {\nspecies {\nname\nclassification\nhomeworld {\nname\n}\n}\n}\n}\n}",
-                    "variables": {
-                        "movie_id": "{movie_id}"
+    },
+    {
+        "@comment": "Feature: GraphQL to REST",
+        "endpoint": "/starwars_films/{movie_id}",
+        "@test_with": "curl http://localhost:8080/starwars_films/1",
+        "backend": [
+            {
+                "host": [
+                    "https://swapi-graphql.netlify.app/"
+                ],
+                "url_pattern": "/.netlify/functions/index",
+                "target": "data.film",
+                "extra_config": {
+                    "backend/graphql": {
+                        "type": "query",
+                        "query": "query Query ($movie_id: ID!) {\nfilm (filmID: $movie_id) {\nid\nepisodeID\ntitle\ndirector\nreleaseDate\nspeciesConnection {\nspecies {\nname\nclassification\nhomeworld {\nname\n}\n}\n}\n}\n}",
+                        "variables": {
+                            "movie_id": "{movie_id}"
+                        }
                     }
                 }
             }
+        ],
+        "extra_config": {
+            "documentation/postman": {
+                "name": "GraphQL to REST Conversion",
+                "description": "Converts GraphQL query to REST endpoint (Star Wars films data from SWAPI)",
+                "folder": "/Protocol Conversion"
+            },
+            "documentation/openapi": {
+                "summary": "GraphQL to REST conversion for Star Wars films",
+                "description": "Converts GraphQL API to REST endpoint, fetching Star Wars movie information including species and homeworld data from SWAPI GraphQL",
+                "tags": [
+                    "Protocol Conversion"
+                ]
+            }
         }
-    ],
-    "extra_config": {
-        "documentation/postman": {
-            "name": "GraphQL to REST Conversion",
-            "description": "Converts GraphQL query to REST endpoint (Star Wars films data from SWAPI)",
-            "folder": "/Protocol Conversion/GraphQL"
-        },
-        "documentation/openapi": {
-            "summary": "GraphQL to REST conversion for Star Wars films",
-            "description": "Converts GraphQL API to REST endpoint, fetching Star Wars movie information including species and homeworld data from SWAPI GraphQL",
-            "tags": [
-                "GraphQL Integration"
-            ]
-        }
-    }
-},
-{
-    "@comment": "EE only feature: GRPC",
-    "endpoint": "/travel",
-    "input_query_strings": [
-        "lat",
-        "lon"
-    ],
-    "backend": [
-        {
-            "host": [
-                "grpc_flights:4242"
-            ],
-            "group": "flights",
-            "url_pattern": "/flight_finder.Flights/FindFlight",
-            "extra_config": {
-                "backend/grpc": {
-                    "input_mapping": {
-                        "lat": "where.latitude",
-                        "lon": "where.longitude"
+    },
+    {
+        "@comment": "EE only feature: GRPC",
+        "endpoint": "/travel",
+        "input_query_strings": [
+            "lat",
+            "lon"
+        ],
+        "backend": [
+            {
+                "host": [
+                    "grpc_flights:4242"
+                ],
+                "group": "flights",
+                "url_pattern": "/flight_finder.Flights/FindFlight",
+                "extra_config": {
+                    "backend/grpc": {
+                        "input_mapping": {
+                            "lat": "where.latitude",
+                            "lon": "where.longitude"
+                        }
+                    }
+                }
+            },
+            {
+                "host": [
+                    "grpc_trains:4243"
+                ],
+                "group": "trains",
+                "url_pattern": "/train_finder.Trains/FindTrains",
+                "extra_config": {
+                    "backend/grpc": {
+                        "input_mapping": {
+                            "lat": "origin.position.latitude",
+                            "lon": "origin.position.longitude"
+                        },
+                        "response_naming_convention": "camelCase",
+                        "output_enum_as_string": true,
+                        "output_timestamp_as_string": true,
+                        "output_duration_as_string": true,
+                        "client_tls": {
+                            "allow_insecure_connections": true
+                        }
+                    }
+                }
+            },
+            {
+                "group": "hotels",
+                "host": [
+                    "http://fake_api"
+                ],
+                "url_pattern": "/hotels/1.json"
+            },
+            {
+                "host": [
+                    "grpc_trains:4243"
+                ],
+                "group": "trains_classes",
+                "url_pattern": "/train_finder.Trains/GetTrainClasses",
+                "extra_config": {
+                    "backend/grpc": {
+                        "response_naming_convention": "camelCase",
+                        "output_remove_unset_values": true,
+                        "client_tls": {
+                            "allow_insecure_connections": true
+                        }
                     }
                 }
             }
-        },
-        {
-            "host": [
-                "grpc_trains:4243"
-            ],
-            "group": "trains",
-            "url_pattern": "/train_finder.Trains/FindTrains",
-            "extra_config": {
-                "backend/grpc": {
-                    "input_mapping": {
-                        "lat": "origin.position.latitude",
-                        "lon": "origin.position.longitude"
-                    },
-                    "response_naming_convention": "camelCase",
-                    "output_enum_as_string": true,
-                    "output_timestamp_as_string": true,
-                    "output_duration_as_string": true,
-                    "client_tls": {
-                        "allow_insecure_connections": true
+        ],
+        "extra_config": {
+            "documentation/postman": {
+                "name": "gRPC to REST Aggregation (Travel Search)",
+                "description": "Aggregates multiple gRPC services (flights, trains, hotels) into a single REST endpoint with parameter mapping",
+                "folder": "/Protocol Conversion"
+            },
+            "documentation/openapi": {
+                "summary": "gRPC to REST aggregation for travel search",
+                "description": "Aggregates multiple gRPC services (flights, trains, hotels) into a single REST endpoint with intelligent parameter mapping and protocol conversion",
+                "tags": [
+                    "Protocol Conversion",
+                    "API Composition"
+                ]
+            }
+        }
+    },
+    {
+        "@comment": "EE only feature: GRPC Payload in Body",
+        "endpoint": "/travel_book_flight/{id_flight}/{main_passenger}",
+        "method": "POST",
+        "backend": [
+            {
+                "host": [
+                    "grpc_flights:4242"
+                ],
+                "group": "flights",
+                "url_pattern": "/flight_finder.Flights/BookFlight",
+                "extra_config": {
+                    "backend/grpc": {
+                        "input_mapping": {
+                            "Id_flight": "flight_id",
+                            "Main_passenger": "main_passenger.full_name"
+                        },
+                        "use_request_body": true
                     }
                 }
             }
-        },
-        {
-            "group": "hotels",
-            "host": ["http://fake_api"],
-            "url_pattern": "/hotels/1.json"
-        },
-        {
-            "host": [
-                "grpc_trains:4243"
-            ],
-            "group": "trains_classes",
-            "url_pattern": "/train_finder.Trains/GetTrainClasses",
-            "extra_config": {
-                "backend/grpc": {
-                    "response_naming_convention": "camelCase",
-                    "output_remove_unset_values": true,
-                    "client_tls": {
-                        "allow_insecure_connections": true
-                    }
-                }
+        ],
+        "extra_config": {
+            "documentation/postman": {
+                "name": "gRPC POST with Request Body",
+                "description": "Demonstrates gRPC integration with POST method using request body for flight booking",
+                "folder": "/Protocol Conversion"
+            },
+            "documentation/openapi": {
+                "summary": "gRPC POST endpoint with request body mapping",
+                "description": "Demonstrates gRPC integration with POST method, mapping request body and path parameters to gRPC fields for flight booking",
+                "tags": [
+                    "Protocol Conversion"
+                ]
             }
         }
-    ],
-    "extra_config": {
-        "documentation/postman": {
-            "name": "gRPC to REST Aggregation (Travel Search)",
-            "description": "Aggregates multiple gRPC services (flights, trains, hotels) into a single REST endpoint with parameter mapping",
-            "folder": "/Protocol Conversion/gRPC"
-        },
-        "documentation/openapi": {
-            "summary": "gRPC to REST aggregation for travel search",
-            "description": "Aggregates multiple gRPC services (flights, trains, hotels) into a single REST endpoint with intelligent parameter mapping and protocol conversion",
-            "tags": [
-                "gRPC Integration",
-                "Aggregation"
-            ]
-        }
-    }
-},
-{
-    "@comment": "EE only feature: GRPC Payload in Body",
-    "endpoint": "/travel_book_flight/{id_flight}/{main_passenger}",
-    "method": "POST",
-    "backend": [
-        {
-            "host": [
-                "grpc_flights:4242"
-            ],
-            "group": "flights",
-            "url_pattern": "/flight_finder.Flights/BookFlight",
-            "extra_config": {
-                "backend/grpc": {
-                    "input_mapping": {
-                        "Id_flight": "flight_id",
-                        "Main_passenger": "main_passenger.full_name"
-                    },
-                    "use_request_body": true
-                }
+    },
+    {
+        "@comment": "EE only feature: WebSockets (chat example)",
+        "endpoint": "/chat/ws/{room}",
+        "input_query_strings": [
+            "*"
+        ],
+        "input_headers": [
+            "*"
+        ],
+        "backend": [
+            {
+                "url_pattern": "/ws/{room}",
+                "disable_host_sanitize": true,
+                "host": [
+                    "ws://{{.hosts.chat}}"
+                ]
+            }
+        ],
+        "extra_config": {
+            "websocket": {
+                "input_headers": [
+                    "Cookie",
+                    "Authorization"
+                ],
+                "connect_event": true,
+                "disconnect_event": true,
+                "read_buffer_size": 4096,
+                "write_buffer_size": 4096,
+                "message_buffer_size": 4096,
+                "max_message_size": 3200000,
+                "write_wait": "10s",
+                "pong_wait": "60s",
+                "ping_period": "54s",
+                "max_retries": 0,
+                "backoff_strategy": "exponential"
+            },
+            "documentation/postman": {
+                "name": "WebSocket Chat Connection",
+                "description": "WebSocket endpoint for real-time chat functionality with connect/disconnect events and message buffering",
+                "folder": "/Real-time Communication"
+            },
+            "documentation/openapi": {
+                "summary": "WebSocket chat room connection",
+                "description": "WebSocket endpoint for real-time bidirectional chat communication with configurable room parameter, connect/disconnect events, and message buffering",
+                "tags": [
+                    "Real-time Communication"
+                ]
             }
         }
-    ],
-    "extra_config": {
-        "documentation/postman": {
-            "name": "gRPC POST with Request Body",
-            "description": "Demonstrates gRPC integration with POST method using request body for flight booking",
-            "folder": "/Protocol Conversion/gRPC"
-        },
-        "documentation/openapi": {
-            "summary": "gRPC POST endpoint with request body mapping",
-            "description": "Demonstrates gRPC integration with POST method, mapping request body and path parameters to gRPC fields for flight booking",
-            "tags": [
-                "gRPC Integration"
-            ]
+    },
+    {
+        "@comment": "EE only feature: WebSockets (chat example web interface)",
+        "endpoint": "/chat",
+        "output_encoding": "no-op",
+        "backend": [
+            {
+                "url_pattern": "/",
+                "host": [
+                    "http://{{.hosts.chat}}"
+                ],
+                "encoding": "no-op"
+            }
+        ],
+        "extra_config": {
+            "documentation/postman": {
+                "name": "WebSocket Chat Web Interface",
+                "description": "Web interface for testing WebSocket chat functionality",
+                "folder": "/Real-time Communication"
+            },
+            "documentation/openapi": {
+                "summary": "WebSocket chat web interface",
+                "description": "Web-based user interface for testing and interacting with WebSocket chat functionality in the browser",
+                "tags": [
+                    "Real-time Communication"
+                ]
+            }
         }
-    }
-},
-{
-    "@comment": "EE only feature: WebSockets (chat example)",
-    "endpoint": "/chat/ws/{room}",
-    "input_query_strings": [
-        "*"
-    ],
-    "input_headers": [
-        "*"
-    ],
-    "backend": [
-        {
-            "url_pattern": "/ws/{room}",
-            "disable_host_sanitize": true,
-            "host": [
-                "ws://{{.hosts.chat}}"
-            ]
+    },
+    {
+        "@comment": "EE only feature: Wildcard to our fake API, open",
+        "endpoint": "/fake-api/*",
+        "backend": [
+            {
+                "host": [
+                    "http://fake_api"
+                ],
+                "url_pattern": "/"
+            }
+        ],
+        "extra_config": {
+            "documentation/postman": {
+                "name": "Wildcard Proxy (Open)",
+                "description": "Open wildcard endpoint that proxies all requests to internal fake API without restrictions",
+                "folder": "/Routing & Wildcards"
+            },
+            "documentation/openapi": {
+                "summary": "Calls to internal service with wildcard",
+                "description": "This endpoint will send all requests to a designed backend including everything after the /fake-api path",
+                "tags": [
+                    "Routing & Wildcards"
+                ]
+            }
         }
-    ],
-    "extra_config": {
-        "websocket": {
-            "input_headers": [
-                "Cookie",
-                "Authorization"
+    },
+    {
+        "@comment": "EE only feature: Wildcard with geofencing - Allow visits only from Spain",
+        "endpoint": "/fake-api-geofence/*",
+        "input_headers": [
+            "X-Geoip"
+        ],
+        "backend": [
+            {
+                "host": [
+                    "http://fake_api"
+                ],
+                "url_pattern": "/"
+            }
+        ],
+        "extra_config": {
+            "documentation/postman": {
+                "name": "Geofenced Wildcard Proxy (Spain Only)",
+                "description": "Wildcard endpoint with geofencing using CEL validation to allow access only from Spain",
+                "folder": "/Routing & Wildcards"
+            },
+            "validation/cel": [
+                {
+                    "check_expr": "req_headers['X-Geoip'][0].matches('\"IsoCode\":\"ES\"')"
+                }
             ],
-            "connect_event": true,
-            "disconnect_event": true,
-            "read_buffer_size": 4096,
-            "write_buffer_size": 4096,
-            "message_buffer_size": 4096,
-            "max_message_size": 3200000,
-            "write_wait": "10s",
-            "pong_wait": "60s",
-            "ping_period": "54s",
-            "max_retries": 0,
-            "backoff_strategy": "exponential"
-        },
-        "documentation/postman": {
-            "name": "WebSocket Chat Connection",
-            "description": "WebSocket endpoint for real-time chat functionality with connect/disconnect events and message buffering",
-            "folder": "/WebSockets & Real-time"
-        },
-        "documentation/openapi": {
-            "summary": "WebSocket chat room connection",
-            "description": "WebSocket endpoint for real-time bidirectional chat communication with configurable room parameter, connect/disconnect events, and message buffering",
-            "tags": [
-                "WebSockets"
-            ]
+            "documentation/openapi": {
+                "summary": "Calls to internal service with wildcard, using geofencing",
+                "description": "This endpoint will send all requests to a designed backend including everything after the /fake-api-geofence path, adding geofencing (allowing calls only from Spain)",
+                "tags": [
+                    "Routing & Wildcards"
+                ]
+            }
+        }
+    },
+    {
+        "@comment": "EE only feature: Dynamic routing based on headers (token claim and cookie also available)",
+        "endpoint": "/dynamic/header",
+        "backend": [
+            {
+                "@comment": "We will route to the backend using the content of the 'X-Route' header",
+                "@test_with": "curl -iG -H 'X-Route: hello' 'http://localhost:8080/dynamic/header'",
+                "host": [
+                    "http://localhost:8080"
+                ],
+                "url_pattern": "/__debug/{input_headers.x-route}"
+            }
+        ],
+        "extra_config": {
+            "documentation/postman": {
+                "name": "Dynamic Routing by Header",
+                "description": "Demonstrates dynamic URL path construction using the X-Route header value",
+                "folder": "/Routing & Wildcards"
+            },
+            "documentation/openapi": {
+                "summary": "Dynamic routing based on request header",
+                "description": "Demonstrates dynamic URL path construction using the value of the X-Route header to determine backend routing destination",
+                "tags": [
+                    "Routing & Wildcards"
+                ]
+            }
+        }
+    },
+    {
+        "@comment": "EE only feature: Dynamic routing based on query strings",
+        "endpoint": "/dynamic/qs",
+        "backend": [
+            {
+                "@comment": "We will route to the backend using the content of the 'X-Route' header",
+                "@test_with": "curl -iG 'http://localhost:8080/dynamic/qs?route=hello'",
+                "host": [
+                    "http://localhost:8080"
+                ],
+                "url_pattern": "/__debug/{input_query_strings.route}"
+            }
+        ],
+        "extra_config": {
+            "documentation/postman": {
+                "name": "Dynamic Routing by Query String",
+                "description": "Demonstrates dynamic URL path construction using the 'route' query string parameter",
+                "folder": "/Routing & Wildcards"
+            },
+            "documentation/openapi": {
+                "summary": "Dynamic routing based on query string",
+                "description": "Demonstrates dynamic URL path construction using the 'route' query string parameter to determine backend routing destination",
+                "tags": [
+                    "Routing & Wildcards"
+                ]
+            }
+        }
+    },
+    {
+        "@comment": "EE only feature: MCP Server - Entrypoint for Model Context Protocol",
+        "endpoint": "/mcp",
+        "method": "POST",
+        "timeout": "15s",
+        "backend": [
+            {
+                "url_pattern": "/ignore",
+                "host": [
+                    "http://ignore"
+                ]
+            }
+        ],
+        "extra_config": {
+            "documentation/postman": {
+                "name": "MCP Server Entrypoint (AI Gateway)",
+                "description": "Model Context Protocol server endpoint that exposes country data aggregation tools for AI/LLM integration",
+                "folder": "/AI Integration"
+            },
+            "ai/mcp": {
+                "server_name": "country-data-aggregator"
+            },
+            "documentation/openapi": {
+                "summary": "MCP Server entrypoint for country data tools",
+                "description": "Model Context Protocol (MCP) server exposing country information aggregation tools. Accepts MCP protocol requests and routes them to appropriate handlers that aggregate REST and GraphQL APIs.",
+                "tags": [
+                    "AI Integration"
+                ]
+            }
         }
     }
-},
-{
-    "@comment": "EE only feature: WebSockets (chat example web interface)",
-    "endpoint": "/chat",
-    "output_encoding": "no-op",
-    "backend": [
-        {
-            "url_pattern": "/",
-            "host": [
-                "http://{{.hosts.chat}}"
-            ],
-            "encoding": "no-op"
-        }
-    ],
-    "extra_config": {
-        "documentation/postman": {
-            "name": "WebSocket Chat Web Interface",
-            "description": "Web interface for testing WebSocket chat functionality",
-            "folder": "/WebSockets & Real-time"
-        },
-        "documentation/openapi": {
-            "summary": "WebSocket chat web interface",
-            "description": "Web-based user interface for testing and interacting with WebSocket chat functionality in the browser",
-            "tags": [
-                "WebSockets"
-            ]
-        }
-    }
-},
-{
-    "@comment": "EE only feature: Wildcard to our fake API, open",
-    "endpoint": "/fake-api/*",
-    "backend": [
-      {
-        "host": ["http://fake_api"],
-        "url_pattern": "/"
-      }
-    ],
-    "extra_config": {
-      "documentation/postman": {
-        "name": "Wildcard Proxy (Open)",
-        "description": "Open wildcard endpoint that proxies all requests to internal fake API without restrictions",
-        "folder": "/Routing & Wildcards"
-      },
-      "documentation/openapi": {
-        "summary": "Calls to internal service with wildcard",
-        "description": "This endpoint will send all requests to a designed backend including everything after the /fake-api path",
-        "tags": [
-          "Wildcard Routing"
-        ]
-      }
-    }
-  },
-
-  {
-    "@comment": "EE only feature: Wildcard with geofencing - Allow visits only from Spain",
-    "endpoint": "/fake-api-geofence/*",
-    "input_headers": [
-      "X-Geoip"
-    ],
-    "backend": [
-      {
-        "host": ["http://fake_api"],
-        "url_pattern": "/"
-      }
-    ],
-    "extra_config": {
-      "documentation/postman": {
-        "name": "Geofenced Wildcard Proxy (Spain Only)",
-        "description": "Wildcard endpoint with geofencing using CEL validation to allow access only from Spain",
-        "folder": "/Routing & Wildcards"
-      },
-      "validation/cel": [
-        {
-          "check_expr": "req_headers['X-Geoip'][0].matches('\"IsoCode\":\"ES\"')"
-        }
-      ],
-      "documentation/openapi": {
-        "summary": "Calls to internal service with wildcard, using geofencing",
-        "description": "This endpoint will send all requests to a designed backend including everything after the /fake-api-geofence path, adding geofencing (allowing calls only from Spain)",
-        "tags": [
-          "Wildcard Routing",
-          "Geofencing"
-        ]
-      }
-    }
-  },
-  {
-    "@comment": "EE only feature: Dynamic routing based on headers (token claim and cookie also available)",
-    "endpoint": "/dynamic/header",
-    "backend": [
-      {
-        "@comment": "We will route to the backend using the content of the 'X-Route' header",
-        "@test_with": "curl -iG -H 'X-Route: hello' 'http://localhost:8080/dynamic/header'",
-        "host": ["http://localhost:8080"],
-        "url_pattern": "/__debug/{input_headers.x-route}"
-      }
-    ],
-    "extra_config": {
-      "documentation/postman": {
-        "name": "Dynamic Routing by Header",
-        "description": "Demonstrates dynamic URL path construction using the X-Route header value",
-        "folder": "/Routing & Wildcards"
-      },
-      "documentation/openapi": {
-        "summary": "Dynamic routing based on request header",
-        "description": "Demonstrates dynamic URL path construction using the value of the X-Route header to determine backend routing destination",
-        "tags": [
-          "Dynamic Routing"
-        ]
-      }
-    }
-  },
-  {
-    "@comment": "EE only feature: Dynamic routing based on query strings",
-    "endpoint": "/dynamic/qs",
-    "backend": [
-      {
-        "@comment": "We will route to the backend using the content of the 'X-Route' header",
-        "@test_with": "curl -iG 'http://localhost:8080/dynamic/qs?route=hello'",
-        "host": ["http://localhost:8080"],
-        "url_pattern": "/__debug/{input_query_strings.route}"
-      }
-    ],
-    "extra_config": {
-      "documentation/postman": {
-        "name": "Dynamic Routing by Query String",
-        "description": "Demonstrates dynamic URL path construction using the 'route' query string parameter",
-        "folder": "/Routing & Wildcards"
-      },
-      "documentation/openapi": {
-        "summary": "Dynamic routing based on query string",
-        "description": "Demonstrates dynamic URL path construction using the 'route' query string parameter to determine backend routing destination",
-        "tags": [
-          "Dynamic Routing"
-        ]
-      }
-    }
-  },
-  {
-    "@comment": "EE only feature: MCP Server - Entrypoint for Model Context Protocol",
-    "endpoint": "/mcp",
-    "method": "POST",
-    "timeout": "15s",
-    "backend": [
-      {
-        "url_pattern": "/ignore",
-        "host": ["http://ignore"]
-      }
-    ],
-    "extra_config": {
-      "documentation/postman": {
-        "name": "MCP Server Entrypoint (AI Gateway)",
-        "description": "Model Context Protocol server endpoint that exposes country data aggregation tools for AI/LLM integration",
-        "folder": "/AI & MCP Server"
-      },
-      "ai/mcp": {
-        "server_name": "country-data-aggregator"
-      },
-      "documentation/openapi": {
-        "summary": "MCP Server entrypoint for country data tools",
-        "description": "Model Context Protocol (MCP) server exposing country information aggregation tools. Accepts MCP protocol requests and routes them to appropriate handlers that aggregate REST and GraphQL APIs.",
-        "tags": ["MCP Server", "AI Gateway"]
-      }
-    }
-  }

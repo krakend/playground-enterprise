@@ -52,11 +52,16 @@
         }
       ],
       "extra_config": {
+        "documentation/postman": {
+          "name": "Aggregate GitHub User & Repos",
+          "description": "Demonstrates API composition by aggregating user profile and repositories from GitHub API in parallel",
+          "folder": "/API Composition"
+        },
         "documentation/openapi": {
           "summary": "Merges two calls from github and serves under a single endpoint",
           "description": "This endpoint fetches in parallel the user information and the repository information from Githuib and returns it together. Non interesting fields are removed.",
           "tags": [
-            "API composition"
+            "API Composition"
           ]
         }
       }
@@ -71,7 +76,19 @@
             "https://api.coingecko.com"
           ],
           "url_pattern": "/api/v3/coins/markets?vs_currency={currency}&order=market_cap_desc&per_page=100&page=1&sparkline=false",
-          "encoding": "safejson"
+          "encoding": "safejson",
+          "extra_config": {
+            "modifier/martian": {
+              "header.Blacklist": {
+                "scope": [
+                  "request"
+                ],
+                "names": [
+                  "X-Forwarded-Host"
+                ]
+              }
+            }
+          }
         }
       ],
       "extra_config": {
@@ -79,11 +96,16 @@
           "@comment": "Get first 5 crypto by market capitalization, then reverse sort them by name, finally filter and rename some fields",
           "expr": "reverse(sort_by(collection[:5], &name))[*].{name: name, token: symbol,price: current_price, price_change: price_change_percentage_24h, market_cap: market_cap}"
         },
+        "documentation/postman": {
+          "name": "Transform Crypto Data with JMESPath",
+          "description": "Advanced response transformation using JMESPath query language to filter and sort cryptocurrency market data",
+          "folder": "/API Composition"
+        },
         "documentation/openapi": {
           "summary": "Get TOP 5 crypto capitalization & price data for a given currency",
           "description": "This endpoint fetches some crypto capitalization data from Coingecko for a given currency.",
           "tags": [
-            "Content Manipulation"
+            "API Composition"
           ]
         }
       }
@@ -117,11 +139,16 @@
         }
       ],
       "extra_config": {
+        "documentation/postman": {
+          "name": "Mask Credit Card Number",
+          "description": "Demonstrates data masking using regex to hide sensitive credit card information (shows only last 4 digits)",
+          "folder": "/API Composition"
+        },
         "documentation/openapi": {
           "summary": "Mask the credit card number",
           "description": "This endpoint fetches the user information and masks the credit card number",
           "tags": [
-            "Content Manipulation"
+            "API Composition"
           ]
         }
       }
@@ -153,11 +180,16 @@
             }
           }
         },
+        "documentation/postman": {
+          "name": "GDPR Cookie Policy Enforcement",
+          "description": "Enforces security policy requiring GDPR cookie acceptance before allowing tracking requests",
+          "folder": "/Authentication & Security"
+        },
         "documentation/openapi": {
           "summary": "Tracks user activity when the GDPR cookie is accepted",
           "description": "Example on how to abort a request based on a security policy. If the user does not have the GDPR cookie set to 'yes', the request will be aborted.",
           "tags": [
-            "Security Policies"
+            "Authentication & Security"
           ]
         }
       }
@@ -195,11 +227,17 @@
         "qos/ratelimit/router": {
           "max_rate": 2
         },
+        "documentation/postman": {
+          "name": "Multi-Level Rate Limiting",
+          "description": "Demonstrates router-level and backend-level rate limiting on aggregated shop data (campaigns + products)",
+          "folder": "/API Composition"
+        },
         "documentation/openapi": {
           "summary": "Aggregates campaigns and products from the shop using different ratelimits",
           "description": "This endpoint fetches the campaigns and products from the shop. The campaigns are fetched without ratelimit, but the products are fetched with a rate limit of 1 request per second. The endpoint itself has a rate limit of 2 requests per second.",
           "tags": [
-            "Throttling and Acceleration"
+            "API Composition",
+            "Performance & QoS"
           ]
         }
       }
@@ -208,11 +246,16 @@
       "@comment": "Feature: Backend cache",
       "endpoint": "/market/cached",
       "extra_config": {
+        "documentation/postman": {
+          "name": "Backend HTTP Cache",
+          "description": "Demonstrates backend response caching using Cache-Control headers to reduce external API calls",
+          "folder": "/Performance & QoS"
+        },
         "documentation/openapi": {
           "summary": "Local cache for the crypto market information",
           "description": "This endpoint caches the responses from the Coingecko API for the time returned in the Cache-Control header.",
           "tags": [
-            "Throttling and Acceleration"
+            "Performance & QoS"
           ]
         }
       },
@@ -229,6 +272,16 @@
           "extra_config": {
             "qos/http-cache": {
               "shared": true
+            },
+            "modifier/martian": {
+              "header.Blacklist": {
+                "scope": [
+                  "request"
+                ],
+                "names": [
+                  "X-Forwarded-Host"
+                ]
+              }
             }
           }
         }
@@ -238,11 +291,16 @@
       "@comment": "Feature: GraphQL to REST",
       "endpoint": "/starwars_films/{movie_id}",
       "extra_config": {
+        "documentation/postman": {
+          "name": "GraphQL to REST - Star Wars Films",
+          "description": "Converts GraphQL API to REST endpoint for fetching Star Wars movie information",
+          "folder": "/Protocol Conversion"
+        },
         "documentation/openapi": {
           "summary": "Connect to a GraphQL server and fetch the film information",
           "description": "This endpoint connects to a GraphQL server and offers the interaction as a regular REST endpoint.",
           "tags": [
-            "Non-REST Connectivity"
+            "Protocol Conversion"
           ]
         }
       },
@@ -277,15 +335,32 @@
           "encoding": "safejson",
           "mapping": {
             "collection": "coins"
+          },
+          "extra_config": {
+            "modifier/martian": {
+              "header.Blacklist": {
+                "scope": [
+                  "request"
+                ],
+                "names": [
+                  "X-Forwarded-Host"
+                ]
+              }
+            }
           }
         }
       ],
       "extra_config": {
+        "documentation/postman": {
+          "name": "Simple Request (No Concurrency)",
+          "description": "Baseline example of a single non-concurrent API call to external service",
+          "folder": "/Performance & QoS"
+        },
         "documentation/openapi": {
           "summary": "Simple fetch of external data without concurrent calls enabled",
           "description": "This endpoint fetches crypto market information from Coingecko using a single non-concurrent call.",
           "tags": [
-            "Throttling and Acceleration"
+            "Performance & QoS"
           ]
         }
       }
@@ -303,15 +378,32 @@
           "encoding": "safejson",
           "mapping": {
             "collection": "coins"
+          },
+          "extra_config": {
+            "modifier/martian": {
+              "header.Blacklist": {
+                "scope": [
+                  "request"
+                ],
+                "names": [
+                  "X-Forwarded-Host"
+                ]
+              }
+            }
           }
         }
       ],
       "extra_config": {
+        "documentation/postman": {
+          "name": "Concurrent Requests (3x)",
+          "description": "Demonstrates concurrent calls feature - makes 3 parallel requests and returns the fastest successful response",
+          "folder": "/Performance & QoS"
+        },
         "documentation/openapi": {
           "summary": "Get crypto market information with 3 concurrent calls",
           "description": "This endpoint fetches crypto market information from Coingecko using 3 concurrent calls. Returns the fastest successful response and discards the rest",
           "tags": [
-            "Throttling and Acceleration"
+            "Performance & QoS"
           ]
         }
       }
@@ -323,11 +415,16 @@
         "proxy": {
           "sequential": true
         },
+        "documentation/postman": {
+          "name": "Sequential API Calls",
+          "description": "Demonstrates sequential requests where second call uses data from first response (hotel -> destination lookup)",
+          "folder": "/API Composition"
+        },
         "documentation/openapi": {
-          "summary": "Get crypto market information with 3 concurrent calls",
-          "description": "This endpoint fetches crypto market information from Coingecko using 3 concurrent calls. Returns the fastest successful response and discards the rest",
+          "summary": "Chains two sequential API calls where the second depends on the first",
+          "description": "This endpoint demonstrates sequential processing by first fetching a hotel, then using its destination_id to fetch destination details. The second call cannot start until the first completes.",
           "tags": [
-            "API composition"
+            "API Composition"
           ]
         }
       },
@@ -353,11 +450,16 @@
       "@comment": "Feature: Expose a GET REST endpoint from POST to SOAP service",
       "endpoint": "/capital-of/{country}",
       "extra_config": {
+        "documentation/postman": {
+          "name": "SOAP to REST - Country Capital",
+          "description": "Converts SOAP XML service to REST JSON endpoint for retrieving country capital information",
+          "folder": "/Protocol Conversion"
+        },
         "documentation/openapi": {
           "summary": "Interact with a SOAP server as a regular REST API",
           "description": "This endpoint interacts with a SOAP server but offers a pure REST interface to the consumer",
           "tags": [
-            "Non-REST Connectivity"
+            "Protocol Conversion"
           ]
         }
       },
@@ -397,11 +499,16 @@
         }
       ],
       "extra_config": {
+        "documentation/postman": {
+          "name": "Wildcard Routing (Open)",
+          "description": "Public wildcard endpoint forwarding all paths under /fake-api/* to backend service",
+          "folder": "/Routing & Wildcards"
+        },
         "documentation/openapi": {
           "summary": "Calls to internal service with wildcard",
           "description": "This endpoint will send all requests to a designed backend including everything after the /fake-api path",
           "tags": [
-            "Routing"
+            "Routing & Wildcards"
           ]
         }
       }
@@ -422,11 +529,17 @@
       "extra_config": {
         "@comment": "The simple inclusion of the Auth Basic component enables it for this endpoint",
         "auth/basic": {},
+        "documentation/postman": {
+          "name": "Wildcard Routing with Basic Auth",
+          "description": "Protected wildcard endpoint requiring Basic Authentication (credentials: admin/admin)",
+          "folder": "/Routing & Wildcards"
+        },
         "documentation/openapi": {
           "summary": "Calls to internal service with wildcard, adding auth",
           "description": "This endpoint will send all requests to a designed backend including everything after the /fake-api-auth path, adding Basic Authentication",
           "tags": [
-            "Routing"
+            "Routing & Wildcards",
+            "Authentication & Security"
           ]
         }
       }
@@ -451,11 +564,16 @@
             "check_expr": "req_headers['X-Geoip'][0].matches('\"IsoCode\":\"ES\"')"
           }
         ],
+        "documentation/postman": {
+          "name": "Wildcard Routing with Geofencing",
+          "description": "Geo-restricted wildcard endpoint allowing access only from Spain using CEL validation",
+          "folder": "/Routing & Wildcards"
+        },
         "documentation/openapi": {
           "summary": "Calls to internal service with wildcard, using geofencing",
           "description": "This endpoint will send all requests to a designed backend including everything after the /fake-api-geofence path, adding geofencing (allowing calls only from Spain)",
           "tags": [
-            "Routing"
+            "Routing & Wildcards"
           ]
         }
       }
@@ -464,11 +582,16 @@
       "@comment": "EE only feature: Dynamic routing based on headers (token claim and cookie also available)",
       "endpoint": "/dynamic/header",
       "extra_config": {
+        "documentation/postman": {
+          "name": "Dynamic Routing by Header",
+          "description": "Routes to different backend paths based on X-Route header value (test with: curl -H 'X-Route: hello')",
+          "folder": "/Routing & Wildcards"
+        },
         "documentation/openapi": {
-          "summary": "Calls to internal service with wildcard, using geofencing",
-          "description": "This endpoint will send all requests to a designed backend including everything after the /fake-api-geofence path, adding geofencing (allowing calls only from Spain)",
+          "summary": "Route to the backend using the content of the 'X-Route' header",
+          "description": "This endpoint demonstrates dynamic routing by using the X-Route header value to determine the backend path. Test with: curl -iG -H 'X-Route: hello' 'http://localhost:8080/dynamic/header'",
           "tags": [
-            "Routing"
+            "Routing & Wildcards"
           ]
         }
       },
@@ -484,11 +607,16 @@
       "@comment": "EE only feature: Dynamic routing based on query strings",
       "endpoint": "/dynamic/qs",
       "extra_config": {
+        "documentation/postman": {
+          "name": "Dynamic Routing by Query String",
+          "description": "Routes to different backend paths based on 'route' query parameter value",
+          "folder": "/Routing & Wildcards"
+        },
         "documentation/openapi": {
-          "summary": "Route to the backend using the content of the 'X-Route' header",
-          "description": "You can test this routing with the command curl -iG 'http://localhost:8080/dynamic/qs?route=hello'",
+          "summary": "Route to the backend using the 'route' query string parameter",
+          "description": "This endpoint demonstrates dynamic routing by using the route query parameter value to determine the backend path. Test with: curl -iG 'http://localhost:8080/dynamic/qs?route=hello'",
           "tags": [
-            "Routing"
+            "Routing & Wildcards"
           ]
         }
       },
@@ -503,11 +631,16 @@
       "cache_ttl": "1s",
       "endpoint": "/public",
       "extra_config": {
+        "documentation/postman": {
+          "name": "Public Endpoint (No Auth)",
+          "description": "Baseline public endpoint requiring no authentication - useful for testing",
+          "folder": "/Authentication & Security"
+        },
         "documentation/openapi": {
           "summary": "Public endpoint",
           "description": "This endpoint is public and requires no authentication",
           "tags": [
-            "Authentication"
+            "Authentication & Security"
           ]
         }
       },
@@ -517,6 +650,34 @@
             "http://fake_api"
           ],
           "url_pattern": "/hotels/1.json"
+        }
+      ]
+    },
+    {
+      "@comment": "Feature: Authentication and authorization",
+      "endpoint": "/auth/*",
+      "extra_config": {
+        "documentation/postman": {
+          "name": "Auth Web UI",
+          "description": "Web interface demonstrating JWT authentication/authorization flow with Keycloak",
+          "folder": "/Authentication & Security"
+        },
+        "documentation/openapi": {
+          "summary": "Full example for JWT based authentication / authorization with Keycloack",
+          "description": "This endpoint offers a web interface to present auth/authz flow with Keycloack.",
+          "tags": [
+            "Authentication & Security"
+          ]
+        }
+      },
+      "output_encoding": "no-op",
+      "backend": [
+        {
+          "url_pattern": "/",
+          "host": [
+            "http://web:3000/"
+          ],
+          "encoding": "no-op"
         }
       ]
     },
@@ -546,11 +707,16 @@
           "jwk_url": "http://keycloak:8080/realms/krakend/protocol/openid-connect/certs",
           "disable_jwk_security": true
         },
+        "documentation/postman": {
+          "name": "JWT Auth with Keycloak (Moderator Role)",
+          "description": "Protected endpoint requiring JWT token from Keycloak with 'moderator' role",
+          "folder": "/Authentication & Security"
+        },
         "documentation/openapi": {
           "summary": "Some information behind JWT authentication protection (Keycloak)",
           "description": "This endpoint uses JWT authentication with Keycloak",
           "tags": [
-            "Authentication"
+            "Authentication & Security"
           ]
         }
       }
@@ -581,11 +747,16 @@
           "jwk_local_path": "/opt/krakend/jwk-symmetric.json",
           "disable_jwk_security": true
         },
+        "documentation/postman": {
+          "name": "JWT Auth with KrakenD Signer",
+          "description": "Protected endpoint using KrakenD's internal JWT signing with role-based authorization",
+          "folder": "/Authentication & Security"
+        },
         "documentation/openapi": {
           "summary": "Sign a token cryptographically (KrakenD JOSE signer)",
           "description": "This endpoint uses the KrakenD JOSE signer to sign plain tokens coming from the backend and helpiong you to adopt cryptography easily",
           "tags": [
-            "Authentication"
+            "Authentication & Security"
           ]
         }
       }
@@ -602,11 +773,16 @@
         }
       ],
       "extra_config": {
+        "documentation/postman": {
+          "name": "JWT Token Signing",
+          "description": "Signs backend tokens (access_token, refresh_token) using KrakenD JWT signer",
+          "folder": "/Authentication & Security"
+        },
         "documentation/openapi": {
           "description": "This endpoint uses JWT signing",
           "summary": "Some information behind JWT signing",
           "tags": [
-            "Authentication"
+            "Authentication & Security"
           ]
         },
         "auth/signer": {
@@ -638,11 +814,16 @@
             "admin"
           ]
         },
+        "documentation/postman": {
+          "name": "API Key Authentication",
+          "description": "Protected endpoint requiring valid API key with 'admin' role (Enterprise-only feature)",
+          "folder": "/Authentication & Security"
+        },
         "documentation/openapi": {
           "summary": "Some information behind API-Keys authentication protection",
           "description": "This endpoint uses API-Key authentication",
           "tags": [
-            "Authentication"
+            "Authentication & Security"
           ]
         }
       }
@@ -657,11 +838,16 @@
         }
       ],
       "extra_config": {
+        "documentation/postman": {
+          "name": "POST-Only Endpoint",
+          "description": "Demonstrates HTTP method restriction - only POST requests allowed",
+          "folder": "/Routing & Wildcards"
+        },
         "documentation/openapi": {
           "summary": "Only POST method allowed",
           "description": "This endpoint only allows POST requests",
           "tags": [
-            "Routing"
+            "Routing & Wildcards"
           ]
         }
       }
@@ -695,11 +881,16 @@
             "strategy": "always"
           }
         },
+        "documentation/postman": {
+          "name": "Mocked Static Response",
+          "description": "Returns static mocked data without calling the backend - useful for testing and development",
+          "folder": "/API Composition"
+        },
         "documentation/openapi": {
           "summary": "Mocked response",
           "description": "This endpoint returns a mocked response when the backend is not available",
           "tags": [
-            "Content Manipulation"
+            "API Composition"
           ]
         }
       }
@@ -708,11 +899,17 @@
       "@comment": "EE only feature: GRPC",
       "endpoint": "/travel",
       "extra_config": {
+        "documentation/postman": {
+          "name": "gRPC Aggregation - Travel Search",
+          "description": "Aggregates flights, trains, and hotels from gRPC services into unified REST response",
+          "folder": "/Protocol Conversion"
+        },
         "documentation/openapi": {
           "summary": "Find flights, trains and hotels",
           "description": "This endpoint fetches flights, trains and hotels information from different backends",
           "tags": [
-            "Non-REST Connectivity"
+            "Protocol Conversion",
+            "API Composition"
           ]
         }
       },
@@ -784,11 +981,16 @@
       "@comment": "EE only feature: GRPC Payload in Body",
       "endpoint": "/travel_book_flight/{id_flight}/{main_passenger}",
       "extra_config": {
+        "documentation/postman": {
+          "name": "gRPC with Body - Book Flight",
+          "description": "Books a flight via gRPC backend using request body and path parameters",
+          "folder": "/Protocol Conversion"
+        },
         "documentation/openapi": {
           "summary": "Book a flight",
           "description": "This endpoint books a flight using a GRPC backend",
           "tags": [
-            "Non-REST Connectivity"
+            "Protocol Conversion"
           ]
         }
       },
@@ -848,11 +1050,16 @@
           "max_retries": 0,
           "backoff_strategy": "exponential"
         },
+        "documentation/postman": {
+          "name": "WebSocket Chat - Connection",
+          "description": "WebSocket endpoint for real-time chat room communication with configurable room parameter",
+          "folder": "/Real-time Communication"
+        },
         "documentation/openapi": {
           "summary": "Chat room using WebSockets",
           "description": "This endpoint connects to a chat server using WebSockets",
           "tags": [
-            "Non-REST Connectivity"
+            "Real-time Communication"
           ]
         }
       }
@@ -861,11 +1068,16 @@
       "@comment": "EE only feature: WebSockets (chat example web interface)",
       "endpoint": "/chat",
       "extra_config": {
+        "documentation/postman": {
+          "name": "WebSocket Chat - Web UI",
+          "description": "Web interface for testing WebSocket chat functionality in the browser",
+          "folder": "/Real-time Communication"
+        },
         "documentation/openapi": {
           "summary": "Chat room User Interface",
           "description": "This endpoint offers a web interface to present a chat room",
           "tags": [
-            "Non-REST Connectivity"
+            "Real-time Communication"
           ]
         }
       },
@@ -900,11 +1112,47 @@
         }
       ],
       "extra_config": {
+        "documentation/postman": {
+          "name": "Static File Server - Demo Site",
+          "description": "Serves static content from demo folder including HTML, CSS, JS, and images",
+          "folder": "/Utilities"
+        },
         "documentation/openapi": {
           "summary": "Serve static content",
           "description": "This endpoint serves static content from the demo folder",
           "tags": [
-            "Non-REST Connectivity"
+            "Utilities"
+          ]
+        }
+      }
+    },
+    {
+      "@comment": "EE only feature: MCP Server - Entrypoint for Model Context Protocol",
+      "endpoint": "/mcp",
+      "method": "POST",
+      "timeout": "15s",
+      "backend": [
+        {
+          "url_pattern": "/ignore",
+          "host": [
+            "http://ignore"
+          ]
+        }
+      ],
+      "extra_config": {
+        "ai/mcp": {
+          "server_name": "country-data-aggregator"
+        },
+        "documentation/postman": {
+          "name": "MCP Server - Country Data Tools",
+          "description": "Model Context Protocol (MCP) server for AI/LLM integration - aggregates country data from REST + GraphQL APIs",
+          "folder": "/AI Integration"
+        },
+        "documentation/openapi": {
+          "summary": "MCP Server entrypoint for country data tools",
+          "description": "Model Context Protocol (MCP) server exposing country information aggregation tools. Accepts MCP protocol requests and routes them to appropriate handlers that aggregate REST and GraphQL APIs.",
+          "tags": [
+            "AI Integration"
           ]
         }
       }
@@ -943,6 +1191,186 @@
     }
   ],
   "extra_config": {
+    "documentation/postman": {
+      "name": "KrakenD Enterprise API Gateway - Playground",
+      "description": "Comprehensive demonstration environment showcasing KrakenD Enterprise capabilities including API composition, authentication, protocol conversion, rate limiting, and AI integration via MCP.",
+      "version": "1.0.0",
+      "folder": [
+        {
+          "name": "/API Composition",
+          "description": "Endpoints demonstrating API aggregation, data transformation, masking, sequential processing, and mocked responses"
+        },
+        {
+          "name": "/Authentication & Security",
+          "description": "Various authentication methods (JWT, API Keys, Basic Auth) and security policy enforcement"
+        },
+        {
+          "name": "/Routing & Wildcards",
+          "description": "Wildcard endpoints, dynamic routing, geofencing, and HTTP method restrictions"
+        },
+        {
+          "name": "/Protocol Conversion",
+          "description": "Convert between protocols: REST to gRPC, GraphQL to REST, SOAP XML to REST JSON"
+        },
+        {
+          "name": "/Performance & QoS",
+          "description": "Rate limiting, caching strategies, and concurrent request handling for optimal performance"
+        },
+        {
+          "name": "/Real-time Communication",
+          "description": "WebSocket connectivity and real-time bidirectional communication"
+        },
+        {
+          "name": "/AI Integration",
+          "description": "Model Context Protocol (MCP) server for AI/LLM integration and intelligent data access"
+        },
+        {
+          "name": "/Utilities",
+          "description": "Static file serving and utility endpoints"
+        }
+      ]
+    },
+    "ai/mcp": {
+      "servers": [
+        {
+          "name": "country-data-aggregator",
+          "title": "Country Information Aggregator",
+          "version": "1.0.0",
+          "stateless": true,
+          "instructions": "Provides unified country data by aggregating REST and GraphQL APIs. Use this to retrieve comprehensive information about countries including geography, demographics, and cultural data.",
+          "tools": [
+            {
+              "name": "get_country_info",
+              "title": "Get Country Information",
+              "description": "Retrieves comprehensive country data by aggregating multiple public APIs (REST + GraphQL). Returns unified information including capital, population, area, languages, currency, flag, and bordering countries.",
+              "type": "text",
+              "input_schema": {
+                "type": "object",
+                "properties": {
+                  "country_code": {
+                    "type": "string",
+                    "description": "Two-letter ISO 3166-1 alpha-2 country code (e.g., ES for Spain, FR for France, US for United States)",
+                    "pattern": "^[A-Z]{2}$"
+                  }
+                },
+                "required": [
+                  "country_code"
+                ]
+              },
+              "output_schema": {
+                "type": "object",
+                "properties": {
+                  "country": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "native_name": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "capital": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "population": {
+                    "type": [
+                      "number",
+                      "null"
+                    ]
+                  },
+                  "area_km2": {
+                    "type": [
+                      "number",
+                      "null"
+                    ]
+                  },
+                  "currency": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "languages": {
+                    "type": [
+                      "array",
+                      "null"
+                    ],
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "flag_emoji": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "borders": {
+                    "type": [
+                      "array",
+                      "null"
+                    ],
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                }
+              },
+              "return_error_msg": true,
+              "workflow": {
+                "endpoint": "/__mcp/country-info/{country_code}",
+                "backend": [
+                  {
+                    "@comment": "REST Countries API - provides geography, population, borders, flags",
+                    "host": [
+                      "https://restcountries.com"
+                    ],
+                    "url_pattern": "/v3.1/alpha/{country_code}",
+                    "encoding": "safejson",
+                    "is_collection": true,
+                    "group": "rest_data",
+                    "mapping": {
+                      "collection": "countries"
+                    }
+                  },
+                  {
+                    "@comment": "GraphQL Countries API - provides currency, native name, emoji, languages",
+                    "host": [
+                      "https://countries.trevorblades.com"
+                    ],
+                    "url_pattern": "/",
+                    "encoding": "json",
+                    "target": "data.country",
+                    "group": "graphql_data",
+                    "extra_config": {
+                      "backend/graphql": {
+                        "type": "query",
+                        "query": "query GetCountry($code: ID!) { country(code: $code) { name native capital currency emoji languages { code name } } }",
+                        "variables": {
+                          "code": "{country_code}"
+                        }
+                      }
+                    }
+                  }
+                ],
+                "extra_config": {
+                  "modifier/jmespath": {
+                    "@comment": "Simplified merge - take first element from REST array and combine with GraphQL",
+                    "expr": "{country: rest_data.countries[0].name.common, native_name: graphql_data.native, capital: rest_data.countries[0].capital[0], population: rest_data.countries[0].population, area_km2: rest_data.countries[0].area, currency: graphql_data.currency, languages: graphql_data.languages[*].name, flag_emoji: graphql_data.emoji, borders: rest_data.countries[0].borders}"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
     "grpc": {
       "catalog": [
         "./grpc_catalog"

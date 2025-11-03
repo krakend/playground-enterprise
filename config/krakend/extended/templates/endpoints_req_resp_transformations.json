@@ -1,250 +1,262 @@
 {
-  "@comment": "Feature: Aggregation and basic transformation",
-  "endpoint": "/git/{user}",
-  "backend": [
-    {
-      "host": [
-        "https://api.github.com"
-      ],
-      "url_pattern": "/users/{user}",
-      "allow": [
-        "avatar_url",
-        "name",
-        "company",
-        "blog",
-        "location",
-        "mail",
-        "hireable",
-        "followers",
-        "public_repos",
-        "public_gists"
-      ],
-      "mapping": {
-        "blog": "website"
-      },
-      "group": "user"
-    },
-    {
-      "host": [
-        "https://api.github.com"
-      ],
-      "url_pattern": "/users/{user}/repos",
-      "mapping": {
-        "collection": "repos"
-      },
-      "is_collection": true
-    }
-  ],
-  "extra_config": {
-    "documentation/postman": {
-      "name": "Aggregate GitHub User Data",
-      "description": "Fetches user info and repositories from GitHub API in parallel, merges results, and filters unnecessary fields",
-      "folder": "/API Composition & Transformation"
-    },
-    "documentation/openapi": {
-      "summary": "Merges two calls from github and serves under a single endpoint",
-      "description": "This endpoint fetches in parallel the user information and the repository information from Githuib and returns it together. Non interesting fields are removed.",
-      "tags": [
-        "Aggregation"
-      ]
-    }
-  }
-},
-{
-  "@comment": "EE only feature: Advanced transformation with query language",
-  "endpoint": "/cryptos/{currency}",
-  "output_encoding": "json-collection",
-  "backend": [
-    {
-      "host": [
-        "https://api.coingecko.com"
-      ],
-      "url_pattern": "/api/v3/coins/markets?vs_currency={currency}&order=market_cap_desc&per_page=100&page=1&sparkline=false",
-      "encoding": "safejson",
-      "extra_config": {
-        "modifier/martian": {
-          "header.Blacklist": {
-            "scope": ["request"],
-            "names": ["X-Forwarded-Host"]
-          }
-        }
-      }
-    }
-  ],
-  "extra_config": {
-    "modifier/jmespath": {
-      "@comment": "Get first 5 crypto by market capitalization, then reverse sort them by name, finally filter and rename some fields",
-      "expr": "reverse(sort_by(collection[:5], &name))[*].{name: name, token: symbol,price: current_price, price_change: price_change_percentage_24h, market_cap: market_cap}"
-    },
-    "documentation/postman": {
-      "name": "Get TOP 5 Cryptocurrencies by Market Cap",
-      "description": "Fetches top 5 cryptocurrencies by market capitalization from Coingecko, sorts them by name, and transforms the response using JMESPath query language",
-      "folder": "/API Composition & Transformation"
-    },
-    "documentation/openapi": {
-      "summary": "Get TOP 5 crypto capitalization & price data for a given currency",
-      "description": "This endpoint fetches some crypto capitalization data from Coingecko for a given currency.",
-      "tags": [
-        "Aggregation",
-        "Data Transformation"
-      ]
-    }
-  }
-},
-{
-  "@comment": "Feature: Regular expression manipulation",
-  "endpoint": "/user/creditcard",
-  "backend": [
-    {
-      "host": ["http://fake_api"],
-      "url_pattern": "/user/1.json",
-      "allow": [
-        "credit_card"
-      ],
-      "extra_config": {
-        "modifier/response-body": {
-          "modifiers": [
+        "@comment": "Feature: Aggregation and basic transformation",
+        "endpoint": "/git/{user}",
+        "backend": [
             {
-              "regexp": {
-                "field": "credit_card.number",
-                "@comment": "Ridiculous card masking. Show last 4 digits and remove the rest. Credit card number is nested.",
-                "find": "^.*(\\d{4})",
-                "replace": "XXXX-${1}"
-              }
+                "host": [
+                    "https://api.github.com"
+                ],
+                "url_pattern": "/users/{user}",
+                "allow": [
+                    "avatar_url",
+                    "name",
+                    "company",
+                    "blog",
+                    "location",
+                    "mail",
+                    "hireable",
+                    "followers",
+                    "public_repos",
+                    "public_gists"
+                ],
+                "mapping": {
+                    "blog": "website"
+                },
+                "group": "user"
+            },
+            {
+                "host": [
+                    "https://api.github.com"
+                ],
+                "url_pattern": "/users/{user}/repos",
+                "mapping": {
+                    "collection": "repos"
+                },
+                "is_collection": true
             }
-          ]
+        ],
+        "extra_config": {
+            "documentation/postman": {
+                "name": "Aggregate GitHub User Data",
+                "description": "Fetches user info and repositories from GitHub API in parallel, merges results, and filters unnecessary fields",
+                "folder": "/API Composition"
+            },
+            "documentation/openapi": {
+                "summary": "Merges two calls from github and serves under a single endpoint",
+                "description": "This endpoint fetches in parallel the user information and the repository information from Githuib and returns it together. Non interesting fields are removed.",
+                "tags": [
+                    "API Composition"
+                ]
+            }
         }
-      }
-    }
-  ],
-  "extra_config": {
-    "documentation/postman": {
-      "name": "Mask Credit Card Number",
-      "description": "Demonstrates regex-based data masking by showing only the last 4 digits of a credit card number",
-      "folder": "/API Composition & Transformation"
     },
-    "documentation/openapi": {
-      "summary": "Mask the credit card number",
-      "description": "This endpoint fetches the user information and masks the credit card number",
-      "tags": [
-        "Data Masking"
-      ]
-    }
-  }
-},
-{
-  "@comment": "Feature: Backend cache",
-  "endpoint": "/market/cached",
-  "backend": [
     {
-      "host": [
-        "https://api.coingecko.com"
-      ],
-      "url_pattern": "/api/v3/coins/markets?vs_currency=eur&ids=bitcoin,ethereum&order=market_cap_desc&per_page=100&page=1&sparkline=false",
-      "encoding": "safejson",
-      "mapping": {
-        "collection": "coins"
-      },
-      "extra_config": {
-        "qos/http-cache": {
-          "shared": true
-        },
-        "modifier/martian": {
-          "header.Blacklist": {
-            "scope": ["request"],
-            "names": ["X-Forwarded-Host"]
-          }
+        "@comment": "EE only feature: Advanced transformation with query language",
+        "endpoint": "/cryptos/{currency}",
+        "output_encoding": "json-collection",
+        "backend": [
+            {
+                "host": [
+                    "https://api.coingecko.com"
+                ],
+                "url_pattern": "/api/v3/coins/markets?vs_currency={currency}&order=market_cap_desc&per_page=100&page=1&sparkline=false",
+                "encoding": "safejson",
+                "extra_config": {
+                    "modifier/martian": {
+                        "header.Blacklist": {
+                            "scope": [
+                                "request"
+                            ],
+                            "names": [
+                                "X-Forwarded-Host"
+                            ]
+                        }
+                    }
+                }
+            }
+        ],
+        "extra_config": {
+            "modifier/jmespath": {
+                "@comment": "Get first 5 crypto by market capitalization, then reverse sort them by name, finally filter and rename some fields",
+                "expr": "reverse(sort_by(collection[:5], &name))[*].{name: name, token: symbol,price: current_price, price_change: price_change_percentage_24h, market_cap: market_cap}"
+            },
+            "documentation/postman": {
+                "name": "Get TOP 5 Cryptocurrencies by Market Cap",
+                "description": "Fetches top 5 cryptocurrencies by market capitalization from Coingecko, sorts them by name, and transforms the response using JMESPath query language",
+                "folder": "/API Composition"
+            },
+            "documentation/openapi": {
+                "summary": "Get TOP 5 crypto capitalization & price data for a given currency",
+                "description": "This endpoint fetches some crypto capitalization data from Coingecko for a given currency.",
+                "tags": [
+                    "API Composition"
+                ]
+            }
         }
-      }
-    }
-  ],
-  "extra_config": {
-    "documentation/postman": {
-      "name": "Backend Cache Demo",
-      "description": "Demonstrates backend-level HTTP caching for expensive API calls (Bitcoin/Ethereum market data)",
-      "folder": "/Rate Limiting & Caching"
-    },
-    "documentation/openapi": {
-      "summary": "Backend HTTP cache for crypto market data",
-      "description": "Demonstrates backend-level caching using Cache-Control headers to reduce expensive API calls to external services",
-      "tags": [
-        "Caching"
-      ]
-    }
-  }
-},
-{
-  "@comment": "Feature: Mocked response",
-  "endpoint": "/mocked-response",
-  "method": "GET",
-  "output_encoding": "json",
-  "backend": [
-    {
-      "host": [
-        "http://unexistent_backend"
-      ],
-      "url_pattern": "/"
-    }
-  ],
-  "extra_config": {
-    "documentation/postman": {
-      "name": "Mocked/Static Response",
-      "description": "Returns a static JSON response without calling any backend, useful for testing and prototyping",
-      "folder": "/API Composition & Transformation"
-    },
-    "documentation/openapi": {
-      "summary": "Static mocked response without backend",
-      "description": "Returns predefined static JSON data without calling any backend service, useful for testing, prototyping, and development",
-      "tags": [
-        "Response Mocking"
-      ]
-    },
-    "proxy": {
-      "static": {
-        "data": {
-          "an_integer": 123,
-          "an_array": [
-            "arr1",
-            "arr2"
-          ],
-          "an_object": {
-            "obj": "obj1"
-          }
-        },
-        "strategy": "always"
-      }
-    }
-  }
-},
-{
-  "@comment": "Feature: Sequential calls, using values from 1st call response into 2nd call request",
-  "endpoint": "/sequential",
-  "backend": [
-    {
-      "host": ["http://fake_api"],
-      "url_pattern": "/hotels/1.json",
-      "allow": [ "destination_id" ]
     },
     {
-      "url_pattern": "/destinations/{resp0_destination_id}.json"
-    }
-  ],
-  "extra_config": {
-    "documentation/postman": {
-      "name": "Sequential Backend Calls",
-      "description": "Demonstrates sequential proxy pattern where the response from the first backend call is used in the second backend request",
-      "folder": "/API Composition & Transformation"
+        "@comment": "Feature: Regular expression manipulation",
+        "endpoint": "/user/creditcard",
+        "backend": [
+            {
+                "host": [
+                    "http://fake_api"
+                ],
+                "url_pattern": "/user/1.json",
+                "allow": [
+                    "credit_card"
+                ],
+                "extra_config": {
+                    "modifier/response-body": {
+                        "modifiers": [
+                            {
+                                "regexp": {
+                                    "field": "credit_card.number",
+                                    "@comment": "Ridiculous card masking. Show last 4 digits and remove the rest. Credit card number is nested.",
+                                    "find": "^.*(\\d{4})",
+                                    "replace": "XXXX-${1}"
+                                }
+                            }
+                        ]
+                    }
+                }
+            }
+        ],
+        "extra_config": {
+            "documentation/postman": {
+                "name": "Mask Credit Card Number",
+                "description": "Demonstrates regex-based data masking by showing only the last 4 digits of a credit card number",
+                "folder": "/API Composition"
+            },
+            "documentation/openapi": {
+                "summary": "Mask the credit card number",
+                "description": "This endpoint fetches the user information and masks the credit card number",
+                "tags": [
+                    "API Composition"
+                ]
+            }
+        }
     },
-    "documentation/openapi": {
-      "summary": "Sequential backend calls with response chaining",
-      "description": "Demonstrates sequential processing where the response from the first backend call is used to construct the second request (hotel lookup followed by destination details)",
-      "tags": [
-        "Sequential Processing",
-        "Aggregation"
-      ]
+    {
+        "@comment": "Feature: Backend cache",
+        "endpoint": "/market/cached",
+        "backend": [
+            {
+                "host": [
+                    "https://api.coingecko.com"
+                ],
+                "url_pattern": "/api/v3/coins/markets?vs_currency=eur&ids=bitcoin,ethereum&order=market_cap_desc&per_page=100&page=1&sparkline=false",
+                "encoding": "safejson",
+                "mapping": {
+                    "collection": "coins"
+                },
+                "extra_config": {
+                    "qos/http-cache": {
+                        "shared": true
+                    },
+                    "modifier/martian": {
+                        "header.Blacklist": {
+                            "scope": [
+                                "request"
+                            ],
+                            "names": [
+                                "X-Forwarded-Host"
+                            ]
+                        }
+                    }
+                }
+            }
+        ],
+        "extra_config": {
+            "documentation/postman": {
+                "name": "Backend Cache Demo",
+                "description": "Demonstrates backend-level HTTP caching for expensive API calls (Bitcoin/Ethereum market data)",
+                "folder": "/Performance & QoS"
+            },
+            "documentation/openapi": {
+                "summary": "Backend HTTP cache for crypto market data",
+                "description": "Demonstrates backend-level caching using Cache-Control headers to reduce expensive API calls to external services",
+                "tags": [
+                    "Performance & QoS"
+                ]
+            }
+        }
     },
-    "proxy": {
-      "sequential": true
+    {
+        "@comment": "Feature: Mocked response",
+        "endpoint": "/mocked-response",
+        "method": "GET",
+        "output_encoding": "json",
+        "backend": [
+            {
+                "host": [
+                    "http://unexistent_backend"
+                ],
+                "url_pattern": "/"
+            }
+        ],
+        "extra_config": {
+            "documentation/postman": {
+                "name": "Mocked/Static Response",
+                "description": "Returns a static JSON response without calling any backend, useful for testing and prototyping",
+                "folder": "/API Composition"
+            },
+            "documentation/openapi": {
+                "summary": "Static mocked response without backend",
+                "description": "Returns predefined static JSON data without calling any backend service, useful for testing, prototyping, and development",
+                "tags": [
+                    "API Composition"
+                ]
+            },
+            "proxy": {
+                "static": {
+                    "data": {
+                        "an_integer": 123,
+                        "an_array": [
+                            "arr1",
+                            "arr2"
+                        ],
+                        "an_object": {
+                            "obj": "obj1"
+                        }
+                    },
+                    "strategy": "always"
+                }
+            }
+        }
+    },
+    {
+        "@comment": "Feature: Sequential calls, using values from 1st call response into 2nd call request",
+        "endpoint": "/sequential",
+        "backend": [
+            {
+                "host": [
+                    "http://fake_api"
+                ],
+                "url_pattern": "/hotels/1.json",
+                "allow": [
+                    "destination_id"
+                ]
+            },
+            {
+                "url_pattern": "/destinations/{resp0_destination_id}.json"
+            }
+        ],
+        "extra_config": {
+            "documentation/postman": {
+                "name": "Sequential Backend Calls",
+                "description": "Demonstrates sequential proxy pattern where the response from the first backend call is used in the second backend request",
+                "folder": "/API Composition"
+            },
+            "documentation/openapi": {
+                "summary": "Sequential backend calls with response chaining",
+                "description": "Demonstrates sequential processing where the response from the first backend call is used to construct the second request (hotel lookup followed by destination details)",
+                "tags": [
+                    "API Composition"
+                ]
+            },
+            "proxy": {
+                "sequential": true
+            }
+        }
     }
-  }
-}
