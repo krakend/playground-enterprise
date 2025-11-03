@@ -14,7 +14,21 @@
             "host": [ "http://localhost:8080" ],
             "encoding":"no-op"
         }
-    ]
+    ],
+    "extra_config": {
+        "documentation/postman": {
+            "name": "Serve Static Website Files",
+            "description": "Serves static HTML/CSS/JS files from the demo directory for the playground demo website",
+            "folder": "/Static Content"
+        },
+        "documentation/openapi": {
+            "summary": "Static file server for demo website",
+            "description": "Serves static HTML, CSS, JavaScript, and image files from the demo directory for the playground demo website",
+            "tags": [
+                "Static Files"
+            ]
+        }
+    }
 },
 {
     "@comment": "Feature: Expose a GET REST endpoint from POST to SOAP service",
@@ -41,7 +55,21 @@
                 }
             }
         }
-    ]
+    ],
+    "extra_config": {
+        "documentation/postman": {
+            "name": "SOAP to REST Conversion",
+            "description": "Converts SOAP XML web service to REST JSON endpoint (country capital lookup)",
+            "folder": "/Protocol Conversion/SOAP"
+        },
+        "documentation/openapi": {
+            "summary": "SOAP to REST conversion for country capital lookup",
+            "description": "Converts SOAP XML web service to REST JSON endpoint, fetching country capital information from a legacy SOAP service",
+            "tags": [
+                "SOAP Integration"
+            ]
+        }
+    }
 },
 {
     "@comment": "Feature: GraphQL to REST",
@@ -64,7 +92,21 @@
                 }
             }
         }
-    ]
+    ],
+    "extra_config": {
+        "documentation/postman": {
+            "name": "GraphQL to REST Conversion",
+            "description": "Converts GraphQL query to REST endpoint (Star Wars films data from SWAPI)",
+            "folder": "/Protocol Conversion/GraphQL"
+        },
+        "documentation/openapi": {
+            "summary": "GraphQL to REST conversion for Star Wars films",
+            "description": "Converts GraphQL API to REST endpoint, fetching Star Wars movie information including species and homeworld data from SWAPI GraphQL",
+            "tags": [
+                "GraphQL Integration"
+            ]
+        }
+    }
 },
 {
     "@comment": "EE only feature: GRPC",
@@ -132,7 +174,22 @@
                 }
             }
         }
-    ]
+    ],
+    "extra_config": {
+        "documentation/postman": {
+            "name": "gRPC to REST Aggregation (Travel Search)",
+            "description": "Aggregates multiple gRPC services (flights, trains, hotels) into a single REST endpoint with parameter mapping",
+            "folder": "/Protocol Conversion/gRPC"
+        },
+        "documentation/openapi": {
+            "summary": "gRPC to REST aggregation for travel search",
+            "description": "Aggregates multiple gRPC services (flights, trains, hotels) into a single REST endpoint with intelligent parameter mapping and protocol conversion",
+            "tags": [
+                "gRPC Integration",
+                "Aggregation"
+            ]
+        }
+    }
 },
 {
     "@comment": "EE only feature: GRPC Payload in Body",
@@ -155,7 +212,21 @@
                 }
             }
         }
-    ]
+    ],
+    "extra_config": {
+        "documentation/postman": {
+            "name": "gRPC POST with Request Body",
+            "description": "Demonstrates gRPC integration with POST method using request body for flight booking",
+            "folder": "/Protocol Conversion/gRPC"
+        },
+        "documentation/openapi": {
+            "summary": "gRPC POST endpoint with request body mapping",
+            "description": "Demonstrates gRPC integration with POST method, mapping request body and path parameters to gRPC fields for flight booking",
+            "tags": [
+                "gRPC Integration"
+            ]
+        }
+    }
 },
 {
     "@comment": "EE only feature: WebSockets (chat example)",
@@ -192,6 +263,18 @@
             "ping_period": "54s",
             "max_retries": 0,
             "backoff_strategy": "exponential"
+        },
+        "documentation/postman": {
+            "name": "WebSocket Chat Connection",
+            "description": "WebSocket endpoint for real-time chat functionality with connect/disconnect events and message buffering",
+            "folder": "/WebSockets & Real-time"
+        },
+        "documentation/openapi": {
+            "summary": "WebSocket chat room connection",
+            "description": "WebSocket endpoint for real-time bidirectional chat communication with configurable room parameter, connect/disconnect events, and message buffering",
+            "tags": [
+                "WebSockets"
+            ]
         }
     }
 },
@@ -207,7 +290,21 @@
             ],
             "encoding": "no-op"
         }
-    ]
+    ],
+    "extra_config": {
+        "documentation/postman": {
+            "name": "WebSocket Chat Web Interface",
+            "description": "Web interface for testing WebSocket chat functionality",
+            "folder": "/WebSockets & Real-time"
+        },
+        "documentation/openapi": {
+            "summary": "WebSocket chat web interface",
+            "description": "Web-based user interface for testing and interacting with WebSocket chat functionality in the browser",
+            "tags": [
+                "WebSockets"
+            ]
+        }
+    }
 },
 {
     "@comment": "EE only feature: Wildcard to our fake API, open",
@@ -219,11 +316,16 @@
       }
     ],
     "extra_config": {
+      "documentation/postman": {
+        "name": "Wildcard Proxy (Open)",
+        "description": "Open wildcard endpoint that proxies all requests to internal fake API without restrictions",
+        "folder": "/Routing & Wildcards"
+      },
       "documentation/openapi": {
         "summary": "Calls to internal service with wildcard",
         "description": "This endpoint will send all requests to a designed backend including everything after the /fake-api path",
         "tags": [
-          "Wildcard"
+          "Wildcard Routing"
         ]
       }
     }
@@ -242,6 +344,11 @@
       }
     ],
     "extra_config": {
+      "documentation/postman": {
+        "name": "Geofenced Wildcard Proxy (Spain Only)",
+        "description": "Wildcard endpoint with geofencing using CEL validation to allow access only from Spain",
+        "folder": "/Routing & Wildcards"
+      },
       "validation/cel": [
         {
           "check_expr": "req_headers['X-Geoip'][0].matches('\"IsoCode\":\"ES\"')"
@@ -251,7 +358,8 @@
         "summary": "Calls to internal service with wildcard, using geofencing",
         "description": "This endpoint will send all requests to a designed backend including everything after the /fake-api-geofence path, adding geofencing (allowing calls only from Spain)",
         "tags": [
-          "Wildcard"
+          "Wildcard Routing",
+          "Geofencing"
         ]
       }
     }
@@ -266,7 +374,21 @@
         "host": ["http://localhost:8080"],
         "url_pattern": "/__debug/{input_headers.x-route}"
       }
-    ]
+    ],
+    "extra_config": {
+      "documentation/postman": {
+        "name": "Dynamic Routing by Header",
+        "description": "Demonstrates dynamic URL path construction using the X-Route header value",
+        "folder": "/Routing & Wildcards"
+      },
+      "documentation/openapi": {
+        "summary": "Dynamic routing based on request header",
+        "description": "Demonstrates dynamic URL path construction using the value of the X-Route header to determine backend routing destination",
+        "tags": [
+          "Dynamic Routing"
+        ]
+      }
+    }
   },
   {
     "@comment": "EE only feature: Dynamic routing based on query strings",
@@ -278,5 +400,46 @@
         "host": ["http://localhost:8080"],
         "url_pattern": "/__debug/{input_query_strings.route}"
       }
-    ]
+    ],
+    "extra_config": {
+      "documentation/postman": {
+        "name": "Dynamic Routing by Query String",
+        "description": "Demonstrates dynamic URL path construction using the 'route' query string parameter",
+        "folder": "/Routing & Wildcards"
+      },
+      "documentation/openapi": {
+        "summary": "Dynamic routing based on query string",
+        "description": "Demonstrates dynamic URL path construction using the 'route' query string parameter to determine backend routing destination",
+        "tags": [
+          "Dynamic Routing"
+        ]
+      }
+    }
+  },
+  {
+    "@comment": "EE only feature: MCP Server - Entrypoint for Model Context Protocol",
+    "endpoint": "/mcp",
+    "method": "POST",
+    "timeout": "15s",
+    "backend": [
+      {
+        "url_pattern": "/ignore",
+        "host": ["http://ignore"]
+      }
+    ],
+    "extra_config": {
+      "documentation/postman": {
+        "name": "MCP Server Entrypoint (AI Gateway)",
+        "description": "Model Context Protocol server endpoint that exposes country data aggregation tools for AI/LLM integration",
+        "folder": "/AI & MCP Server"
+      },
+      "ai/mcp": {
+        "server_name": "country-data-aggregator"
+      },
+      "documentation/openapi": {
+        "summary": "MCP Server entrypoint for country data tools",
+        "description": "Model Context Protocol (MCP) server exposing country information aggregation tools. Accepts MCP protocol requests and routes them to appropriate handlers that aggregate REST and GraphQL APIs.",
+        "tags": ["MCP Server", "AI Gateway"]
+      }
+    }
   }

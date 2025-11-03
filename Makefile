@@ -22,13 +22,13 @@ compile-flexible-config:
 
 
 check:
-	docker run -it \
+	docker run \
         -v "$(PWD)/config/krakend/:/etc/krakend/" \
         krakend/krakend-ee \
         check -d -t -c krakend.json --lint
 
 audit:
-	docker run -it \
+	docker run \
         -v "$(PWD)/config/krakend/:/etc/krakend/" \
         krakend/krakend-ee \
         audit -c krakend.json

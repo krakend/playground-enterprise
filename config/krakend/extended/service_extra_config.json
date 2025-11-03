@@ -1,4 +1,143 @@
 {
+  "documentation/postman": {
+    "name": "KrakenD Enterprise API Gateway - Playground",
+    "description": "Comprehensive demonstration environment showcasing KrakenD Enterprise capabilities including API composition, authentication, protocol conversion, rate limiting, and AI integration via MCP.",
+    "version": "1.0.0",
+    "folder": [
+      {
+        "name": "/API Composition & Transformation",
+        "description": "Endpoints demonstrating API aggregation, data transformation, masking, and mocked responses"
+      },
+      {
+        "name": "/Authentication & Authorization",
+        "description": "Various authentication methods: JWT (Keycloak), API Keys, Basic Auth, and token signing"
+      },
+      {
+        "name": "/Rate Limiting & Caching",
+        "description": "QoS features including multi-level rate limiting, backend caching, and concurrent requests"
+      },
+      {
+        "name": "/Routing & Wildcards",
+        "description": "Dynamic routing, wildcard endpoints, geofencing, and HTTP method restrictions"
+      },
+      {
+        "name": "/Protocol Conversion",
+        "description": "Convert between protocols: REST to gRPC, GraphQL to REST, SOAP XML to REST JSON"
+      },
+      {
+        "name": "/Protocol Conversion/gRPC",
+        "description": "gRPC service integration examples"
+      },
+      {
+        "name": "/Protocol Conversion/GraphQL",
+        "description": "GraphQL to REST transformation examples"
+      },
+      {
+        "name": "/Protocol Conversion/SOAP",
+        "description": "SOAP XML to REST JSON conversion examples"
+      },
+      {
+        "name": "/WebSockets & Real-time",
+        "description": "WebSocket connectivity and real-time chat functionality"
+      },
+      {
+        "name": "/Security Policies",
+        "description": "Advanced security policy enforcement using CEL expressions"
+      },
+      {
+        "name": "/AI & MCP Server",
+        "description": "Model Context Protocol (MCP) server for AI/LLM integration (Enterprise-only feature)"
+      },
+      {
+        "name": "/Static Content",
+        "description": "Serve static files and demo website"
+      }
+    ]
+  },
+  "ai/mcp": {
+    "servers": [
+      {
+        "name": "country-data-aggregator",
+        "title": "Country Information Aggregator",
+        "version": "1.0.0",
+        "stateless": true,
+        "instructions": "Provides unified country data by aggregating REST and GraphQL APIs. Use this to retrieve comprehensive information about countries including geography, demographics, and cultural data.",
+        "tools": [
+          {
+            "name": "get_country_info",
+            "title": "Get Country Information",
+            "description": "Retrieves comprehensive country data by aggregating multiple public APIs (REST + GraphQL). Returns unified information including capital, population, area, languages, currency, flag, and bordering countries.",
+            "type": "text",
+            "input_schema": {
+              "type": "object",
+              "properties": {
+                "country_code": {
+                  "type": "string",
+                  "description": "Two-letter ISO 3166-1 alpha-2 country code (e.g., ES for Spain, FR for France, US for United States)",
+                  "pattern": "^[A-Z]{2}$"
+                }
+              },
+              "required": ["country_code"]
+            },
+            "output_schema": {
+              "type": "object",
+              "properties": {
+                "country": {"type": ["string", "null"]},
+                "native_name": {"type": ["string", "null"]},
+                "capital": {"type": ["string", "null"]},
+                "population": {"type": ["number", "null"]},
+                "area_km2": {"type": ["number", "null"]},
+                "currency": {"type": ["string", "null"]},
+                "languages": {"type": ["array", "null"], "items": {"type": "string"}},
+                "flag_emoji": {"type": ["string", "null"]},
+                "borders": {"type": ["array", "null"], "items": {"type": "string"}}
+              }
+            },
+            "return_error_msg": true,
+            "workflow": {
+              "endpoint": "/__mcp/country-info/{country_code}",
+              "backend": [
+                {
+                  "@comment": "REST Countries API - provides geography, population, borders, flags",
+                  "host": ["https://restcountries.com"],
+                  "url_pattern": "/v3.1/alpha/{country_code}",
+                  "encoding": "safejson",
+                  "is_collection": true,
+                  "group": "rest_data",
+                  "mapping": {
+                    "collection": "countries"
+                  }
+                },
+                {
+                  "@comment": "GraphQL Countries API - provides currency, native name, emoji, languages",
+                  "host": ["https://countries.trevorblades.com"],
+                  "url_pattern": "/",
+                  "encoding": "json",
+                  "target": "data.country",
+                  "group": "graphql_data",
+                  "extra_config": {
+                    "backend/graphql": {
+                      "type": "query",
+                      "query": "query GetCountry($code: ID!) { country(code: $code) { name native capital currency emoji languages { code name } } }",
+                      "variables": {
+                        "code": "{country_code}"
+                      }
+                    }
+                  }
+                }
+              ],
+              "extra_config": {
+                "modifier/jmespath": {
+                  "@comment": "Simplified merge - take first element from REST array and combine with GraphQL",
+                  "expr": "{country: rest_data.countries[0].name.common, native_name: graphql_data.native, capital: rest_data.countries[0].capital[0], population: rest_data.countries[0].population, area_km2: rest_data.countries[0].area, currency: graphql_data.currency, languages: graphql_data.languages[*].name, flag_emoji: graphql_data.emoji, borders: rest_data.countries[0].borders}"
+                }
+              }
+            }
+          }
+        ]
+      }
+    ]
+  },
   "grpc": {
     "catalog": [
       "{{.grpc_catalog}}"

@@ -24,6 +24,19 @@
         }
     ],
     "extra_config": {
+        "documentation/postman": {
+            "name": "Multi-Level Rate Limiting",
+            "description": "Demonstrates endpoint-level and backend-level rate limiting with aggregation of multiple data sources",
+            "folder": "/Rate Limiting & Caching"
+        },
+        "documentation/openapi": {
+            "summary": "Multi-level rate limiting with aggregation",
+            "description": "Demonstrates both endpoint-level and backend-level rate limiting while aggregating multiple data sources (campaigns and products)",
+            "tags": [
+                "Aggregation",
+                "Rate Limiting"
+            ]
+        },
         "qos/ratelimit/router": {
             "max_rate": 2
         }
@@ -41,15 +54,28 @@
             "encoding": "safejson",
             "mapping": {
                 "collection": "coins"
+            },
+            "extra_config": {
+                "modifier/martian": {
+                    "header.Blacklist": {
+                        "scope": ["request"],
+                        "names": ["X-Forwarded-Host"]
+                    }
+                }
             }
         }
     ],
     "extra_config": {
+        "documentation/postman": {
+            "name": "Sequential Backend Call (No Concurrency)",
+            "description": "Fetches crypto market data with a single sequential call (baseline for comparison with concurrent endpoint)",
+            "folder": "/Rate Limiting & Caching"
+        },
         "documentation/openapi": {
             "summary": "Get crypto market information with a single call",
             "description": "This endpoint fetches crypto market information from Coingecko using a single non-concurrent call.",
             "tags": [
-                "Concurrent calls"
+                "Concurrency"
             ]
         }
     }
@@ -67,15 +93,52 @@
             "encoding": "safejson",
             "mapping": {
                 "collection": "coins"
+            },
+            "extra_config": {
+                "modifier/martian": {
+                    "header.Blacklist": {
+                        "scope": ["request"],
+                        "names": ["X-Forwarded-Host"]
+                    }
+                }
             }
         }
     ],
     "extra_config": {
+        "documentation/postman": {
+            "name": "Concurrent Backend Calls (3x Parallelization)",
+            "description": "Demonstrates concurrent requests by making 3 parallel calls to the same backend endpoint for improved performance",
+            "folder": "/Rate Limiting & Caching"
+        },
         "documentation/openapi": {
             "summary": "Get crypto market information with 3 concurrent calls",
             "description": "This endpoint fetches crypto market information from Coingecko using 3 concurrent calls.",
             "tags": [
-                "Concurrent calls"
+                "Concurrency"
+            ]
+        }
+    }
+},
+{
+    "@comment": "Feature: Only POST method allowed",
+    "endpoint": "/post",
+    "method": "POST",
+    "backend": [
+        {
+            "url_pattern": "/__debug/post"
+        }
+    ],
+    "extra_config": {
+        "documentation/postman": {
+            "name": "HTTP Method Restriction (POST Only)",
+            "description": "Demonstrates method-specific routing by allowing only POST requests",
+            "folder": "/Routing & Wildcards"
+        },
+        "documentation/openapi": {
+            "summary": "Only POST method allowed",
+            "description": "This endpoint only allows POST requests",
+            "tags": [
+                "HTTP Methods"
             ]
         }
     }
