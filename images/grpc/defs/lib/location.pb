@@ -7,4 +7,4 @@
 address_line (	RaddressLine"~
 Location5
 address (2.krakend_playground.AddressRaddress;
-position (2.krakend_playground.GeoPositionRpositionBCZAgithub.com/krakendio/playground-enterprise/images/grpc/genlib/libbproto3
+position (2.krakend_playground.GeoPositionRpositionBCZAgithub.com/krakend/playground-enterprise/images/grpc/genlib/libbproto3

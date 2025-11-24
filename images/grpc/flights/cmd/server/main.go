@@ -6,7 +6,7 @@ import (
 
 	"google.golang.org/grpc"
 	// timestamppb "google.golang.org/protobuf/types/known/timestamppb"
-	flightspb "github.com/krakendio/playground-enterprise/images/grpc/genlib/flights"
+	flightspb "github.com/krakend/playground-enterprise/images/grpc/genlib/flights"
 )
 
 func main() {

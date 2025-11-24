@@ -8,8 +8,8 @@ import (
 	"strconv"
 	"time"
 
-	libpb "github.com/krakendio/playground-enterprise/images/grpc/genlib/lib"
-	trainspb "github.com/krakendio/playground-enterprise/images/grpc/genlib/trains"
+	libpb "github.com/krakend/playground-enterprise/images/grpc/genlib/lib"
+	trainspb "github.com/krakend/playground-enterprise/images/grpc/genlib/trains"
 	emptypb "google.golang.org/protobuf/types/known/emptypb"
 	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
 )
