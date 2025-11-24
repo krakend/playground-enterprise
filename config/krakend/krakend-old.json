@@ -142,32 +142,11 @@
         }
       ],
       "extra_config": {
-        "qos/ratelimit/tiered": {
-          "tier_key": "plan",
-          "tiers": [
-            {
-              "tier_value": "premium",
-              "tier_value_as": "literal",
-              "ratelimit": {
-                "client_max_rate": 5,
-                "client_capacity": 5,
-                "every": "1m",
-                "max_rate": 10000,
-                "strategy": "header",
-                "key": "apikey"
-              }
-            },
-            {
-              "tier_value": "",
-              "tier_value_as": "*",
-              "ratelimit": {
-                "client_max_rate": 2,
-                "client_capacity": 2,
-                "every": "1m",
-                "strategy": "ip"
-              }
-            }
-          ]
+        "qos/ratelimit/router": {
+          "client_max_rate": 5,
+          "every": "5s",
+          "strategy": "param",
+          "key": "shop_id"
         }
       }
     },
