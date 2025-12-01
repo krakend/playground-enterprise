@@ -1,82 +1,157 @@
 {
-    "@comment": "Feature: Aggregation + backend rate limiting + endpoint rate limiting",
-    "endpoint": "/shop",
-    "backend": [
-        {
-            "host": ["http://fake_api"],
-            "url_pattern": "/shop/campaigns.json",
-            "allow": [
-                "campaigns"
-            ]
-        },
-        {
-            "host": ["http://fake_api"],
-            "url_pattern": "/shop/products.json",
-            "allow": [
-                "products"
-            ],
-            "extra_config": {
-                "qos/ratelimit/proxy": {
-                    "max_rate": 1,
-                    "capacity": 1
+        "@comment": "Feature: Aggregation + backend rate limiting + endpoint rate limiting",
+        "endpoint": "/shop",
+        "backend": [
+            {
+                "host": [
+                    "http://fake_api"
+                ],
+                "url_pattern": "/shop/campaigns.json",
+                "allow": [
+                    "campaigns"
+                ]
+            },
+            {
+                "host": [
+                    "http://fake_api"
+                ],
+                "url_pattern": "/shop/products.json",
+                "allow": [
+                    "products"
+                ],
+                "extra_config": {
+                    "qos/ratelimit/proxy": {
+                        "max_rate": 1,
+                        "capacity": 1
+                    }
                 }
             }
-        }
-    ],
-    "extra_config": {
-        "qos/ratelimit/router": {
-            "max_rate": 2
-        }
-    }
-},
-{
-    "@comment": "Feature: Concurrent calls - Not enabled",
-    "endpoint": "/market/simple",
-    "backend": [
-        {
-            "host": [
-                "https://api.coingecko.com"
-            ],
-            "url_pattern": "/api/v3/coins/markets?vs_currency=eur&ids=bitcoin%2Cethereum&order=market_cap_desc&per_page=100&page=1&sparkline=false",
-            "encoding": "safejson",
-            "mapping": {
-                "collection": "coins"
+        ],
+        "extra_config": {
+            "documentation/postman": {
+                "name": "Multi-Level Rate Limiting",
+                "description": "Demonstrates endpoint-level and backend-level rate limiting with aggregation of multiple data sources",
+                "folder": "/API Composition"
+            },
+            "documentation/openapi": {
+                "summary": "Multi-level rate limiting with aggregation",
+                "description": "Demonstrates both endpoint-level and backend-level rate limiting while aggregating multiple data sources (campaigns and products)",
+                "tags": [
+                    "API Composition",
+                    "Performance & QoS"
+                ]
+            },
+            "qos/ratelimit/router": {
+                "max_rate": 2
             }
         }
-    ],
-    "extra_config": {
-        "documentation/openapi": {
-            "summary": "Get crypto market information with a single call",
-            "description": "This endpoint fetches crypto market information from Coingecko using a single non-concurrent call.",
-            "tags": [
-                "Concurrent calls"
-            ]
-        }
-    }
-},
-{
-    "@comment": "Feature: Concurrent calls - Enabled",
-    "endpoint": "/market/concurrent",
-    "concurrent_calls": 3,
-    "backend": [
-        {
-            "host": [
-                "https://api.coingecko.com"
-            ],
-            "url_pattern": "/api/v3/coins/markets?vs_currency=eur&ids=bitcoin%2Cethereum&order=market_cap_desc&per_page=100&page=1&sparkline=false",
-            "encoding": "safejson",
-            "mapping": {
-                "collection": "coins"
+    },
+    {
+        "@comment": "Feature: Concurrent calls - Not enabled",
+        "endpoint": "/market/simple",
+        "backend": [
+            {
+                "host": [
+                    "https://api.coingecko.com"
+                ],
+                "url_pattern": "/api/v3/coins/markets?vs_currency=eur&ids=bitcoin%2Cethereum&order=market_cap_desc&per_page=100&page=1&sparkline=false",
+                "encoding": "safejson",
+                "mapping": {
+                    "collection": "coins"
+                },
+                "extra_config": {
+                    "modifier/martian": {
+                        "header.Blacklist": {
+                            "scope": [
+                                "request"
+                            ],
+                            "names": [
+                                "X-Forwarded-Host"
+                            ]
+                        }
+                    }
+                }
+            }
+        ],
+        "extra_config": {
+            "documentation/postman": {
+                "name": "Sequential Backend Call (No Concurrency)",
+                "description": "Fetches crypto market data with a single sequential call (baseline for comparison with concurrent endpoint)",
+                "folder": "/Performance & QoS"
+            },
+            "documentation/openapi": {
+                "summary": "Get crypto market information with a single call",
+                "description": "This endpoint fetches crypto market information from Coingecko using a single non-concurrent call.",
+                "tags": [
+                    "Performance & QoS"
+                ]
             }
         }
-    ],
-    "extra_config": {
-        "documentation/openapi": {
-            "summary": "Get crypto market information with 3 concurrent calls",
-            "description": "This endpoint fetches crypto market information from Coingecko using 3 concurrent calls.",
-            "tags": [
-                "Concurrent calls"
-            ]
+    },
+    {
+        "@comment": "Feature: Concurrent calls - Enabled",
+        "endpoint": "/market/concurrent",
+        "concurrent_calls": 3,
+        "backend": [
+            {
+                "host": [
+                    "https://api.coingecko.com"
+                ],
+                "url_pattern": "/api/v3/coins/markets?vs_currency=eur&ids=bitcoin%2Cethereum&order=market_cap_desc&per_page=100&page=1&sparkline=false",
+                "encoding": "safejson",
+                "mapping": {
+                    "collection": "coins"
+                },
+                "extra_config": {
+                    "modifier/martian": {
+                        "header.Blacklist": {
+                            "scope": [
+                                "request"
+                            ],
+                            "names": [
+                                "X-Forwarded-Host"
+                            ]
+                        }
+                    }
+                }
+            }
+        ],
+        "extra_config": {
+            "documentation/postman": {
+                "name": "Concurrent Backend Calls (3x Parallelization)",
+                "description": "Demonstrates concurrent requests by making 3 parallel calls to the same backend endpoint for improved performance",
+                "folder": "/Performance & QoS"
+            },
+            "documentation/openapi": {
+                "summary": "Get crypto market information with 3 concurrent calls",
+                "description": "This endpoint fetches crypto market information from Coingecko using 3 concurrent calls.",
+                "tags": [
+                    "Performance & QoS"
+                ]
+            }
+        }
+    },
+    {
+        "@comment": "Feature: Only POST method allowed",
+        "endpoint": "/post",
+        "method": "POST",
+        "backend": [
+            {
+                "url_pattern": "/__debug/post"
+            }
+        ],
+        "extra_config": {
+            "documentation/postman": {
+                "name": "HTTP Method Restriction (POST Only)",
+                "description": "Demonstrates method-specific routing by allowing only POST requests",
+                "folder": "/Routing & Wildcards"
+            },
+            "documentation/openapi": {
+                "summary": "Only POST method allowed",
+                "description": "This endpoint only allows POST requests",
+                "tags": [
+                    "Routing & Wildcards"
+                ]
+            }
         }
     }
-}

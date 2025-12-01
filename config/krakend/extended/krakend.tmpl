@@ -22,6 +22,7 @@
       {{ template "endpoints_traffic_management.json" . }},
       {{ template "endpoints_services_connectivity.json" . }}
   ],
+  "sequential_start": true,
   "extra_config": {
     "$ref": "./service_extra_config.json"
   }

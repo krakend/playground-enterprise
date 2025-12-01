@@ -1,2 +1,4 @@
 config/krakend/LICENSE
 dumps/
+config/krakend/demo/swagger.json
+config/krakend/demo/postman.json

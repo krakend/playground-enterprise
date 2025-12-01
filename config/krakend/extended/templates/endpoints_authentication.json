@@ -1,209 +1,268 @@
 {
-    "@comment": "Feature: A public endpoint that requires no authentication",
-    "endpoint": "/public",
-    "backend": [
-        {
-            "host": ["http://fake_api"],
-            "url_pattern": "/hotels/1.json"
-        }
-    ]
-},
-{
-    "@comment": "Feature: Authorization based on JWT (using Keycloak)",
-    "endpoint": "/private/moderate",
-    "backend": [
-        {
-            "host": ["http://fake_api"],
-            "url_pattern": "/user/1.json"
-        }
-    ],
-    "extra_config": {
-        "auth/validator": {
-            "alg": "RS256",
-            "audience": [
-              "playground"
-            ],
-            "roles_key_is_nested": true,
-            "roles_key": "realm_access.roles",
-            "roles": [
-              "moderator"
-            ],
-            "jwk_url": "http://keycloak:8080/realms/krakend/protocol/openid-connect/certs",
-            "disable_jwk_security": true
-        },
-        "documentation/openapi": {
-            "summary": "Some information behind JWT authentication protection (Keycloak)",
-            "description": "This endpoint uses JWT authentication with Keycloak",
-            "tags": [
-                "Authentication"
-            ]
-        }
-    }
-},
-{
-    "@comment": "Feature: Security policy engine for requests, responses and claim checking",
-    "endpoint": "/track-user",
-    "@test_with": "curl -iG -H'Cookie: GDPR=yes' 'http://localhost:8080/track-user'",
-    "input_headers": [
-        "Cookie"
-    ],
-    "backend": [
-        {
-            "url_pattern": "/__debug/cookie"
-        }
-    ],
-    "extra_config": {
-        "security/policies": {
-            "req": {
-                "policies": [
-                    "getCookie('GDPR') == 'yes'"
+        "@comment": "Feature: A public endpoint that requires no authentication",
+        "endpoint": "/public",
+        "backend": [
+            {
+                "host": [
+                    "http://fake_api"
                 ],
-                "error": {
-                    "body": "User did not accept the cookie and tracking is not allowed",
-                    "status": 403
+                "url_pattern": "/hotels/1.json"
+            }
+        ],
+        "extra_config": {
+            "documentation/postman": {
+                "name": "Public Endpoint (No Auth Required)",
+                "description": "Example of a completely public endpoint with no authentication requirements",
+                "folder": "/Authentication & Security"
+            },
+            "documentation/openapi": {
+                "summary": "Public endpoint with no authentication",
+                "description": "Baseline example of a completely open endpoint requiring no authentication, useful for testing and comparison",
+                "tags": [
+                    "Authentication & Security"
+                ]
+            }
+        }
+    },
+    {
+        "@comment": "Feature: Authentication and authorization",
+        "endpoint": "/auth/*",
+        "output_encoding": "no-op",
+        "backend": [
+            {
+                "url_pattern": "/",
+                "host": [
+                    "http://web:3000/"
+                ],
+                "encoding": "no-op"
+            }
+        ],
+        "extra_config": {
+            "documentation/postman": {
+                "name": "JWT Auth Demo Web Interface (Keycloak)",
+                "description": "Interactive web interface demonstrating complete JWT authentication and authorization flow using Keycloak",
+                "folder": "/Authentication & Security"
+            },
+            "documentation/openapi": {
+                "summary": "Full example for JWT based authentication / authorization with Keycloack",
+                "description": "This endpoint offers a web interface to present auth/authz flow with Keycloack.",
+                "tags": [
+                    "Authentication & Security"
+                ]
+            }
+        }
+    },
+    {
+        "@comment": "Feature: Authorization based on JWT (using Keycloak)",
+        "endpoint": "/private/moderate",
+        "backend": [
+            {
+                "host": [
+                    "http://fake_api"
+                ],
+                "url_pattern": "/user/1.json"
+            }
+        ],
+        "extra_config": {
+            "auth/validator": {
+                "alg": "RS256",
+                "audience": [
+                    "playground"
+                ],
+                "roles_key_is_nested": true,
+                "roles_key": "realm_access.roles",
+                "roles": [
+                    "moderator"
+                ],
+                "jwk_url": "http://keycloak:8080/realms/krakend/protocol/openid-connect/certs",
+                "disable_jwk_security": true
+            },
+            "documentation/postman": {
+                "name": "JWT Auth with Role-Based Access (Keycloak)",
+                "description": "Protected endpoint requiring JWT token from Keycloak with 'moderator' role authorization",
+                "folder": "/Authentication & Security"
+            },
+            "documentation/openapi": {
+                "summary": "Some information behind JWT authentication protection (Keycloak)",
+                "description": "This endpoint uses JWT authentication with Keycloak",
+                "tags": [
+                    "Authentication & Security"
+                ]
+            }
+        }
+    },
+    {
+        "@comment": "Feature: Security policy engine for requests, responses and claim checking",
+        "endpoint": "/track-user",
+        "@test_with": "curl -iG -H'Cookie: GDPR=yes' 'http://localhost:8080/track-user'",
+        "input_headers": [
+            "Cookie"
+        ],
+        "backend": [
+            {
+                "url_pattern": "/__debug/cookie"
+            }
+        ],
+        "extra_config": {
+            "documentation/postman": {
+                "name": "Cookie-Based Access Control (CEL Policy)",
+                "description": "Demonstrates security policy engine using CEL expressions to validate cookies before allowing access",
+                "folder": "/Authentication & Security"
+            },
+            "documentation/openapi": {
+                "summary": "Cookie validation using CEL security policies",
+                "description": "Demonstrates security policy engine using CEL (Common Expression Language) to validate GDPR cookie acceptance before allowing tracking",
+                "tags": [
+                    "Authentication & Security"
+                ]
+            },
+            "security/policies": {
+                "req": {
+                    "policies": [
+                        "getCookie('GDPR') == 'yes'"
+                    ],
+                    "error": {
+                        "body": "User did not accept the cookie and tracking is not allowed",
+                        "status": 403
+                    }
                 }
             }
         }
-    }
-},
-{
-    "@comment": "Feature: Authorization based on JWT (using KrakenD JOSE signer)",
-    "endpoint": "/private/custom",
-    "backend": [
-        {
-            "host": ["http://fake_api"],
-            "url_pattern": "/user/1.json"
-        }
-    ],
-    "extra_config": {
-        "auth/validator": {
-            "alg": "HS256",
-            "audience": [
-                "http://api.example.com"
-            ],
-            "roles_key": "roles",
-            "issuer": "https://krakend.io",
-            "roles": [
-                "role_a",
-                "role_c"
-            ],
-            "jwk_url": "{{.fake_api}}/jwk/symmetric.json",
-            "disable_jwk_security": true
-        }
-    }
-},
-{
-    "@comment": "Feature: JWT signing, as described at https://www.krakend.io/docs/authorization/jwt-signing/",
-    "endpoint": "/token",
-    "backend": [
-        {
-            "host": ["http://fake_api"],
-            "url_pattern": "/token.json"
-        }
-    ],
-    "extra_config": {
-        "auth/signer": {
-            "alg": "HS256",
-            "kid": "sim2",
-            "keys_to_sign": [
-                "access_token",
-                "refresh_token"
-            ],
-            "jwk_url": "{{.fake_api}}/jwk/symmetric.json",
-            "disable_jwk_security": true
-        }
-    }
-},
-{
-    "@comment": "EE only feature: Authorization based on API Keys",
-    "endpoint": "/api-key",
-    "@test_with": "curl -iG -H'Authorization: Bearer 58427514-be32-0b52-b7c6-d01fada30497' http://localhost:8080/api-key",
-    "backend": [
-        {
-            "url_pattern": "/__debug/admin"
-        }
-    ],
-    "extra_config": {
-        "auth/api-keys": {
-            "roles": [
-                "admin"
-            ]
-        },
-        "documentation/openapi": {
-            "summary": "Some information behind API-Keys authentication protection",
-            "description": "This endpoint uses API-Key authentication",
-            "tags": [
-                "Authentication"
-            ]
-        }
-    }
-},
-{
-    "@comment": "EE only feature: Wildcard to our fake API, protected with Basic Auth",
-    "@test_with": "curl -iG 'http://admin:admin@localhost:8080/fake-api-auth/articles.json'",
-    "backend": [
-        {
-            "host": ["http://fake_api"],
-            "url_pattern": "/token.json"
-        }
-    ],
-    "extra_config": {
-        "auth/signer": {
-            "alg": "HS256",
-            "kid": "sim2",
-            "keys_to_sign": [
-                "access_token",
-                "refresh_token"
-            ],
-            "jwk_url": "{{.fake_api}}/jwk/symmetric.json",
-            "disable_jwk_security": true
-        }
-    }
-},
-{
-    "@comment": "EE only feature: Authorization based on API Keys",
-    "endpoint": "/api-key",
-    "@test_with": "curl -iG -H'Authorization: Bearer 58427514-be32-0b52-b7c6-d01fada30497' http://localhost:8080/api-key",
-    "backend": [
-        {
-            "url_pattern": "/__debug/admin"
-        }
-    ],
-    "extra_config": {
-        "auth/api-keys": {
-            "roles": [
-                "admin"
-            ]
-        },
-        "documentation/openapi": {
-            "summary": "Some information behind API-Keys authentication protection",
-            "description": "This endpoint uses API-Key authentication",
-            "tags": [
-                "Authentication"
-            ]
-        }
-    }
-},
-{
-    "@comment": "EE only feature: Wildcard to our fake API, protected with Basic Auth",
-    "@test_with": "curl -iG 'http://admin:admin@localhost:8080/fake-api-auth/articles.json'",
-    "backend": [
-        {
-            "host": ["http://fake_api"],
-            "url_pattern": "/"
-        }
-    ],
-    "endpoint": "/fake-api-auth/*",
-    "extra_config": {
-        "@comment": "The simple inclusion of the Auth Basic component enables it for this endpoint",
-        "auth/basic": {},
-        "documentation/openapi": {
-            "description": "This endpoint will send all requests to a designed backend including everything after the /fake-api-auth path, adding Basic Authentication",
-            "summary": "Calls to internal service with wildcard, adding auth",
-            "tags": [
-                "Wildcard"
-            ]
+    },
+    {
+        "@comment": "Feature: Authorization based on JWT (using KrakenD JOSE signer)",
+        "endpoint": "/private/custom",
+        "backend": [
+            {
+                "host": [
+                    "http://fake_api"
+                ],
+                "url_pattern": "/user/1.json"
+            }
+        ],
+        "extra_config": {
+            "documentation/postman": {
+                "name": "JWT Auth with Custom Signer (KrakenD JOSE)",
+                "description": "Protected endpoint using KrakenD's built-in JWT signer with role-based authorization (requires role_a or role_c)",
+                "folder": "/Authentication & Security"
+            },
+            "documentation/openapi": {
+                "summary": "JWT authentication with KrakenD internal signer",
+                "description": "Protected endpoint using KrakenD's built-in JWT signing and validation with role-based authorization (requires role_a or role_c)",
+                "tags": [
+                    "Authentication & Security",
+                    "Authorization"
+                ]
+            },
+            "auth/validator": {
+                "alg": "HS256",
+                "audience": [
+                    "http://api.example.com"
+                ],
+                "roles_key": "roles",
+                "issuer": "https://krakend.io",
+                "roles": [
+                    "role_a",
+                    "role_c"
+                ],
+                "jwk_local_path": "/opt/krakend/jwk-symmetric.json",
+                "disable_jwk_security": true
+            }
         }
     },
-    "output_encoding": "no-op"
-}
+    {
+        "@comment": "Feature: JWT signing, as described at https://www.krakend.io/docs/authorization/jwt-signing/",
+        "endpoint": "/token",
+        "backend": [
+            {
+                "host": [
+                    "http://fake_api"
+                ],
+                "url_pattern": "/token.json"
+            }
+        ],
+        "extra_config": {
+            "documentation/postman": {
+                "name": "JWT Token Signing",
+                "description": "Demonstrates JWT signing by wrapping backend tokens in KrakenD-signed JWTs for enhanced security",
+                "folder": "/Authentication & Security"
+            },
+            "documentation/openapi": {
+                "summary": "JWT token signing for backend tokens",
+                "description": "Wraps backend-provided tokens (access_token, refresh_token) in KrakenD-signed JWTs for enhanced security and validation",
+                "tags": [
+                    "Authentication & Security"
+                ]
+            },
+            "auth/signer": {
+                "alg": "HS256",
+                "kid": "sim2",
+                "keys_to_sign": [
+                    "access_token",
+                    "refresh_token"
+                ],
+                "jwk_local_path": "/opt/krakend/jwk-symmetric.json",
+                "disable_jwk_security": true
+            }
+        }
+    },
+    {
+        "@comment": "EE only feature: Authorization based on API Keys",
+        "endpoint": "/api-key",
+        "@test_with": "curl -iG -H'Authorization: Bearer 58427514-be32-0b52-b7c6-d01fada30497' http://localhost:8080/api-key",
+        "backend": [
+            {
+                "url_pattern": "/__debug/admin"
+            }
+        ],
+        "extra_config": {
+            "documentation/postman": {
+                "name": "API Key Authentication (Enterprise)",
+                "description": "Protected endpoint using API Key authentication with role-based authorization (requires 'admin' role)",
+                "folder": "/Authentication & Security"
+            },
+            "auth/api-keys": {
+                "roles": [
+                    "admin"
+                ]
+            },
+            "documentation/openapi": {
+                "summary": "Some information behind API-Keys authentication protection",
+                "description": "This endpoint uses API-Key authentication",
+                "tags": [
+                    "Authentication & Security"
+                ]
+            }
+        }
+    },
+    {
+        "@comment": "EE only feature: Wildcard to our fake API, protected with Basic Auth",
+        "@test_with": "curl -iG 'http://admin:admin@localhost:8080/fake-api-auth/articles.json'",
+        "endpoint": "/fake-api-auth/*",
+        "output_encoding": "no-op",
+        "backend": [
+            {
+                "host": [
+                    "http://fake_api"
+                ],
+                "url_pattern": "/"
+            }
+        ],
+        "extra_config": {
+            "@comment": "The simple inclusion of the Auth Basic component enables it for this endpoint",
+            "documentation/postman": {
+                "name": "Basic Authentication with Wildcard Proxy",
+                "description": "Wildcard endpoint that proxies all requests to internal fake API with Basic Authentication protection",
+                "folder": "/Routing & Wildcards"
+            },
+            "auth/basic": {},
+            "documentation/openapi": {
+                "summary": "Calls to internal service with wildcard, adding auth",
+                "description": "This endpoint will send all requests to a designed backend including everything after the /fake-api-auth path, adding Basic Authentication",
+                "tags": [
+                    "Routing & Wildcards",
+                    "Authentication & Security"
+                ]
+            }
+        }
+    }
