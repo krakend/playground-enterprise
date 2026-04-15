@@ -1,28 +1,43 @@
 {
   "$schema": "https://www.krakend.io/schema/krakend.json",
-  "version": 3,
-  "name": "KrakenD Enterprise API Gateway",
-  "port": 8080,
-  "host": [
-    "http://localhost:8080"
-  ],
-  "timeout": "3000ms",
-  "cache_ttl": "300s",
-  "debug_endpoint": true,
-  "plugin": {
-    "pattern": ".so",
-    "folder": "/opt/krakend/plugins/"
-  },
-  "endpoints": [
+  "async_agent": [
     {
-      "@comment": "Feature: Aggregation and basic transformation",
-      "endpoint": "/git/{user}",
       "backend": [
         {
           "host": [
-            "https://api.github.com"
+            "http://127.0.0.1:8080"
           ],
-          "url_pattern": "/users/{user}",
+          "method": "POST",
+          "url_pattern": "/__debug/async-agent-demo"
+        }
+      ],
+      "connection": {
+        "backoff_strategy": "exponential-jitter",
+        "max_retries": 10
+      },
+      "consumer": {
+        "topic": "*.bar",
+        "workers": 20
+      },
+      "extra_config": {
+        "async/amqp": {
+          "auto_ack": true,
+          "exchange": "foo",
+          "host": "amqp://guest:guest@rabbitmq:5672/",
+          "name": "krakend",
+          "prefetch_count": 40
+        }
+      },
+      "name": "async-agent-demo"
+    }
+  ],
+  "cache_ttl": "300s",
+  "debug_endpoint": true,
+  "endpoints": [
+    {
+      "@comment": "Feature: Aggregation and basic transformation",
+      "backend": [
+        {
           "allow": [
             "avatar_url",
             "name",
@@ -35,90 +50,90 @@
             "public_repos",
             "public_gists"
           ],
+          "group": "user",
+          "host": [
+            "https://api.github.com"
+          ],
           "mapping": {
             "blog": "website"
           },
-          "group": "user"
+          "url_pattern": "/users/{user}"
         },
         {
           "host": [
             "https://api.github.com"
           ],
-          "url_pattern": "/users/{user}/repos",
+          "is_collection": true,
           "mapping": {
             "collection": "repos"
           },
-          "is_collection": true
+          "url_pattern": "/users/{user}/repos"
         }
       ],
+      "endpoint": "/git/{user}",
       "extra_config": {
-        "documentation/postman": {
-          "name": "Aggregate GitHub User & Repos",
-          "description": "Demonstrates API composition by aggregating user profile and repositories from GitHub API in parallel",
-          "folder": "/API Composition"
-        },
         "documentation/openapi": {
-          "summary": "Merges two calls from github and serves under a single endpoint",
           "description": "This endpoint fetches in parallel the user information and the repository information from Githuib and returns it together. Non interesting fields are removed.",
+          "summary": "Merges two calls from github and serves under a single endpoint",
           "tags": [
             "API Composition"
           ]
+        },
+        "documentation/postman": {
+          "description": "Fetches user info and repositories from GitHub API in parallel, merges results, and filters unnecessary fields",
+          "folder": "/API Composition",
+          "name": "Aggregate GitHub User Data"
         }
       }
     },
     {
       "@comment": "EE only feature: Advanced transformation with query language",
-      "endpoint": "/cryptos/{currency}",
-      "output_encoding": "json-collection",
       "backend": [
         {
-          "host": [
-            "https://api.coingecko.com"
-          ],
-          "url_pattern": "/api/v3/coins/markets?vs_currency={currency}&order=market_cap_desc&per_page=100&page=1&sparkline=false",
           "encoding": "safejson",
           "extra_config": {
             "modifier/martian": {
               "header.Blacklist": {
-                "scope": [
-                  "request"
-                ],
                 "names": [
                   "X-Forwarded-Host"
+                ],
+                "scope": [
+                  "request"
                 ]
               }
             }
-          }
+          },
+          "host": [
+            "https://api.coingecko.com"
+          ],
+          "url_pattern": "/api/v3/coins/markets?vs_currency={currency}&order=market_cap_desc&per_page=100&page=1&sparkline=false"
         }
       ],
+      "endpoint": "/cryptos/{currency}",
       "extra_config": {
-        "modifier/jmespath": {
-          "@comment": "Get first 5 crypto by market capitalization, then reverse sort them by name, finally filter and rename some fields",
-          "expr": "reverse(sort_by(collection[:5], &name))[*].{name: name, token: symbol,price: current_price, price_change: price_change_percentage_24h, market_cap: market_cap}"
-        },
-        "documentation/postman": {
-          "name": "Transform Crypto Data with JMESPath",
-          "description": "Advanced response transformation using JMESPath query language to filter and sort cryptocurrency market data",
-          "folder": "/API Composition"
-        },
         "documentation/openapi": {
-          "summary": "Get TOP 5 crypto capitalization & price data for a given currency",
           "description": "This endpoint fetches some crypto capitalization data from Coingecko for a given currency.",
+          "summary": "Get TOP 5 crypto capitalization & price data for a given currency",
           "tags": [
             "API Composition"
           ]
+        },
+        "documentation/postman": {
+          "description": "Fetches top 5 cryptocurrencies by market capitalization from Coingecko, sorts them by name, and transforms the response using JMESPath query language",
+          "folder": "/API Composition",
+          "name": "Get TOP 5 Cryptocurrencies by Market Cap"
+        },
+        "modifier/jmespath": {
+          "@comment": "Get first 5 crypto by market capitalization, then reverse sort them by name, finally filter and rename some fields",
+          "expr": "reverse(sort_by(collection[:5], &name))[*].{name: name, token: symbol,price: current_price, price_change: price_change_percentage_24h, market_cap: market_cap}"
         }
-      }
+      },
+      "output_encoding": "json-collection"
     },
     {
       "@comment": "Feature: Regular expression manipulation",
-      "endpoint": "/user/creditcard",
       "backend": [
         {
-          "host": [
-            "http://fake_api"
-          ],
-          "url_pattern": "/user/1.json",
           "allow": [
             "credit_card"
           ],
@@ -127,736 +142,84 @@
               "modifiers": [
                 {
                   "regexp": {
-                    "field": "credit_card.number",
                     "@comment": "Ridiculous card masking. Show last 4 digits and remove the rest. Credit card number is nested.",
+                    "field": "credit_card.number",
                     "find": "^.*(\\d{4})",
                     "replace": "XXXX-${1}"
                   }
                 }
               ]
             }
-          }
+          },
+          "host": [
+            "http://fake_api"
+          ],
+          "url_pattern": "/user/1.json"
         }
       ],
+      "endpoint": "/user/creditcard",
       "extra_config": {
-        "documentation/postman": {
-          "name": "Mask Credit Card Number",
-          "description": "Demonstrates data masking using regex to hide sensitive credit card information (shows only last 4 digits)",
-          "folder": "/API Composition"
-        },
         "documentation/openapi": {
-          "summary": "Mask the credit card number",
           "description": "This endpoint fetches the user information and masks the credit card number",
+          "summary": "Mask the credit card number",
           "tags": [
             "API Composition"
           ]
-        }
-      }
-    },
-    {
-      "@comment": "Feature: Security policy engine for requests, responses and claim checking",
-      "endpoint": "/track-user",
-      "@test_with": "curl -iG -H'Cookie: GDPR=yes' 'http://localhost:8080/track-user'",
-      "input_headers": [
-        "Cookie"
-      ],
-      "backend": [
-        {
-          "host": [
-            "http://localhost:8080"
-          ],
-          "url_pattern": "/__debug/cookie"
-        }
-      ],
-      "extra_config": {
-        "security/policies": {
-          "req": {
-            "policies": [
-              "getCookie('GDPR') == 'yes'"
-            ],
-            "error": {
-              "body": "User did not accept the cookie and tracking is not allowed",
-              "status": 403
-            }
-          }
         },
         "documentation/postman": {
-          "name": "GDPR Cookie Policy Enforcement",
-          "description": "Enforces security policy requiring GDPR cookie acceptance before allowing tracking requests",
-          "folder": "/Authentication & Security"
-        },
-        "documentation/openapi": {
-          "summary": "Tracks user activity when the GDPR cookie is accepted",
-          "description": "Example on how to abort a request based on a security policy. If the user does not have the GDPR cookie set to 'yes', the request will be aborted.",
-          "tags": [
-            "Authentication & Security"
-          ]
-        }
-      }
-    },
-    {
-      "@comment": "Feature: Two types of rate limiting on aggregated content",
-      "endpoint": "/shop",
-      "backend": [
-        {
-          "host": [
-            "http://fake_api"
-          ],
-          "url_pattern": "/shop/campaigns.json",
-          "allow": [
-            "campaigns"
-          ]
-        },
-        {
-          "host": [
-            "http://fake_api"
-          ],
-          "url_pattern": "/shop/products.json",
-          "allow": [
-            "products"
-          ],
-          "extra_config": {
-            "qos/ratelimit/proxy": {
-              "max_rate": 1,
-              "capacity": 1
-            }
-          }
-        }
-      ],
-      "extra_config": {
-        "qos/ratelimit/router": {
-          "max_rate": 2
-        },
-        "documentation/postman": {
-          "name": "Multi-Level Rate Limiting",
-          "description": "Demonstrates router-level and backend-level rate limiting on aggregated shop data (campaigns + products)",
-          "folder": "/API Composition"
-        },
-        "documentation/openapi": {
-          "summary": "Aggregates campaigns and products from the shop using different ratelimits",
-          "description": "This endpoint fetches the campaigns and products from the shop. The campaigns are fetched without ratelimit, but the products are fetched with a rate limit of 1 request per second. The endpoint itself has a rate limit of 2 requests per second.",
-          "tags": [
-            "API Composition",
-            "Performance & QoS"
-          ]
+          "description": "Demonstrates regex-based data masking by showing only the last 4 digits of a credit card number",
+          "folder": "/API Composition",
+          "name": "Mask Credit Card Number"
         }
       }
     },
     {
       "@comment": "Feature: Backend cache",
-      "endpoint": "/market/cached",
-      "extra_config": {
-        "documentation/postman": {
-          "name": "Backend HTTP Cache",
-          "description": "Demonstrates backend response caching using Cache-Control headers to reduce external API calls",
-          "folder": "/Performance & QoS"
-        },
-        "documentation/openapi": {
-          "summary": "Local cache for the crypto market information",
-          "description": "This endpoint caches the responses from the Coingecko API for the time returned in the Cache-Control header.",
-          "tags": [
-            "Performance & QoS"
-          ]
-        }
-      },
       "backend": [
         {
-          "host": [
-            "https://api.coingecko.com"
-          ],
-          "url_pattern": "/api/v3/coins/markets?vs_currency=eur&ids=bitcoin%2Cethereum&order=market_cap_desc&per_page=100&page=1&sparkline=false",
           "encoding": "safejson",
-          "mapping": {
-            "collection": "coins"
-          },
           "extra_config": {
+            "modifier/martian": {
+              "header.Blacklist": {
+                "names": [
+                  "X-Forwarded-Host"
+                ],
+                "scope": [
+                  "request"
+                ]
+              }
+            },
             "qos/http-cache": {
               "shared": true
-            },
-            "modifier/martian": {
-              "header.Blacklist": {
-                "scope": [
-                  "request"
-                ],
-                "names": [
-                  "X-Forwarded-Host"
-                ]
-              }
             }
-          }
-        }
-      ]
-    },
-    {
-      "@comment": "Feature: GraphQL to REST",
-      "endpoint": "/starwars_films/{movie_id}",
-      "extra_config": {
-        "documentation/postman": {
-          "name": "GraphQL to REST - Star Wars Films",
-          "description": "Converts GraphQL API to REST endpoint for fetching Star Wars movie information",
-          "folder": "/Protocol Conversion"
-        },
-        "documentation/openapi": {
-          "summary": "Connect to a GraphQL server and fetch the film information",
-          "description": "This endpoint connects to a GraphQL server and offers the interaction as a regular REST endpoint.",
-          "tags": [
-            "Protocol Conversion"
-          ]
-        }
-      },
-      "backend": [
-        {
-          "host": [
-            "https://swapi-graphql.netlify.app/"
-          ],
-          "url_pattern": "/.netlify/functions/index",
-          "target": "data.film",
-          "extra_config": {
-            "backend/graphql": {
-              "type": "query",
-              "query": "query Query ($movie_id: ID!) {\nfilm (filmID: $movie_id) {\nid\nepisodeID\ntitle\ndirector\nreleaseDate\nspeciesConnection {\nspecies {\nname\nclassification\nhomeworld {\nname\n}\n}\n}\n}\n}",
-              "variables": {
-                "movie_id": "{movie_id}"
-              }
-            }
-          }
-        }
-      ]
-    },
-    {
-      "@comment": "Feature: Concurrent calls - Initial example with no concurrent calls enabled (normal)",
-      "endpoint": "/market/simple",
-      "backend": [
-        {
+          },
           "host": [
             "https://api.coingecko.com"
           ],
-          "url_pattern": "/api/v3/coins/markets?vs_currency=eur&ids=bitcoin%2Cethereum&order=market_cap_desc&per_page=100&page=1&sparkline=false",
-          "encoding": "safejson",
           "mapping": {
             "collection": "coins"
           },
-          "extra_config": {
-            "modifier/martian": {
-              "header.Blacklist": {
-                "scope": [
-                  "request"
-                ],
-                "names": [
-                  "X-Forwarded-Host"
-                ]
-              }
-            }
-          }
+          "url_pattern": "/api/v3/coins/markets?vs_currency=eur&ids=bitcoin,ethereum&order=market_cap_desc&per_page=100&page=1&sparkline=false"
         }
       ],
+      "endpoint": "/market/cached",
       "extra_config": {
-        "documentation/postman": {
-          "name": "Simple Request (No Concurrency)",
-          "description": "Baseline example of a single non-concurrent API call to external service",
-          "folder": "/Performance & QoS"
-        },
         "documentation/openapi": {
-          "summary": "Simple fetch of external data without concurrent calls enabled",
-          "description": "This endpoint fetches crypto market information from Coingecko using a single non-concurrent call.",
+          "description": "Demonstrates backend-level caching using Cache-Control headers to reduce expensive API calls to external services",
+          "summary": "Backend HTTP cache for crypto market data",
           "tags": [
             "Performance & QoS"
           ]
-        }
-      }
-    },
-    {
-      "@comment": "Feature: Concurrent calls - Example with concurrent calls enabled (more speed, less errors)",
-      "endpoint": "/market/concurrent",
-      "concurrent_calls": 3,
-      "backend": [
-        {
-          "host": [
-            "https://api.coingecko.com"
-          ],
-          "url_pattern": "/api/v3/coins/markets?vs_currency=eur&ids=bitcoin%2Cethereum&order=market_cap_desc&per_page=100&page=1&sparkline=false",
-          "encoding": "safejson",
-          "mapping": {
-            "collection": "coins"
-          },
-          "extra_config": {
-            "modifier/martian": {
-              "header.Blacklist": {
-                "scope": [
-                  "request"
-                ],
-                "names": [
-                  "X-Forwarded-Host"
-                ]
-              }
-            }
-          }
-        }
-      ],
-      "extra_config": {
-        "documentation/postman": {
-          "name": "Concurrent Requests (3x)",
-          "description": "Demonstrates concurrent calls feature - makes 3 parallel requests and returns the fastest successful response",
-          "folder": "/Performance & QoS"
-        },
-        "documentation/openapi": {
-          "summary": "Get crypto market information with 3 concurrent calls",
-          "description": "This endpoint fetches crypto market information from Coingecko using 3 concurrent calls. Returns the fastest successful response and discards the rest",
-          "tags": [
-            "Performance & QoS"
-          ]
-        }
-      }
-    },
-    {
-      "@comment": "Feature: Sequential calls, using values from 1st call response into 2nd call request",
-      "endpoint": "/sequential",
-      "extra_config": {
-        "proxy": {
-          "sequential": true
         },
         "documentation/postman": {
-          "name": "Sequential API Calls",
-          "description": "Demonstrates sequential requests where second call uses data from first response (hotel -> destination lookup)",
-          "folder": "/API Composition"
-        },
-        "documentation/openapi": {
-          "summary": "Chains two sequential API calls where the second depends on the first",
-          "description": "This endpoint demonstrates sequential processing by first fetching a hotel, then using its destination_id to fetch destination details. The second call cannot start until the first completes.",
-          "tags": [
-            "API Composition"
-          ]
-        }
-      },
-      "backend": [
-        {
-          "host": [
-            "http://fake_api"
-          ],
-          "url_pattern": "/hotels/1.json",
-          "allow": [
-            "destination_id"
-          ]
-        },
-        {
-          "host": [
-            "http://fake_api"
-          ],
-          "url_pattern": "/destinations/{resp0_destination_id}.json"
-        }
-      ]
-    },
-    {
-      "@comment": "Feature: Expose a GET REST endpoint from POST to SOAP service",
-      "endpoint": "/capital-of/{country}",
-      "extra_config": {
-        "documentation/postman": {
-          "name": "SOAP to REST - Country Capital",
-          "description": "Converts SOAP XML service to REST JSON endpoint for retrieving country capital information",
-          "folder": "/Protocol Conversion"
-        },
-        "documentation/openapi": {
-          "summary": "Interact with a SOAP server as a regular REST API",
-          "description": "This endpoint interacts with a SOAP server but offers a pure REST interface to the consumer",
-          "tags": [
-            "Protocol Conversion"
-          ]
-        }
-      },
-      "backend": [
-        {
-          "host": [
-            "http://webservices.oorsprong.org"
-          ],
-          "url_pattern": "/websamples.countryinfo/CountryInfoService.wso",
-          "encoding": "xml",
-          "method": "POST",
-          "target": "Envelope.Body.CapitalCityResponse",
-          "mapping": {
-            "CapitalCityResult": "capital"
-          },
-          "deny": [
-            "-m"
-          ],
-          "extra_config": {
-            "backend/soap": {
-              "@comment": "The XML template with variables is in the following path:",
-              "path": "./extended/templates/soap_request_capital_city.tmpl.xml"
-            }
-          }
-        }
-      ]
-    },
-    {
-      "@comment": "EE only feature: Wildcard to our fake API, open",
-      "endpoint": "/fake-api/*",
-      "backend": [
-        {
-          "host": [
-            "http://fake_api"
-          ],
-          "url_pattern": "/"
-        }
-      ],
-      "extra_config": {
-        "documentation/postman": {
-          "name": "Wildcard Routing (Open)",
-          "description": "Public wildcard endpoint forwarding all paths under /fake-api/* to backend service",
-          "folder": "/Routing & Wildcards"
-        },
-        "documentation/openapi": {
-          "summary": "Calls to internal service with wildcard",
-          "description": "This endpoint will send all requests to a designed backend including everything after the /fake-api path",
-          "tags": [
-            "Routing & Wildcards"
-          ]
-        }
-      }
-    },
-    {
-      "@comment": "EE only feature: Wildcard to our fake API, protected with Basic Auth",
-      "endpoint": "/fake-api-auth/*",
-      "@test_with": "curl -iG 'http://admin:admin@localhost:8080/fake-api-auth/articles.json'",
-      "output_encoding": "no-op",
-      "backend": [
-        {
-          "host": [
-            "http://fake_api"
-          ],
-          "url_pattern": "/"
-        }
-      ],
-      "extra_config": {
-        "@comment": "The simple inclusion of the Auth Basic component enables it for this endpoint",
-        "auth/basic": {},
-        "documentation/postman": {
-          "name": "Wildcard Routing with Basic Auth",
-          "description": "Protected wildcard endpoint requiring Basic Authentication (credentials: admin/admin)",
-          "folder": "/Routing & Wildcards"
-        },
-        "documentation/openapi": {
-          "summary": "Calls to internal service with wildcard, adding auth",
-          "description": "This endpoint will send all requests to a designed backend including everything after the /fake-api-auth path, adding Basic Authentication",
-          "tags": [
-            "Routing & Wildcards",
-            "Authentication & Security"
-          ]
-        }
-      }
-    },
-    {
-      "@comment": "EE only feature: Wildcard with geofencing - Allow visits only from Spain",
-      "endpoint": "/fake-api-geofence/*",
-      "input_headers": [
-        "X-Geoip"
-      ],
-      "backend": [
-        {
-          "host": [
-            "http://fake_api"
-          ],
-          "url_pattern": "/"
-        }
-      ],
-      "extra_config": {
-        "validation/cel": [
-          {
-            "check_expr": "req_headers['X-Geoip'][0].matches('\"IsoCode\":\"ES\"')"
-          }
-        ],
-        "documentation/postman": {
-          "name": "Wildcard Routing with Geofencing",
-          "description": "Geo-restricted wildcard endpoint allowing access only from Spain using CEL validation",
-          "folder": "/Routing & Wildcards"
-        },
-        "documentation/openapi": {
-          "summary": "Calls to internal service with wildcard, using geofencing",
-          "description": "This endpoint will send all requests to a designed backend including everything after the /fake-api-geofence path, adding geofencing (allowing calls only from Spain)",
-          "tags": [
-            "Routing & Wildcards"
-          ]
-        }
-      }
-    },
-    {
-      "@comment": "EE only feature: Dynamic routing based on headers (token claim and cookie also available)",
-      "endpoint": "/dynamic/header",
-      "extra_config": {
-        "documentation/postman": {
-          "name": "Dynamic Routing by Header",
-          "description": "Routes to different backend paths based on X-Route header value (test with: curl -H 'X-Route: hello')",
-          "folder": "/Routing & Wildcards"
-        },
-        "documentation/openapi": {
-          "summary": "Route to the backend using the content of the 'X-Route' header",
-          "description": "This endpoint demonstrates dynamic routing by using the X-Route header value to determine the backend path. Test with: curl -iG -H 'X-Route: hello' 'http://localhost:8080/dynamic/header'",
-          "tags": [
-            "Routing & Wildcards"
-          ]
-        }
-      },
-      "backend": [
-        {
-          "@comment": "We will route to the backend using the content of the 'X-Route' header",
-          "@test_with": "curl -iG -H 'X-Route: hello' 'http://localhost:8080/dynamic/header'",
-          "url_pattern": "/__debug/{input_headers.x-route}"
-        }
-      ]
-    },
-    {
-      "@comment": "EE only feature: Dynamic routing based on query strings",
-      "endpoint": "/dynamic/qs",
-      "extra_config": {
-        "documentation/postman": {
-          "name": "Dynamic Routing by Query String",
-          "description": "Routes to different backend paths based on 'route' query parameter value",
-          "folder": "/Routing & Wildcards"
-        },
-        "documentation/openapi": {
-          "summary": "Route to the backend using the 'route' query string parameter",
-          "description": "This endpoint demonstrates dynamic routing by using the route query parameter value to determine the backend path. Test with: curl -iG 'http://localhost:8080/dynamic/qs?route=hello'",
-          "tags": [
-            "Routing & Wildcards"
-          ]
-        }
-      },
-      "backend": [
-        {
-          "url_pattern": "/__debug/{input_query_strings.route}"
-        }
-      ]
-    },
-    {
-      "@comment": "Feature: A public endpoint that requires no authentication",
-      "cache_ttl": "1s",
-      "endpoint": "/public",
-      "extra_config": {
-        "documentation/postman": {
-          "name": "Public Endpoint (No Auth)",
-          "description": "Baseline public endpoint requiring no authentication - useful for testing",
-          "folder": "/Authentication & Security"
-        },
-        "documentation/openapi": {
-          "summary": "Public endpoint",
-          "description": "This endpoint is public and requires no authentication",
-          "tags": [
-            "Authentication & Security"
-          ]
-        }
-      },
-      "backend": [
-        {
-          "host": [
-            "http://fake_api"
-          ],
-          "url_pattern": "/hotels/1.json"
-        }
-      ]
-    },
-    {
-      "@comment": "Feature: Authentication and authorization",
-      "endpoint": "/auth/*",
-      "extra_config": {
-        "documentation/postman": {
-          "name": "Auth Web UI",
-          "description": "Web interface demonstrating JWT authentication/authorization flow with Keycloak",
-          "folder": "/Authentication & Security"
-        },
-        "documentation/openapi": {
-          "summary": "Full example for JWT based authentication / authorization with Keycloack",
-          "description": "This endpoint offers a web interface to present auth/authz flow with Keycloack.",
-          "tags": [
-            "Authentication & Security"
-          ]
-        }
-      },
-      "output_encoding": "no-op",
-      "backend": [
-        {
-          "url_pattern": "/",
-          "host": [
-            "http://web:3000/"
-          ],
-          "encoding": "no-op"
-        }
-      ]
-    },
-    {
-      "@comment": "Feature: Authorization based on JWT (using Keycloak)",
-      "endpoint": "/private/moderate",
-      "cache_ttl": "1s",
-      "backend": [
-        {
-          "host": [
-            "http://fake_api"
-          ],
-          "url_pattern": "/user/1.json"
-        }
-      ],
-      "extra_config": {
-        "auth/validator": {
-          "alg": "RS256",
-          "audience": [
-            "playground"
-          ],
-          "roles_key_is_nested": true,
-          "roles_key": "realm_access.roles",
-          "roles": [
-            "moderator"
-          ],
-          "jwk_url": "http://keycloak:8080/realms/krakend/protocol/openid-connect/certs",
-          "disable_jwk_security": true
-        },
-        "documentation/postman": {
-          "name": "JWT Auth with Keycloak (Moderator Role)",
-          "description": "Protected endpoint requiring JWT token from Keycloak with 'moderator' role",
-          "folder": "/Authentication & Security"
-        },
-        "documentation/openapi": {
-          "summary": "Some information behind JWT authentication protection (Keycloak)",
-          "description": "This endpoint uses JWT authentication with Keycloak",
-          "tags": [
-            "Authentication & Security"
-          ]
-        }
-      }
-    },
-    {
-      "@comment": "Feature: Authorization based on JWT (using KrakenD JOSE signer)",
-      "endpoint": "/private/custom",
-      "backend": [
-        {
-          "host": [
-            "http://fake_api"
-          ],
-          "url_pattern": "/user/1.json"
-        }
-      ],
-      "extra_config": {
-        "auth/validator": {
-          "alg": "HS256",
-          "audience": [
-            "http://api.example.com"
-          ],
-          "roles_key": "roles",
-          "issuer": "https://krakend.io",
-          "roles": [
-            "role_a",
-            "role_c"
-          ],
-          "jwk_local_path": "/opt/krakend/jwk-symmetric.json",
-          "disable_jwk_security": true
-        },
-        "documentation/postman": {
-          "name": "JWT Auth with KrakenD Signer",
-          "description": "Protected endpoint using KrakenD's internal JWT signing with role-based authorization",
-          "folder": "/Authentication & Security"
-        },
-        "documentation/openapi": {
-          "summary": "Sign a token cryptographically (KrakenD JOSE signer)",
-          "description": "This endpoint uses the KrakenD JOSE signer to sign plain tokens coming from the backend and helpiong you to adopt cryptography easily",
-          "tags": [
-            "Authentication & Security"
-          ]
-        }
-      }
-    },
-    {
-      "@comment": "Feature: JWT signing, as described at https://www.krakend.io/docs/authorization/jwt-signing/",
-      "endpoint": "/token",
-      "backend": [
-        {
-          "host": [
-            "http://fake_api"
-          ],
-          "url_pattern": "/token.json"
-        }
-      ],
-      "extra_config": {
-        "documentation/postman": {
-          "name": "JWT Token Signing",
-          "description": "Signs backend tokens (access_token, refresh_token) using KrakenD JWT signer",
-          "folder": "/Authentication & Security"
-        },
-        "documentation/openapi": {
-          "description": "This endpoint uses JWT signing",
-          "summary": "Some information behind JWT signing",
-          "tags": [
-            "Authentication & Security"
-          ]
-        },
-        "auth/signer": {
-          "alg": "HS256",
-          "kid": "sim2",
-          "keys_to_sign": [
-            "access_token",
-            "refresh_token"
-          ],
-          "jwk_local_path": "/opt/krakend/jwk-symmetric.json",
-          "disable_jwk_security": true
-        }
-      }
-    },
-    {
-      "@comment": "EE only feature: Authorization based on API Keys",
-      "endpoint": "/api-key",
-      "backend": [
-        {
-          "url_pattern": "/__debug/admin",
-          "host": [
-            "http://localhost:8080"
-          ]
-        }
-      ],
-      "extra_config": {
-        "auth/api-keys": {
-          "roles": [
-            "admin"
-          ]
-        },
-        "documentation/postman": {
-          "name": "API Key Authentication",
-          "description": "Protected endpoint requiring valid API key with 'admin' role (Enterprise-only feature)",
-          "folder": "/Authentication & Security"
-        },
-        "documentation/openapi": {
-          "summary": "Some information behind API-Keys authentication protection",
-          "description": "This endpoint uses API-Key authentication",
-          "tags": [
-            "Authentication & Security"
-          ]
-        }
-      }
-    },
-    {
-      "@comment": "Feature: Only POST method allowed",
-      "endpoint": "/post",
-      "method": "POST",
-      "backend": [
-        {
-          "url_pattern": "/__debug/post"
-        }
-      ],
-      "extra_config": {
-        "documentation/postman": {
-          "name": "POST-Only Endpoint",
-          "description": "Demonstrates HTTP method restriction - only POST requests allowed",
-          "folder": "/Routing & Wildcards"
-        },
-        "documentation/openapi": {
-          "summary": "Only POST method allowed",
-          "description": "This endpoint only allows POST requests",
-          "tags": [
-            "Routing & Wildcards"
-          ]
+          "description": "Demonstrates backend-level HTTP caching for expensive API calls (Bitcoin/Ethereum market data)",
+          "folder": "/Performance & QoS",
+          "name": "Backend Cache Demo"
         }
       }
     },
     {
       "@comment": "Feature: Mocked response",
-      "endpoint": "/mocked-response",
-      "method": "GET",
-      "output_encoding": "json",
       "backend": [
         {
           "host": [
@@ -865,240 +228,507 @@
           "url_pattern": "/"
         }
       ],
+      "endpoint": "/mocked-response",
       "extra_config": {
+        "documentation/openapi": {
+          "description": "Returns predefined static JSON data without calling any backend service, useful for testing, prototyping, and development",
+          "summary": "Static mocked response without backend",
+          "tags": [
+            "API Composition"
+          ]
+        },
+        "documentation/postman": {
+          "description": "Returns a static JSON response without calling any backend, useful for testing and prototyping",
+          "folder": "/API Composition",
+          "name": "Mocked/Static Response"
+        },
         "proxy": {
           "static": {
             "data": {
-              "an_integer": 123,
               "an_array": [
                 "arr1",
                 "arr2"
               ],
+              "an_integer": 123,
               "an_object": {
                 "obj": "obj1"
               }
             },
             "strategy": "always"
           }
-        },
-        "documentation/postman": {
-          "name": "Mocked Static Response",
-          "description": "Returns static mocked data without calling the backend - useful for testing and development",
-          "folder": "/API Composition"
-        },
-        "documentation/openapi": {
-          "summary": "Mocked response",
-          "description": "This endpoint returns a mocked response when the backend is not available",
-          "tags": [
-            "API Composition"
-          ]
-        }
-      }
-    },
-    {
-      "@comment": "EE only feature: GRPC",
-      "endpoint": "/travel",
-      "extra_config": {
-        "documentation/postman": {
-          "name": "gRPC Aggregation - Travel Search",
-          "description": "Aggregates flights, trains, and hotels from gRPC services into unified REST response",
-          "folder": "/Protocol Conversion"
-        },
-        "documentation/openapi": {
-          "summary": "Find flights, trains and hotels",
-          "description": "This endpoint fetches flights, trains and hotels information from different backends",
-          "tags": [
-            "Protocol Conversion",
-            "API Composition"
-          ]
         }
       },
-      "input_query_strings": [
-        "lat",
-        "lon"
-      ],
+      "method": "GET",
+      "output_encoding": "json"
+    },
+    {
+      "@comment": "Feature: Sequential calls, using values from 1st call response into 2nd call request",
       "backend": [
         {
-          "host": [
-            "grpc_flights:4242"
+          "allow": [
+            "destination_id"
           ],
-          "group": "flights",
-          "url_pattern": "/flight_finder.Flights/FindFlight",
-          "extra_config": {
-            "backend/grpc": {
-              "input_mapping": {
-                "lat": "where.latitude",
-                "lon": "where.longitude"
-              }
-            }
-          }
-        },
-        {
           "host": [
-            "grpc_trains:4243"
+            "http://fake_api"
           ],
-          "group": "trains",
-          "url_pattern": "/train_finder.Trains/FindTrains",
-          "extra_config": {
-            "backend/grpc": {
-              "input_mapping": {
-                "lat": "origin.position.latitude",
-                "lon": "origin.position.longitude"
-              },
-              "response_naming_convention": "camelCase",
-              "output_enum_as_string": true,
-              "output_timestamp_as_string": true,
-              "output_duration_as_string": true,
-              "client_tls": {
-                "allow_insecure_connections": true
-              }
-            }
-          }
-        },
-        {
-          "group": "hotels",
           "url_pattern": "/hotels/1.json"
         },
         {
           "host": [
-            "grpc_trains:4243"
+            "http://fake_api"
           ],
-          "group": "trains_classes",
-          "url_pattern": "/train_finder.Trains/GetTrainClasses",
-          "extra_config": {
-            "backend/grpc": {
-              "response_naming_convention": "camelCase",
-              "output_remove_unset_values": true,
-              "client_tls": {
-                "allow_insecure_connections": true
-              }
-            }
-          }
+          "url_pattern": "/destinations/{resp0_destination_id}.json"
         }
-      ]
-    },
-    {
-      "@comment": "EE only feature: GRPC Payload in Body",
-      "endpoint": "/travel_book_flight/{id_flight}/{main_passenger}",
+      ],
+      "endpoint": "/sequential",
       "extra_config": {
-        "documentation/postman": {
-          "name": "gRPC with Body - Book Flight",
-          "description": "Books a flight via gRPC backend using request body and path parameters",
-          "folder": "/Protocol Conversion"
-        },
         "documentation/openapi": {
-          "summary": "Book a flight",
-          "description": "This endpoint books a flight using a GRPC backend",
+          "description": "Demonstrates sequential processing where the response from the first backend call is used to construct the second request (hotel lookup followed by destination details)",
+          "summary": "Sequential backend calls with response chaining",
           "tags": [
-            "Protocol Conversion"
+            "API Composition"
           ]
-        }
-      },
-      "method": "POST",
-      "backend": [
-        {
-          "host": [
-            "grpc_flights:4242"
-          ],
-          "group": "flights",
-          "url_pattern": "/flight_finder.Flights/BookFlight",
-          "extra_config": {
-            "backend/grpc": {
-              "input_mapping": {
-                "Id_flight": "flight_id",
-                "Main_passenger": "main_passenger.full_name"
-              },
-              "use_request_body": true
-            }
-          }
-        }
-      ]
-    },
-    {
-      "@comment": "EE only feature: WebSockets (chat example)",
-      "endpoint": "/chat/ws/{room}",
-      "input_query_strings": [
-        "*"
-      ],
-      "input_headers": [
-        "*"
-      ],
-      "backend": [
-        {
-          "url_pattern": "/ws/{room}",
-          "disable_host_sanitize": true,
-          "host": [
-            "ws://chat:8888"
-          ]
-        }
-      ],
-      "extra_config": {
-        "websocket": {
-          "input_headers": [
-            "Cookie",
-            "Authorization"
-          ],
-          "connect_event": true,
-          "disconnect_event": true,
-          "read_buffer_size": 4096,
-          "write_buffer_size": 4096,
-          "message_buffer_size": 4096,
-          "max_message_size": 3200000,
-          "write_wait": "10s",
-          "pong_wait": "60s",
-          "ping_period": "54s",
-          "max_retries": 0,
-          "backoff_strategy": "exponential"
         },
         "documentation/postman": {
-          "name": "WebSocket Chat - Connection",
-          "description": "WebSocket endpoint for real-time chat room communication with configurable room parameter",
-          "folder": "/Real-time Communication"
+          "description": "Demonstrates sequential proxy pattern where the response from the first backend call is used in the second backend request",
+          "folder": "/API Composition",
+          "name": "Sequential Backend Calls"
         },
-        "documentation/openapi": {
-          "summary": "Chat room using WebSockets",
-          "description": "This endpoint connects to a chat server using WebSockets",
-          "tags": [
-            "Real-time Communication"
-          ]
+        "proxy": {
+          "sequential": true
         }
       }
     },
     {
-      "@comment": "EE only feature: WebSockets (chat example web interface)",
-      "endpoint": "/chat",
-      "extra_config": {
-        "documentation/postman": {
-          "name": "WebSocket Chat - Web UI",
-          "description": "Web interface for testing WebSocket chat functionality in the browser",
-          "folder": "/Real-time Communication"
-        },
-        "documentation/openapi": {
-          "summary": "Chat room User Interface",
-          "description": "This endpoint offers a web interface to present a chat room",
-          "tags": [
-            "Real-time Communication"
-          ]
-        }
-      },
-      "output_encoding": "no-op",
+      "@comment": "Feature: A public endpoint that requires no authentication",
       "backend": [
         {
-          "url_pattern": "/",
           "host": [
-            "http://chat:8888"
+            "http://fake_api"
           ],
-          "encoding": "no-op"
+          "url_pattern": "/hotels/1.json"
         }
+      ],
+      "endpoint": "/public",
+      "extra_config": {
+        "documentation/openapi": {
+          "description": "Baseline example of a completely open endpoint requiring no authentication, useful for testing and comparison",
+          "summary": "Public endpoint with no authentication",
+          "tags": [
+            "Authentication & Security"
+          ]
+        },
+        "documentation/postman": {
+          "description": "Example of a completely public endpoint with no authentication requirements",
+          "folder": "/Authentication & Security",
+          "name": "Public Endpoint (No Auth Required)"
+        }
+      }
+    },
+    {
+      "@comment": "Feature: Authentication and authorization",
+      "backend": [
+        {
+          "encoding": "no-op",
+          "host": [
+            "http://web:3000/"
+          ],
+          "url_pattern": "/"
+        }
+      ],
+      "endpoint": "/auth/*",
+      "extra_config": {
+        "documentation/openapi": {
+          "description": "This endpoint offers a web interface to present auth/authz flow with Keycloack.",
+          "summary": "Full example for JWT based authentication / authorization with Keycloack",
+          "tags": [
+            "Authentication & Security"
+          ]
+        },
+        "documentation/postman": {
+          "description": "Interactive web interface demonstrating complete JWT authentication and authorization flow using Keycloak",
+          "folder": "/Authentication & Security",
+          "name": "JWT Auth Demo Web Interface (Keycloak)"
+        }
+      },
+      "output_encoding": "no-op"
+    },
+    {
+      "@comment": "Feature: Authorization based on JWT (using Keycloak)",
+      "backend": [
+        {
+          "host": [
+            "http://fake_api"
+          ],
+          "url_pattern": "/user/1.json"
+        }
+      ],
+      "endpoint": "/private/moderate",
+      "extra_config": {
+        "auth/validator": {
+          "alg": "RS256",
+          "audience": [
+            "playground"
+          ],
+          "disable_jwk_security": true,
+          "jwk_url": "http://keycloak:8080/realms/krakend/protocol/openid-connect/certs",
+          "roles": [
+            "moderator"
+          ],
+          "roles_key": "realm_access.roles",
+          "roles_key_is_nested": true
+        },
+        "documentation/openapi": {
+          "description": "This endpoint uses JWT authentication with Keycloak",
+          "summary": "Some information behind JWT authentication protection (Keycloak)",
+          "tags": [
+            "Authentication & Security"
+          ]
+        },
+        "documentation/postman": {
+          "description": "Protected endpoint requiring JWT token from Keycloak with 'moderator' role authorization",
+          "folder": "/Authentication & Security",
+          "name": "JWT Auth with Role-Based Access (Keycloak)"
+        }
+      }
+    },
+    {
+      "@comment": "Feature: Security policy engine for requests, responses and claim checking",
+      "@test_with": "curl -iG -H'Cookie: GDPR=yes' 'http://localhost:8080/track-user'",
+      "backend": [
+        {
+          "url_pattern": "/__debug/cookie"
+        }
+      ],
+      "endpoint": "/track-user",
+      "extra_config": {
+        "documentation/openapi": {
+          "description": "Demonstrates security policy engine using CEL (Common Expression Language) to validate GDPR cookie acceptance before allowing tracking",
+          "summary": "Cookie validation using CEL security policies",
+          "tags": [
+            "Authentication & Security"
+          ]
+        },
+        "documentation/postman": {
+          "description": "Demonstrates security policy engine using CEL expressions to validate cookies before allowing access",
+          "folder": "/Authentication & Security",
+          "name": "Cookie-Based Access Control (CEL Policy)"
+        },
+        "security/policies": {
+          "req": {
+            "error": {
+              "body": "User did not accept the cookie and tracking is not allowed",
+              "status": 403
+            },
+            "policies": [
+              "getCookie('GDPR') == 'yes'"
+            ]
+          }
+        }
+      },
+      "input_headers": [
+        "Cookie"
       ]
     },
     {
-      "@comment": "EE only feature: Web Server - Static content",
-      "endpoint": "/demo/*",
-      "output_encoding": "no-op",
+      "@comment": "Feature: Authorization based on JWT (using KrakenD JOSE signer)",
       "backend": [
         {
-          "url_pattern": "/",
+          "host": [
+            "http://fake_api"
+          ],
+          "url_pattern": "/user/1.json"
+        }
+      ],
+      "endpoint": "/private/custom",
+      "extra_config": {
+        "auth/validator": {
+          "alg": "HS256",
+          "audience": [
+            "http://api.example.com"
+          ],
+          "disable_jwk_security": true,
+          "issuer": "https://krakend.io",
+          "jwk_local_path": "/opt/krakend/jwk-symmetric.json",
+          "roles": [
+            "role_a",
+            "role_c"
+          ],
+          "roles_key": "roles"
+        },
+        "documentation/openapi": {
+          "description": "Protected endpoint using KrakenD's built-in JWT signing and validation with role-based authorization (requires role_a or role_c)",
+          "summary": "JWT authentication with KrakenD internal signer",
+          "tags": [
+            "Authentication & Security",
+            "Authorization"
+          ]
+        },
+        "documentation/postman": {
+          "description": "Protected endpoint using KrakenD's built-in JWT signer with role-based authorization (requires role_a or role_c)",
+          "folder": "/Authentication & Security",
+          "name": "JWT Auth with Custom Signer (KrakenD JOSE)"
+        }
+      }
+    },
+    {
+      "@comment": "Feature: JWT signing, as described at https://www.krakend.io/docs/authorization/jwt-signing/",
+      "backend": [
+        {
+          "host": [
+            "http://fake_api"
+          ],
+          "url_pattern": "/token.json"
+        }
+      ],
+      "endpoint": "/token",
+      "extra_config": {
+        "auth/signer": {
+          "alg": "HS256",
+          "disable_jwk_security": true,
+          "jwk_local_path": "/opt/krakend/jwk-symmetric.json",
+          "keys_to_sign": [
+            "access_token",
+            "refresh_token"
+          ],
+          "kid": "sim2"
+        },
+        "documentation/openapi": {
+          "description": "Wraps backend-provided tokens (access_token, refresh_token) in KrakenD-signed JWTs for enhanced security and validation",
+          "summary": "JWT token signing for backend tokens",
+          "tags": [
+            "Authentication & Security"
+          ]
+        },
+        "documentation/postman": {
+          "description": "Demonstrates JWT signing by wrapping backend tokens in KrakenD-signed JWTs for enhanced security",
+          "folder": "/Authentication & Security",
+          "name": "JWT Token Signing"
+        }
+      }
+    },
+    {
+      "@comment": "EE only feature: Authorization based on API Keys",
+      "@test_with": "curl -iG -H'Authorization: Bearer 58427514-be32-0b52-b7c6-d01fada30497' http://localhost:8080/api-key",
+      "backend": [
+        {
+          "url_pattern": "/__debug/admin"
+        }
+      ],
+      "endpoint": "/api-key",
+      "extra_config": {
+        "auth/api-keys": {
+          "roles": [
+            "admin"
+          ]
+        },
+        "documentation/openapi": {
+          "description": "This endpoint uses API-Key authentication",
+          "summary": "Some information behind API-Keys authentication protection",
+          "tags": [
+            "Authentication & Security"
+          ]
+        },
+        "documentation/postman": {
+          "description": "Protected endpoint using API Key authentication with role-based authorization (requires 'admin' role)",
+          "folder": "/Authentication & Security",
+          "name": "API Key Authentication (Enterprise)"
+        }
+      }
+    },
+    {
+      "@comment": "EE only feature: Wildcard to our fake API, protected with Basic Auth",
+      "@test_with": "curl -iG 'http://admin:admin@localhost:8080/fake-api-auth/articles.json'",
+      "backend": [
+        {
+          "host": [
+            "http://fake_api"
+          ],
+          "url_pattern": "/"
+        }
+      ],
+      "endpoint": "/fake-api-auth/*",
+      "extra_config": {
+        "@comment": "The simple inclusion of the Auth Basic component enables it for this endpoint",
+        "auth/basic": {},
+        "documentation/openapi": {
+          "description": "This endpoint will send all requests to a designed backend including everything after the /fake-api-auth path, adding Basic Authentication",
+          "summary": "Calls to internal service with wildcard, adding auth",
+          "tags": [
+            "Routing & Wildcards",
+            "Authentication & Security"
+          ]
+        },
+        "documentation/postman": {
+          "description": "Wildcard endpoint that proxies all requests to internal fake API with Basic Authentication protection",
+          "folder": "/Routing & Wildcards",
+          "name": "Basic Authentication with Wildcard Proxy"
+        }
+      },
+      "output_encoding": "no-op"
+    },
+    {
+      "@comment": "Feature: Aggregation + backend rate limiting + endpoint rate limiting",
+      "backend": [
+        {
+          "allow": [
+            "campaigns"
+          ],
+          "host": [
+            "http://fake_api"
+          ],
+          "url_pattern": "/shop/campaigns.json"
+        },
+        {
+          "allow": [
+            "products"
+          ],
+          "extra_config": {
+            "qos/ratelimit/proxy": {
+              "capacity": 1,
+              "max_rate": 1
+            }
+          },
+          "host": [
+            "http://fake_api"
+          ],
+          "url_pattern": "/shop/products.json"
+        }
+      ],
+      "endpoint": "/shop",
+      "extra_config": {
+        "documentation/openapi": {
+          "description": "Demonstrates both endpoint-level and backend-level rate limiting while aggregating multiple data sources (campaigns and products)",
+          "summary": "Multi-level rate limiting with aggregation",
+          "tags": [
+            "API Composition",
+            "Performance & QoS"
+          ]
+        },
+        "documentation/postman": {
+          "description": "Demonstrates endpoint-level and backend-level rate limiting with aggregation of multiple data sources",
+          "folder": "/API Composition",
+          "name": "Multi-Level Rate Limiting"
+        },
+        "qos/ratelimit/router": {
+          "max_rate": 2
+        }
+      }
+    },
+    {
+      "@comment": "Feature: Concurrent calls - Not enabled",
+      "backend": [
+        {
+          "encoding": "safejson",
+          "extra_config": {
+            "modifier/martian": {
+              "header.Blacklist": {
+                "names": [
+                  "X-Forwarded-Host"
+                ],
+                "scope": [
+                  "request"
+                ]
+              }
+            }
+          },
+          "host": [
+            "https://api.coingecko.com"
+          ],
+          "mapping": {
+            "collection": "coins"
+          },
+          "url_pattern": "/api/v3/coins/markets?vs_currency=eur&ids=bitcoin%2Cethereum&order=market_cap_desc&per_page=100&page=1&sparkline=false"
+        }
+      ],
+      "endpoint": "/market/simple",
+      "extra_config": {
+        "documentation/openapi": {
+          "description": "This endpoint fetches crypto market information from Coingecko using a single non-concurrent call.",
+          "summary": "Get crypto market information with a single call",
+          "tags": [
+            "Performance & QoS"
+          ]
+        },
+        "documentation/postman": {
+          "description": "Fetches crypto market data with a single sequential call (baseline for comparison with concurrent endpoint)",
+          "folder": "/Performance & QoS",
+          "name": "Sequential Backend Call (No Concurrency)"
+        }
+      }
+    },
+    {
+      "@comment": "Feature: Concurrent calls - Enabled",
+      "backend": [
+        {
+          "encoding": "safejson",
+          "extra_config": {
+            "modifier/martian": {
+              "header.Blacklist": {
+                "names": [
+                  "X-Forwarded-Host"
+                ],
+                "scope": [
+                  "request"
+                ]
+              }
+            }
+          },
+          "host": [
+            "https://api.coingecko.com"
+          ],
+          "mapping": {
+            "collection": "coins"
+          },
+          "url_pattern": "/api/v3/coins/markets?vs_currency=eur&ids=bitcoin%2Cethereum&order=market_cap_desc&per_page=100&page=1&sparkline=false"
+        }
+      ],
+      "concurrent_calls": 3,
+      "endpoint": "/market/concurrent",
+      "extra_config": {
+        "documentation/openapi": {
+          "description": "This endpoint fetches crypto market information from Coingecko using 3 concurrent calls.",
+          "summary": "Get crypto market information with 3 concurrent calls",
+          "tags": [
+            "Performance & QoS"
+          ]
+        },
+        "documentation/postman": {
+          "description": "Demonstrates concurrent requests by making 3 parallel calls to the same backend endpoint for improved performance",
+          "folder": "/Performance & QoS",
+          "name": "Concurrent Backend Calls (3x Parallelization)"
+        }
+      }
+    },
+    {
+      "@comment": "Feature: Only POST method allowed",
+      "backend": [
+        {
+          "url_pattern": "/__debug/post"
+        }
+      ],
+      "endpoint": "/post",
+      "extra_config": {
+        "documentation/openapi": {
+          "description": "This endpoint only allows POST requests",
+          "summary": "Only POST method allowed",
+          "tags": [
+            "Routing & Wildcards"
+          ]
+        },
+        "documentation/postman": {
+          "description": "Demonstrates method-specific routing by allowing only POST requests",
+          "folder": "/Routing & Wildcards",
+          "name": "HTTP Method Restriction (POST Only)"
+        }
+      },
+      "method": "POST"
+    },
+    {
+      "@comment": "EE only feature: Web Server - Static content",
+      "backend": [
+        {
+          "encoding": "no-op",
           "extra_config": {
             "backend/static-filesystem": {
               "directory_listing": false,
@@ -1108,171 +738,969 @@
           "host": [
             "http://localhost:8080"
           ],
-          "encoding": "no-op"
+          "url_pattern": "/"
         }
       ],
+      "endpoint": "/demo/*",
       "extra_config": {
-        "documentation/postman": {
-          "name": "Static File Server - Demo Site",
-          "description": "Serves static content from demo folder including HTML, CSS, JS, and images",
-          "folder": "/Utilities"
-        },
         "documentation/openapi": {
-          "summary": "Serve static content",
-          "description": "This endpoint serves static content from the demo folder",
+          "description": "Serves static HTML, CSS, JavaScript, and image files from the demo directory for the playground demo website",
+          "summary": "Static file server for demo website",
           "tags": [
             "Utilities"
           ]
+        },
+        "documentation/postman": {
+          "description": "Serves static HTML/CSS/JS files from the demo directory for the playground demo website",
+          "folder": "/Utilities",
+          "name": "Serve Static Website Files"
+        }
+      },
+      "output_encoding": "no-op"
+    },
+    {
+      "@comment": "Feature: Expose a GET REST endpoint from POST to SOAP service",
+      "backend": [
+        {
+          "deny": [
+            "-m"
+          ],
+          "encoding": "xml",
+          "extra_config": {
+            "backend/soap": {
+              "@comment": "The XML template with variables is in the following path:",
+              "path": "./extended/templates/soap_request_capital_city.tmpl.xml"
+            }
+          },
+          "host": [
+            "http://webservices.oorsprong.org"
+          ],
+          "mapping": {
+            "CapitalCityResult": "capital"
+          },
+          "method": "POST",
+          "target": "Envelope.Body.CapitalCityResponse",
+          "url_pattern": "/websamples.countryinfo/CountryInfoService.wso"
+        }
+      ],
+      "endpoint": "/capital-of/{country}",
+      "extra_config": {
+        "documentation/openapi": {
+          "description": "Converts SOAP XML web service to REST JSON endpoint, fetching country capital information from a legacy SOAP service",
+          "summary": "SOAP to REST conversion for country capital lookup",
+          "tags": [
+            "Protocol Conversion"
+          ]
+        },
+        "documentation/postman": {
+          "description": "Converts SOAP XML web service to REST JSON endpoint (country capital lookup)",
+          "folder": "/Protocol Conversion",
+          "name": "SOAP to REST Conversion"
+        }
+      }
+    },
+    {
+      "@comment": "Feature: GraphQL to REST",
+      "@test_with": "curl http://localhost:8080/starwars_films/1",
+      "backend": [
+        {
+          "extra_config": {
+            "backend/graphql": {
+              "query": "query Query ($movie_id: ID!) {\nfilm (filmID: $movie_id) {\nid\nepisodeID\ntitle\ndirector\nreleaseDate\nspeciesConnection {\nspecies {\nname\nclassification\nhomeworld {\nname\n}\n}\n}\n}\n}",
+              "type": "query",
+              "variables": {
+                "movie_id": "{movie_id}"
+              }
+            }
+          },
+          "host": [
+            "https://swapi-graphql.netlify.app/"
+          ],
+          "target": "data.film",
+          "url_pattern": "/.netlify/functions/index"
+        }
+      ],
+      "endpoint": "/starwars_films/{movie_id}",
+      "extra_config": {
+        "documentation/openapi": {
+          "description": "Converts GraphQL API to REST endpoint, fetching Star Wars movie information including species and homeworld data from SWAPI GraphQL",
+          "summary": "GraphQL to REST conversion for Star Wars films",
+          "tags": [
+            "Protocol Conversion"
+          ]
+        },
+        "documentation/postman": {
+          "description": "Converts GraphQL query to REST endpoint (Star Wars films data from SWAPI)",
+          "folder": "/Protocol Conversion",
+          "name": "GraphQL to REST Conversion"
+        }
+      }
+    },
+    {
+      "@comment": "EE only feature: GRPC",
+      "backend": [
+        {
+          "extra_config": {
+            "backend/grpc": {
+              "input_mapping": {
+                "lat": "where.latitude",
+                "lon": "where.longitude"
+              }
+            }
+          },
+          "group": "flights",
+          "host": [
+            "grpc_flights:4242"
+          ],
+          "url_pattern": "/flight_finder.Flights/FindFlight"
+        },
+        {
+          "extra_config": {
+            "backend/grpc": {
+              "client_tls": {
+                "allow_insecure_connections": true
+              },
+              "input_mapping": {
+                "lat": "origin.position.latitude",
+                "lon": "origin.position.longitude"
+              },
+              "output_duration_as_string": true,
+              "output_enum_as_string": true,
+              "output_timestamp_as_string": true,
+              "response_naming_convention": "camelCase"
+            }
+          },
+          "group": "trains",
+          "host": [
+            "grpc_trains:4243"
+          ],
+          "url_pattern": "/train_finder.Trains/FindTrains"
+        },
+        {
+          "group": "hotels",
+          "host": [
+            "http://fake_api"
+          ],
+          "url_pattern": "/hotels/1.json"
+        },
+        {
+          "extra_config": {
+            "backend/grpc": {
+              "client_tls": {
+                "allow_insecure_connections": true
+              },
+              "output_remove_unset_values": true,
+              "response_naming_convention": "camelCase"
+            }
+          },
+          "group": "trains_classes",
+          "host": [
+            "grpc_trains:4243"
+          ],
+          "url_pattern": "/train_finder.Trains/GetTrainClasses"
+        }
+      ],
+      "endpoint": "/travel",
+      "extra_config": {
+        "documentation/openapi": {
+          "description": "Aggregates multiple gRPC services (flights, trains, hotels) into a single REST endpoint with intelligent parameter mapping and protocol conversion",
+          "summary": "gRPC to REST aggregation for travel search",
+          "tags": [
+            "Protocol Conversion",
+            "API Composition"
+          ]
+        },
+        "documentation/postman": {
+          "description": "Aggregates multiple gRPC services (flights, trains, hotels) into a single REST endpoint with parameter mapping",
+          "folder": "/Protocol Conversion",
+          "name": "gRPC to REST Aggregation (Travel Search)"
+        }
+      },
+      "input_query_strings": [
+        "lat",
+        "lon"
+      ]
+    },
+    {
+      "@comment": "EE only feature: GRPC Payload in Body",
+      "backend": [
+        {
+          "extra_config": {
+            "backend/grpc": {
+              "input_mapping": {
+                "Id_flight": "flight_id",
+                "Main_passenger": "main_passenger.full_name"
+              },
+              "use_request_body": true
+            }
+          },
+          "group": "flights",
+          "host": [
+            "grpc_flights:4242"
+          ],
+          "url_pattern": "/flight_finder.Flights/BookFlight"
+        }
+      ],
+      "endpoint": "/travel_book_flight/{id_flight}/{main_passenger}",
+      "extra_config": {
+        "documentation/openapi": {
+          "description": "Demonstrates gRPC integration with POST method, mapping request body and path parameters to gRPC fields for flight booking",
+          "summary": "gRPC POST endpoint with request body mapping",
+          "tags": [
+            "Protocol Conversion"
+          ]
+        },
+        "documentation/postman": {
+          "description": "Demonstrates gRPC integration with POST method using request body for flight booking",
+          "folder": "/Protocol Conversion",
+          "name": "gRPC POST with Request Body"
+        }
+      },
+      "method": "POST"
+    },
+    {
+      "@comment": "EE only feature: WebSockets (chat example)",
+      "backend": [
+        {
+          "disable_host_sanitize": true,
+          "host": [
+            "ws://chat:8888"
+          ],
+          "url_pattern": "/ws/{room}"
+        }
+      ],
+      "endpoint": "/chat/ws/{room}",
+      "extra_config": {
+        "documentation/openapi": {
+          "description": "WebSocket endpoint for real-time bidirectional chat communication with configurable room parameter, connect/disconnect events, and message buffering",
+          "summary": "WebSocket chat room connection",
+          "tags": [
+            "Real-time Communication"
+          ]
+        },
+        "documentation/postman": {
+          "description": "WebSocket endpoint for real-time chat functionality with connect/disconnect events and message buffering",
+          "folder": "/Real-time Communication",
+          "name": "WebSocket Chat Connection"
+        },
+        "websocket": {
+          "backoff_strategy": "exponential",
+          "connect_event": true,
+          "disconnect_event": true,
+          "input_headers": [
+            "Cookie",
+            "Authorization"
+          ],
+          "max_message_size": 3200000,
+          "max_retries": 0,
+          "message_buffer_size": 4096,
+          "ping_period": "54s",
+          "pong_wait": "60s",
+          "read_buffer_size": 4096,
+          "write_buffer_size": 4096,
+          "write_wait": "10s"
+        }
+      },
+      "input_headers": [
+        "*"
+      ],
+      "input_query_strings": [
+        "*"
+      ]
+    },
+    {
+      "@comment": "EE only feature: WebSockets (chat example web interface)",
+      "backend": [
+        {
+          "encoding": "no-op",
+          "host": [
+            "http://chat:8888"
+          ],
+          "url_pattern": "/"
+        }
+      ],
+      "endpoint": "/chat",
+      "extra_config": {
+        "documentation/openapi": {
+          "description": "Web-based user interface for testing and interacting with WebSocket chat functionality in the browser",
+          "summary": "WebSocket chat web interface",
+          "tags": [
+            "Real-time Communication"
+          ]
+        },
+        "documentation/postman": {
+          "description": "Web interface for testing WebSocket chat functionality",
+          "folder": "/Real-time Communication",
+          "name": "WebSocket Chat Web Interface"
+        }
+      },
+      "output_encoding": "no-op"
+    },
+    {
+      "@comment": "EE only feature: Wildcard to our fake API, open",
+      "backend": [
+        {
+          "host": [
+            "http://fake_api"
+          ],
+          "url_pattern": "/"
+        }
+      ],
+      "endpoint": "/fake-api/*",
+      "extra_config": {
+        "documentation/openapi": {
+          "description": "This endpoint will send all requests to a designed backend including everything after the /fake-api path",
+          "summary": "Calls to internal service with wildcard",
+          "tags": [
+            "Routing & Wildcards"
+          ]
+        },
+        "documentation/postman": {
+          "description": "Open wildcard endpoint that proxies all requests to internal fake API without restrictions",
+          "folder": "/Routing & Wildcards",
+          "name": "Wildcard Proxy (Open)"
+        }
+      }
+    },
+    {
+      "@comment": "EE only feature: Wildcard with geofencing - Allow visits only from Spain",
+      "backend": [
+        {
+          "host": [
+            "http://fake_api"
+          ],
+          "url_pattern": "/"
+        }
+      ],
+      "endpoint": "/fake-api-geofence/*",
+      "extra_config": {
+        "documentation/openapi": {
+          "description": "This endpoint will send all requests to a designed backend including everything after the /fake-api-geofence path, adding geofencing (allowing calls only from Spain)",
+          "summary": "Calls to internal service with wildcard, using geofencing",
+          "tags": [
+            "Routing & Wildcards"
+          ]
+        },
+        "documentation/postman": {
+          "description": "Wildcard endpoint with geofencing using CEL validation to allow access only from Spain",
+          "folder": "/Routing & Wildcards",
+          "name": "Geofenced Wildcard Proxy (Spain Only)"
+        },
+        "validation/cel": [
+          {
+            "check_expr": "req_headers['X-Geoip'][0].matches('\"IsoCode\":\"ES\"')"
+          }
+        ]
+      },
+      "input_headers": [
+        "X-Geoip"
+      ]
+    },
+    {
+      "@comment": "EE only feature: Dynamic routing based on headers (token claim and cookie also available)",
+      "backend": [
+        {
+          "@comment": "We will route to the backend using the content of the 'X-Route' header",
+          "@test_with": "curl -iG -H 'X-Route: hello' 'http://localhost:8080/dynamic/header'",
+          "host": [
+            "http://localhost:8080"
+          ],
+          "url_pattern": "/__debug/{input_headers.x-route}"
+        }
+      ],
+      "endpoint": "/dynamic/header",
+      "extra_config": {
+        "documentation/openapi": {
+          "description": "Demonstrates dynamic URL path construction using the value of the X-Route header to determine backend routing destination",
+          "summary": "Dynamic routing based on request header",
+          "tags": [
+            "Routing & Wildcards"
+          ]
+        },
+        "documentation/postman": {
+          "description": "Demonstrates dynamic URL path construction using the X-Route header value",
+          "folder": "/Routing & Wildcards",
+          "name": "Dynamic Routing by Header"
+        }
+      }
+    },
+    {
+      "@comment": "EE only feature: Dynamic routing based on query strings",
+      "backend": [
+        {
+          "@comment": "We will route to the backend using the content of the 'X-Route' header",
+          "@test_with": "curl -iG 'http://localhost:8080/dynamic/qs?route=hello'",
+          "host": [
+            "http://localhost:8080"
+          ],
+          "url_pattern": "/__debug/{input_query_strings.route}"
+        }
+      ],
+      "endpoint": "/dynamic/qs",
+      "extra_config": {
+        "documentation/openapi": {
+          "description": "Demonstrates dynamic URL path construction using the 'route' query string parameter to determine backend routing destination",
+          "summary": "Dynamic routing based on query string",
+          "tags": [
+            "Routing & Wildcards"
+          ]
+        },
+        "documentation/postman": {
+          "description": "Demonstrates dynamic URL path construction using the 'route' query string parameter",
+          "folder": "/Routing & Wildcards",
+          "name": "Dynamic Routing by Query String"
         }
       }
     },
     {
       "@comment": "EE only feature: MCP Server - Entrypoint for Model Context Protocol",
-      "endpoint": "/mcp",
-      "method": "POST",
-      "timeout": "15s",
       "backend": [
         {
-          "url_pattern": "/ignore",
           "host": [
             "http://ignore"
-          ]
+          ],
+          "url_pattern": "/ignore"
         }
       ],
+      "endpoint": "/mcp",
       "extra_config": {
         "ai/mcp": {
           "server_name": "country-data-aggregator"
         },
-        "documentation/postman": {
-          "name": "MCP Server - Country Data Tools",
-          "description": "Model Context Protocol (MCP) server for AI/LLM integration - aggregates country data from REST + GraphQL APIs",
-          "folder": "/AI Integration"
-        },
         "documentation/openapi": {
-          "summary": "MCP Server entrypoint for country data tools",
           "description": "Model Context Protocol (MCP) server exposing country information aggregation tools. Accepts MCP protocol requests and routes them to appropriate handlers that aggregate REST and GraphQL APIs.",
+          "summary": "MCP Server entrypoint for country data tools",
           "tags": [
             "AI Integration"
           ]
+        },
+        "documentation/postman": {
+          "description": "Model Context Protocol server endpoint that exposes country data aggregation tools for AI/LLM integration",
+          "folder": "/AI Integration",
+          "name": "MCP Server Entrypoint (AI Gateway)"
         }
-      }
-    }
-  ],
-  "sequential_start": true,
-  "async_agent": [
+      },
+      "method": "POST",
+      "timeout": "15s"
+    },
     {
-      "name": "async-agent-demo",
+      "@comment": "AI Integration: LLM Routing",
       "backend": [
         {
+          "extra_config": {
+            "ai/llm": {
+              "gemini": {
+                "v1beta": {
+                  "credentials": "<REDACTED_GEMINI_API_KEY>",
+                  "variables": {
+                    "candidate_count": 1
+                  }
+                }
+              }
+            },
+            "backend/conditional": {
+              "name": "X-Model",
+              "strategy": "header",
+              "value": "gemini"
+            },
+            "telemetry/logging": {
+              "custom_format": "{\"ts\":\"%{time:rfc3339}\", \"endpoint\":\"/llm-routing\", \"vendor\":\"gemini\", \"latency\":\"%{latencyMs}\", \"tokenUsage\":\"%{resp.usageMetadata.totalTokenCount}\"}\n"
+            }
+          },
           "host": [
-            "http://127.0.0.1:8080"
+            "https://generativelanguage.googleapis.com"
           ],
-          "url_pattern": "/__debug/async-agent-demo",
-          "method": "POST"
+          "method": "POST",
+          "url_pattern": "/v1beta/models/gemini-2.5-flash:generateContent"
+        },
+        {
+          "extra_config": {
+            "ai/llm": {
+              "openai": {
+                "v1": {
+                  "credentials": "<REDACTED_OPENAI_API_KEY>",
+                  "variables": {
+                    "model": "gpt-4o-mini"
+                  }
+                }
+              }
+            },
+            "backend/conditional": {
+              "name": "X-Model",
+              "strategy": "header",
+              "value": "openai"
+            },
+            "telemetry/logging": {
+              "custom_format": "{\"ts\":\"%{time:rfc3339}\", \"endpoint\":\"/llm-routing\", \"vendor\":\"openai\", \"latency\":\"%{latencyMs}\", \"tokenUsage\":\"%{resp.usage.total_tokens}\"}\n"
+            }
+          },
+          "host": [
+            "https://api.openai.com"
+          ],
+          "method": "POST",
+          "url_pattern": "/v1/responses"
+        },
+        {
+          "extra_config": {
+            "ai/llm": {
+              "anthropic": {
+                "v1": {
+                  "credentials": "<REDACTED_ANTHROPIC_API_KEY>",
+                  "variables": {
+                    "model": "claude-3-haiku-20240307"
+                  }
+                }
+              }
+            },
+            "backend/conditional": {
+              "strategy": "fallback"
+            },
+            "telemetry/logging": {
+              "custom_format": "{\"ts\":\"%{time:rfc3339}\", \"endpoint\":\"/llm-routing\", \"vendor\":\"anthropic\", \"latency\":\"%{latencyMs}\", \"tokenUsage\":\"%{resp.usage.input_tokens}\"}\n"
+            }
+          },
+          "host": [
+            "https://api.anthropic.com"
+          ],
+          "method": "POST",
+          "url_pattern": "/v1/messages"
         }
       ],
-      "consumer": {
-        "topic": "*.bar",
-        "workers": 20
-      },
-      "connection": {
-        "max_retries": 10,
-        "backoff_strategy": "exponential-jitter"
-      },
+      "endpoint": "/llm-routing",
       "extra_config": {
-        "async/amqp": {
-          "name": "krakend",
-          "host": "amqp://guest:guest@rabbitmq:5672/",
-          "exchange": "foo",
-          "prefetch_count": 40,
-          "auto_ack": true
+        "documentation/openapi": {
+          "description": "Demonstrates header-based LLM routing using conditional backends. Send X-Model: gemini, openai, or omit for Anthropic fallback.",
+          "summary": "Routes requests to different LLM providers based on X-Model header",
+          "tags": [
+            "AI Integration"
+          ]
+        },
+        "documentation/postman": {
+          "description": "Route to Gemini, OpenAI, or Anthropic (fallback) based on X-Model header",
+          "folder": "/AI Integration",
+          "name": "LLM Routing by Header"
         }
-      }
+      },
+      "input_headers": [
+        "X-Model"
+      ],
+      "method": "POST",
+      "timeout": "60000ms"
+    },
+    {
+      "@comment": "AI Integration: Conditional LLM Routing",
+      "backend": [
+        {
+          "extra_config": {
+            "ai/llm": {
+              "openai": {
+                "v1": {
+                  "credentials": "<REDACTED_OPENAI_API_KEY>",
+                  "variables": {
+                    "model": "gpt-4o-mini"
+                  }
+                }
+              }
+            },
+            "backend/conditional": {
+              "strategy": "policy",
+              "value": "req_headers['X-Role'][0].contains('moderator')"
+            },
+            "telemetry/logging": {
+              "custom_format": "{\"ts\":\"%{time:rfc3339}\", \"endpoint\":\"/llm-conditional\", \"vendor\":\"openai\", \"latency\":\"%{latencyMs}\", \"tokenUsage\":\"%{resp.usage.total_tokens}\", \"userId\":\"%{reqHeader.X-User-Id}\", \"role\":\"%{reqHeader.X-Role}\"}\n"
+            }
+          },
+          "host": [
+            "https://api.openai.com"
+          ],
+          "method": "POST",
+          "url_pattern": "/v1/responses"
+        },
+        {
+          "extra_config": {
+            "ai/llm": {
+              "gemini": {
+                "v1beta": {
+                  "credentials": "<REDACTED_GEMINI_API_KEY>",
+                  "variables": {
+                    "candidate_count": 1
+                  }
+                }
+              }
+            },
+            "backend/conditional": {
+              "strategy": "fallback"
+            },
+            "telemetry/logging": {
+              "custom_format": "{\"ts\":\"%{time:rfc3339}\", \"endpoint\":\"/llm-conditional\", \"vendor\":\"gemini\", \"latency\":\"%{latencyMs}\", \"tokenUsage\":\"%{resp.usageMetadata.totalTokenCount}\", \"userId\":\"%{reqHeader.X-User-Id}\", \"role\":\"%{reqHeader.X-Role}\"}\n"
+            }
+          },
+          "host": [
+            "https://generativelanguage.googleapis.com"
+          ],
+          "method": "POST",
+          "url_pattern": "/v1beta/models/gemini-2.5-flash:generateContent"
+        }
+      ],
+      "endpoint": "/llm-conditional",
+      "extra_config": {
+        "auth/validator": {
+          "alg": "RS256",
+          "audience": [
+            "playground"
+          ],
+          "disable_jwk_security": true,
+          "jwk_url": "http://keycloak:8080/realms/krakend/protocol/openid-connect/certs",
+          "propagate_claims": [
+            [
+              "realm_access.roles",
+              "X-Role"
+            ],
+            [
+              "email",
+              "X-User-Id"
+            ]
+          ],
+          "roles_key": "realm_access.roles",
+          "roles_key_is_nested": true
+        },
+        "documentation/openapi": {
+          "description": "Demonstrates conditional routing by user role. Moderators get routed to OpenAI (premium), readers get Gemini (basic). Requires JWT authentication via Keycloak.",
+          "summary": "Routes to different LLMs based on JWT role claims",
+          "tags": [
+            "AI Integration"
+          ]
+        },
+        "documentation/postman": {
+          "description": "Moderator → OpenAI, Reader → Gemini based on JWT role",
+          "folder": "/AI Integration",
+          "name": "Conditional LLM Routing by Role"
+        }
+      },
+      "input_headers": [
+        "X-Role",
+        "X-User-Id"
+      ],
+      "method": "POST",
+      "timeout": "60000ms"
+    },
+    {
+      "@comment": "AI Integration: Token Quota Management",
+      "backend": [
+        {
+          "extra_config": {
+            "ai/llm": {
+              "gemini": {
+                "v1beta": {
+                  "credentials": "<REDACTED_GEMINI_API_KEY>",
+                  "variables": {
+                    "candidate_count": 1
+                  }
+                }
+              }
+            },
+            "telemetry/logging": {
+              "custom_format": "{\"ts\":\"%{time:rfc3339}\", \"endpoint\":\"/llm-quota\", \"vendor\":\"gemini\", \"latency\":\"%{latencyMs}\", \"tokenUsage\":\"%{resp.usageMetadata.totalTokenCount}\", \"userId\":\"%{reqHeader.X-User-Id}\", \"role\":\"%{reqHeader.X-Role}\"}\n"
+            }
+          },
+          "host": [
+            "https://generativelanguage.googleapis.com"
+          ],
+          "method": "POST",
+          "url_pattern": "/v1beta/models/gemini-2.5-flash:generateContent"
+        }
+      ],
+      "endpoint": "/llm-quota",
+      "extra_config": {
+        "auth/validator": {
+          "alg": "RS256",
+          "audience": [
+            "playground"
+          ],
+          "disable_jwk_security": true,
+          "jwk_url": "http://keycloak:8080/realms/krakend/protocol/openid-connect/certs",
+          "propagate_claims": [
+            [
+              "realm_access.roles",
+              "X-Role"
+            ],
+            [
+              "email",
+              "X-User-Id"
+            ]
+          ],
+          "roles_key": "realm_access.roles",
+          "roles_key_is_nested": true
+        },
+        "documentation/openapi": {
+          "description": "Demonstrates AI cost control with token quotas. Moderators get 10000 tokens/day, readers get 1000 tokens/day. Uses Redis for persistent quota tracking.",
+          "summary": "Enforces token-based usage quotas per user for LLM requests",
+          "tags": [
+            "AI Integration"
+          ]
+        },
+        "documentation/postman": {
+          "description": "LLM endpoint with per-user token quotas enforced via Redis",
+          "folder": "/AI Integration",
+          "name": "Token Quota Management"
+        },
+        "governance/quota": {
+          "quota_name": "llm_tokens",
+          "tier_key": "X-Role",
+          "tiers": [
+            {
+              "key": "X-User-Id",
+              "rule_name": "poweruser",
+              "strategy": "header",
+              "tier_value": "moderator",
+              "tier_value_as": "literal"
+            },
+            {
+              "key": "X-User-Id",
+              "rule_name": "basic",
+              "strategy": "header",
+              "tier_value_as": "*"
+            }
+          ],
+          "weight_key": "credits_consumed",
+          "weight_strategy": "body"
+        }
+      },
+      "input_headers": [
+        "X-Role",
+        "X-User-Id"
+      ],
+      "method": "POST",
+      "timeout": "60000ms"
+    },
+    {
+      "@comment": "AI Integration: Deterministic Prompt Guardrail",
+      "backend": [
+        {
+          "extra_config": {
+            "ai/llm": {
+              "gemini": {
+                "v1beta": {
+                  "credentials": "<REDACTED_GEMINI_API_KEY>",
+                  "variables": {
+                    "candidate_count": 1
+                  }
+                }
+              }
+            },
+            "telemetry/logging": {
+              "custom_format": "{\"ts\":\"%{time:rfc3339}\", \"endpoint\":\"/prompt-guardrail-deterministic\", \"vendor\":\"gemini\", \"latency\":\"%{latencyMs}\", \"tokenUsage\":\"%{resp.usageMetadata.totalTokenCount}\"}\n"
+            }
+          },
+          "host": [
+            "https://generativelanguage.googleapis.com"
+          ],
+          "method": "POST",
+          "url_pattern": "/v1beta/models/gemini-2.5-flash:generateContent"
+        }
+      ],
+      "endpoint": "/prompt-guardrail-deterministic",
+      "extra_config": {
+        "documentation/openapi": {
+          "description": "Demonstrates deterministic prompt guardrails using JSON Schema regex validation. Rejects requests containing credit card numbers, passwords, secrets, or API keys before reaching the LLM.",
+          "summary": "Blocks prompts containing sensitive data patterns using regex validation",
+          "tags": [
+            "AI Integration"
+          ]
+        },
+        "documentation/postman": {
+          "description": "Pattern-based prompt validation blocking sensitive data",
+          "folder": "/AI Integration",
+          "name": "Deterministic Prompt Guardrail"
+        },
+        "validation/json-schema": {
+          "properties": {
+            "contents": {
+              "allOf": [
+                {
+                  "not": {
+                    "pattern": "\\b\\d{4}[\\s\\-]?\\d{4}[\\s\\-]?\\d{4}[\\s\\-]?\\d{4}\\b"
+                  }
+                },
+                {
+                  "not": {
+                    "pattern": "(?i)password\\s*(is)?\\s*[:=]"
+                  }
+                },
+                {
+                  "not": {
+                    "pattern": "(?i)secret\\s*(is)?\\s*[:=]"
+                  }
+                },
+                {
+                  "not": {
+                    "pattern": "(?i)api[_\\s\\-]?key\\s*[:=]"
+                  }
+                }
+              ],
+              "type": "string"
+            }
+          },
+          "required": [
+            "contents"
+          ],
+          "type": "object"
+        }
+      },
+      "method": "POST",
+      "timeout": "60000ms"
+    },
+    {
+      "@comment": "AI Integration: Intelligent Prompt Guardrail",
+      "backend": [
+        {
+          "extra_config": {
+            "telemetry/logging": {
+              "custom_format": "{\"ts\":\"%{time:rfc3339}\", \"endpoint\":\"/prompt-guardrail-intelligent\", \"vendor\":\"prompt-guard\", \"latency\":\"%{latencyMs}\"}\n"
+            }
+          },
+          "host": [
+            "http://prompt-guard:8090"
+          ],
+          "method": "POST",
+          "url_pattern": "/classify"
+        },
+        {
+          "extra_config": {
+            "backend/conditional": {
+              "strategy": "policy",
+              "value": "req_params['Resp0_label'] == 'BENIGN'"
+            },
+            "modifier/body-generator": {
+              "content_type": "application/json",
+              "path": "./templates/gemini_from_params.tmpl"
+            },
+            "telemetry/logging": {
+              "custom_format": "{\"ts\":\"%{time:rfc3339}\", \"endpoint\":\"/prompt-guardrail-intelligent\", \"vendor\":\"gemini\", \"latency\":\"%{latencyMs}\"}\n"
+            }
+          },
+          "group": "llm",
+          "host": [
+            "https://generativelanguage.googleapis.com"
+          ],
+          "method": "POST",
+          "url_pattern": "/v1beta/models/gemini-2.5-flash:generateContent?key=<REDACTED_GEMINI_API_KEY>"
+        }
+      ],
+      "endpoint": "/prompt-guardrail-intelligent",
+      "extra_config": {
+        "documentation/openapi": {
+          "description": "Demonstrates AI-based prompt guardrails using sequential proxy. First classifies the prompt with Prompt Guard 2 22M model, then only forwards to Gemini if classified as BENIGN. Blocks injection and jailbreak attempts with a 403 error.",
+          "summary": "Classifies prompts with AI safety model before forwarding to LLM",
+          "tags": [
+            "AI Integration"
+          ]
+        },
+        "documentation/postman": {
+          "description": "AI-based prompt classifier + Gemini LLM via sequential proxy",
+          "folder": "/AI Integration",
+          "name": "Intelligent Prompt Guardrail"
+        },
+        "proxy": {
+          "sequential": true,
+          "sequential_propagated_params": [
+            "resp0_label",
+            "resp0_contents"
+          ]
+        },
+        "security/policies": {
+          "resp": {
+            "error": {
+              "body": "{\"error\":\"Prompt blocked\",\"message\":\"Your prompt was classified as potentially unsafe and has been blocked by the AI guardrail\"}",
+              "content_type": "application/json",
+              "status": 403
+            },
+            "policies": [
+              "resp_data.label == 'BENIGN'"
+            ]
+          }
+        }
+      },
+      "method": "POST",
+      "timeout": "60000ms"
     }
   ],
   "extra_config": {
-    "documentation/postman": {
-      "name": "KrakenD Enterprise API Gateway - Playground",
-      "description": "Comprehensive demonstration environment showcasing KrakenD Enterprise capabilities including API composition, authentication, protocol conversion, rate limiting, and AI integration via MCP.",
-      "version": "1.0.0",
-      "folder": [
-        {
-          "name": "/API Composition",
-          "description": "Endpoints demonstrating API aggregation, data transformation, masking, sequential processing, and mocked responses"
-        },
-        {
-          "name": "/Authentication & Security",
-          "description": "Various authentication methods (JWT, API Keys, Basic Auth) and security policy enforcement"
-        },
-        {
-          "name": "/Routing & Wildcards",
-          "description": "Wildcard endpoints, dynamic routing, geofencing, and HTTP method restrictions"
-        },
-        {
-          "name": "/Protocol Conversion",
-          "description": "Convert between protocols: REST to gRPC, GraphQL to REST, SOAP XML to REST JSON"
-        },
-        {
-          "name": "/Performance & QoS",
-          "description": "Rate limiting, caching strategies, and concurrent request handling for optimal performance"
-        },
-        {
-          "name": "/Real-time Communication",
-          "description": "WebSocket connectivity and real-time bidirectional communication"
-        },
-        {
-          "name": "/AI Integration",
-          "description": "Model Context Protocol (MCP) server for AI/LLM integration and intelligent data access"
-        },
-        {
-          "name": "/Utilities",
-          "description": "Static file serving and utility endpoints"
-        }
-      ]
-    },
     "ai/mcp": {
       "servers": [
         {
-          "name": "country-data-aggregator",
-          "title": "Country Information Aggregator",
-          "version": "1.0.0",
-          "stateless": true,
           "instructions": "Provides unified country data by aggregating REST and GraphQL APIs. Use this to retrieve comprehensive information about countries including geography, demographics, and cultural data.",
+          "name": "country-data-aggregator",
+          "stateless": true,
+          "title": "Country Information Aggregator",
           "tools": [
             {
-              "name": "get_country_info",
-              "title": "Get Country Information",
               "description": "Retrieves comprehensive country data by aggregating multiple public APIs (REST + GraphQL). Returns unified information including capital, population, area, languages, currency, flag, and bordering countries.",
-              "type": "text",
               "input_schema": {
-                "type": "object",
                 "properties": {
                   "country_code": {
-                    "type": "string",
                     "description": "Two-letter ISO 3166-1 alpha-2 country code (e.g., ES for Spain, FR for France, US for United States)",
-                    "pattern": "^[A-Z]{2}$"
+                    "pattern": "^[A-Z]{2}$",
+                    "type": "string"
                   }
                 },
                 "required": [
                   "country_code"
-                ]
+                ],
+                "type": "object"
               },
+              "name": "get_country_info",
               "output_schema": {
-                "type": "object",
                 "properties": {
+                  "area_km2": {
+                    "type": [
+                      "number",
+                      "null"
+                    ]
+                  },
+                  "borders": {
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": [
+                      "array",
+                      "null"
+                    ]
+                  },
+                  "capital": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
                   "country": {
                     "type": [
                       "string",
                       "null"
                     ]
                   },
-                  "native_name": {
+                  "currency": {
                     "type": [
                       "string",
                       "null"
                     ]
                   },
-                  "capital": {
+                  "flag_emoji": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "languages": {
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": [
+                      "array",
+                      "null"
+                    ]
+                  },
+                  "native_name": {
                     "type": [
                       "string",
                       "null"
@@ -1283,82 +1711,49 @@
                       "number",
                       "null"
                     ]
-                  },
-                  "area_km2": {
-                    "type": [
-                      "number",
-                      "null"
-                    ]
-                  },
-                  "currency": {
-                    "type": [
-                      "string",
-                      "null"
-                    ]
-                  },
-                  "languages": {
-                    "type": [
-                      "array",
-                      "null"
-                    ],
-                    "items": {
-                      "type": "string"
-                    }
-                  },
-                  "flag_emoji": {
-                    "type": [
-                      "string",
-                      "null"
-                    ]
-                  },
-                  "borders": {
-                    "type": [
-                      "array",
-                      "null"
-                    ],
-                    "items": {
-                      "type": "string"
-                    }
                   }
-                }
+                },
+                "type": "object"
               },
               "return_error_msg": true,
+              "title": "Get Country Information",
+              "type": "text",
               "workflow": {
-                "endpoint": "/__mcp/country-info/{country_code}",
                 "backend": [
                   {
                     "@comment": "REST Countries API - provides geography, population, borders, flags",
+                    "encoding": "safejson",
+                    "group": "rest_data",
                     "host": [
                       "https://restcountries.com"
                     ],
-                    "url_pattern": "/v3.1/alpha/{country_code}",
-                    "encoding": "safejson",
                     "is_collection": true,
-                    "group": "rest_data",
                     "mapping": {
                       "collection": "countries"
-                    }
+                    },
+                    "url_pattern": "/v3.1/alpha/{country_code}"
                   },
                   {
                     "@comment": "GraphQL Countries API - provides currency, native name, emoji, languages",
-                    "host": [
-                      "https://countries.trevorblades.com"
-                    ],
-                    "url_pattern": "/",
                     "encoding": "json",
-                    "target": "data.country",
-                    "group": "graphql_data",
                     "extra_config": {
                       "backend/graphql": {
-                        "type": "query",
                         "query": "query GetCountry($code: ID!) { country(code: $code) { name native capital currency emoji languages { code name } } }",
+                        "type": "query",
                         "variables": {
                           "code": "{country_code}"
                         }
                       }
-                    }
+                    },
+                    "group": "graphql_data",
+                    "host": [
+                      "https://countries.trevorblades.com"
+                    ],
+                    "target": "data.country",
+                    "url_pattern": "/"
                   }
                 ],
+                "endpoint": "/__mcp/country-info/{country_code}",
                 "extra_config": {
                   "modifier/jmespath": {
                     "@comment": "Simplified merge - take first element from REST array and combine with GraphQL",
@@ -1367,27 +1762,156 @@
                 }
               }
             }
+          ],
+          "version": "1.0.0"
+        }
+      ]
+    },
+    "auth/api-keys": {
+      "keys": [
+        {
+          "@description": "ACME Inc.",
+          "key": "4d2c61e1-34c4-e96c-9456-15bd983c5019",
+          "roles": [
+            "role1",
+            "role2"
+          ]
+        },
+        {
+          "@description": "Administrators Inc.",
+          "key": "58427514-be32-0b52-b7c6-d01fada30497",
+          "roles": [
+            "admin",
+            "user"
+          ]
+        }
+      ]
+    },
+    "auth/basic": {
+      "@comment": "Location of the password file for endpoints requiring basic auth",
+      "htpasswd_path": ".htpasswd"
+    },
+    "auth/revoker": {
+      "N": 10000000,
+      "P": 1e-7,
+      "TTL": 1500,
+      "hash_name": "optimal",
+      "port": 1234,
+      "revoke_server_api_key": "639ee23f-f4c5-40c4-855c-912bf01fae87",
+      "revoke_server_max_workers": 5,
+      "revoke_server_ping_interval": "30s",
+      "revoke_server_ping_url": "http://revoker:8081/instances",
+      "token_keys": [
+        "jti",
+        "sub"
+      ]
+    },
+    "documentation/openapi": {
+      "contact_email": "contact@example.com",
+      "contact_name": "John Doe",
+      "license_name": "MIT",
+      "license_url": "https://opensource.org/licenses/MIT",
+      "version": "1"
+    },
+    "documentation/postman": {
+      "description": "Comprehensive demonstration environment showcasing KrakenD Enterprise capabilities including API composition, authentication, protocol conversion, rate limiting, and AI integration via MCP.",
+      "folder": [
+        {
+          "description": "Endpoints demonstrating API aggregation, data transformation, masking, and mocked responses",
+          "name": "/API Composition & Transformation"
+        },
+        {
+          "description": "Various authentication methods: JWT (Keycloak), API Keys, Basic Auth, and token signing",
+          "name": "/Authentication & Authorization"
+        },
+        {
+          "description": "QoS features including multi-level rate limiting, backend caching, and concurrent requests",
+          "name": "/Rate Limiting & Caching"
+        },
+        {
+          "description": "Dynamic routing, wildcard endpoints, geofencing, and HTTP method restrictions",
+          "name": "/Routing & Wildcards"
+        },
+        {
+          "description": "Convert between protocols: REST to gRPC, GraphQL to REST, SOAP XML to REST JSON",
+          "name": "/Protocol Conversion"
+        },
+        {
+          "description": "gRPC service integration examples",
+          "name": "/Protocol Conversion/gRPC"
+        },
+        {
+          "description": "GraphQL to REST transformation examples",
+          "name": "/Protocol Conversion/GraphQL"
+        },
+        {
+          "description": "SOAP XML to REST JSON conversion examples",
+          "name": "/Protocol Conversion/SOAP"
+        },
+        {
+          "description": "WebSocket connectivity and real-time chat functionality",
+          "name": "/WebSockets & Real-time"
+        },
+        {
+          "description": "Advanced security policy enforcement using CEL expressions",
+          "name": "/Security Policies"
+        },
+        {
+          "description": "Model Context Protocol (MCP) server for AI/LLM integration (Enterprise-only feature)",
+          "name": "/AI & MCP Server"
+        },
+        {
+          "description": "Serve static files and demo website",
+          "name": "/Static Content"
+        }
+      ],
+      "name": "KrakenD Enterprise API Gateway - Playground",
+      "version": "1.0.0"
+    },
+    "governance/processors": {
+      "quotas": [
+        {
+          "connection_name": "default",
+          "hash_keys": true,
+          "name": "llm_tokens",
+          "on_failure_allow": true,
+          "rejecter_cache": {
+            "N": 10000000,
+            "P": 1e-8,
+            "hash_name": "optimal"
+          },
+          "rules": [
+            {
+              "limits": [
+                {
+                  "amount": 10000,
+                  "unit": "day"
+                }
+              ],
+              "name": "poweruser"
+            },
+            {
+              "limits": [
+                {
+                  "amount": 1000,
+                  "unit": "day"
+                }
+              ],
+              "name": "basic"
+            }
           ]
         }
       ]
     },
     "grpc": {
       "catalog": [
-        "./grpc_catalog"
+        "/etc/krakend/grpc_catalog"
       ],
       "server": {
         "services": [
           {
-            "name": "flight_finder.Flights",
             "methods": [
               {
-                "name": "FindFlight",
-                "input_headers": [
-                  "x-my-custom-header"
-                ],
-                "payload_params": {
-                  "page.cursor": "cursor"
-                },
                 "backend": [
                   {
                     "host": [
@@ -1396,39 +1920,39 @@
                     "url_pattern": "/__debug/{cursor}/"
                   },
                   {
-                    "host": [
-                      "grpc_flights:4242"
-                    ],
-                    "url_pattern": "/flight_finder.Flights/FindFlight",
                     "extra_config": {
                       "backend/grpc": {
                         "use_request_body": true
                       }
-                    }
+                    },
+                    "host": [
+                      "grpc_flights:4242"
+                    ],
+                    "url_pattern": "/flight_finder.Flights/FindFlight"
                   }
-                ]
+                ],
+                "input_headers": [
+                  "x-my-custom-header"
+                ],
+                "name": "FindFlight",
+                "payload_params": {
+                  "page.cursor": "cursor"
+                }
               }
-            ]
+            ],
+            "name": "flight_finder.Flights"
           }
         ]
       }
     },
-    "router": {
-      "return_error_msg": true,
-      "disable_gzip": true
-    },
-    "auth/basic": {
-      "@comment": "Location of the password file for endpoints requiring basic auth",
-      "htpasswd_path": ".htpasswd"
-    },
     "plugin/http-server": {
+      "geoip": {
+        "citydb_path": "geoip/GeoLite2-City.mmdb"
+      },
       "name": [
         "geoip",
         "url-rewrite"
       ],
-      "geoip": {
-        "citydb_path": "./geoip/GeoLite2-City.mmdb"
-      },
       "url-rewrite": {
         "literal": {
           "/git-profile": "/git"
@@ -1445,43 +1969,77 @@
         ]
       }
     },
-    "documentation/openapi": {
-      "version": "1",
-      "contact_name": "John Doe",
-      "contact_email": "contact@example.com",
-      "license_name": "MIT",
-      "license_url": "https://opensource.org/licenses/MIT"
-    },
-    "auth/api-keys": {
-      "keys": [
+    "redis": {
+      "connection_pools": [
         {
-          "key": "4d2c61e1-34c4-e96c-9456-15bd983c5019",
-          "roles": [
-            "role1",
-            "role2"
-          ],
-          "@description": "ACME Inc."
-        },
-        {
-          "key": "58427514-be32-0b52-b7c6-d01fada30497",
-          "roles": [
-            "admin",
-            "user"
-          ],
-          "@description": "Administrators Inc."
+          "address": "redis:6379",
+          "name": "default"
         }
       ]
     },
+    "router": {
+      "disable_gzip": true,
+      "return_error_msg": true
+    },
+    "security/cors": {
+      "allow_headers": [
+        "Origin",
+        "Authorization",
+        "Content-Type",
+        "X-Model"
+      ],
+      "allow_methods": [
+        "POST",
+        "GET"
+      ],
+      "allow_origins": [
+        "*"
+      ],
+      "expose_headers": [
+        "Content-Length"
+      ],
+      "max_age": "12h"
+    },
+    "telemetry/gelf": {
+      "address": "logstash:12201",
+      "enable_tcp": false
+    },
+    "telemetry/logging": {
+      "level": "DEBUG",
+      "prefix": "[KRAKEND]",
+      "stdout": true,
+      "syslog": false
+    },
     "telemetry/opentelemetry": {
-      "service_name": "krakend_prometheus_service",
-      "metric_reporting_period": 1,
-      "trace_sample_rate": 1,
       "exporters": {
         "otlp": [
           {
             "disable_metrics": true,
-            "disable_traces": false,
-            "host": "jaeger",
+            "host": "tempo",
+            "name": "local_tempo",
+            "port": 4317,
+            "use_http": false
+          },
+          {
+            "disable_metrics": true,
+            "disable_traces": true,
+            "host": "127.0.0.1",
+            "name": "datadog",
+            "port": 14317,
+            "use_http": false
+          },
+          {
+            "disable_metrics": true,
+            "disable_traces": true,
+            "host": "otlp.eu01.nr-data.net",
+            "name": "newrelic",
+            "port": 4318,
+            "use_http": true
+          },
+          {
+            "disable_metrics": true,
+            "disable_traces": true,
+            "host": "jaeeger",
             "name": "debug_jaeger",
             "port": 4317,
             "use_http": false
@@ -1489,14 +2047,42 @@
         ],
         "prometheus": [
           {
+            "go_metrics": true,
             "name": "local_prometheus",
             "port": 9090,
-            "process_metrics": true,
-            "go_metrics": true
+            "process_metrics": true
           }
         ]
       },
       "layers": {
+        "backend": {
+          "metrics": {
+            "detailed_connection": true,
+            "disable_stage": false,
+            "read_payload": true,
+            "report_headers": true,
+            "round_trip": true,
+            "static_attributes": [
+              {
+                "key": "my_metric_attr",
+                "value": "my_metric_val"
+              }
+            ]
+          },
+          "traces": {
+            "detailed_connection": true,
+            "disable_stage": false,
+            "read_payload": true,
+            "report_headers": true,
+            "round_trip": true,
+            "static_attributes": [
+              {
+                "key": "my_trace_attr",
+                "value": "my_trace_val"
+              }
+            ]
+          }
+        },
         "global": {
           "disable_metrics": false,
           "disable_propagation": false,
@@ -1505,69 +2091,35 @@
         },
         "proxy": {
           "disable_metrics": false,
-          "disable_traces": true,
+          "disable_traces": false,
           "report_headers": true
-        },
-        "backend": {
-          "metrics": {
-            "detailed_connection": true,
-            "disable_stage": false,
-            "read_payload": false,
-            "round_trip": false
-          },
-          "traces": {
-            "detailed_connection": false,
-            "disable_stage": false,
-            "read_payload": false,
-            "report_headers": false,
-            "round_trip": false
-          }
         }
-      }
+      },
+      "metric_reporting_period": 1,
+      "service_name": "playground_enterprise_otel",
+      "trace_sample_rate": 0.5
     },
-    "telemetry/logging": {
-      "level": "DEBUG",
-      "prefix": "[KRAKEND]",
-      "syslog": false,
-      "stdout": true
-    },
-    "telemetry/gelf": {
-      "address": "logstash:12201",
-      "enable_tcp": false
-    },
-    "security/cors": {
-      "allow_origins": [
-        "*"
-      ],
-      "allow_methods": [
-        "POST",
-        "GET"
-      ],
-      "allow_headers": [
-        "Origin",
-        "Authorization",
-        "Content-Type"
-      ],
-      "expose_headers": [
-        "Content-Length"
-      ],
-      "max_age": "12h"
-    },
-    "auth/revoker": {
-      "@comment": "The values in this section must match the ones used in the revoker.json file",
-      "hash_name": "optimal",
-      "N": 10000000,
-      "P": 1e-7,
-      "port": 1234,
-      "token_keys": [
-        "jti",
-        "sub"
-      ],
-      "TTL": 1500,
-      "revoke_server_ping_url": "http://revoker:8081/instances",
-      "revoke_server_ping_interval": "30s",
-      "revoke_server_api_key": "639ee23f-f4c5-40c4-855c-912bf01fae87",
-      "revoke_server_max_workers": 5
+    "telemetry/opentelemetry-security": {
+      "otlp": [
+        {
+          "headers": {
+            "api-key": ""
+          },
+          "name": "newrelic"
+        }
+      ]
     }
-  }
+  },
+  "host": [
+    "http://localhost:8080"
+  ],
+  "name": "KrakenD Enterprise API Gateway",
+  "plugin": {
+    "folder": "/opt/krakend/plugins/",
+    "pattern": ".so"
+  },
+  "port": 8080,
+  "sequential_start": true,
+  "timeout": "3000ms",
+  "version": 3
 }

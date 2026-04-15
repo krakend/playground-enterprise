@@ -141,7 +141,44 @@
   "grpc": {
     "catalog": [
       "{{.grpc_catalog}}"
-    ]
+    ],
+    "server": {
+      "services": [
+        {
+          "name": "flight_finder.Flights",
+          "methods": [
+            {
+              "name": "FindFlight",
+              "input_headers": [
+                "x-my-custom-header"
+              ],
+              "payload_params": {
+                "page.cursor": "cursor"
+              },
+              "backend": [
+                {
+                  "host": [
+                    "http://localhost:8080"
+                  ],
+                  "url_pattern": "/__debug/{cursor}/"
+                },
+                {
+                  "host": [
+                    "grpc_flights:4242"
+                  ],
+                  "url_pattern": "/flight_finder.Flights/FindFlight",
+                  "extra_config": {
+                    "backend/grpc": {
+                      "use_request_body": true
+                    }
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
   },
   "telemetry/opentelemetry": { "$ref": "extra_config/otel.json" },
   "telemetry/opentelemetry-security": {
@@ -234,7 +271,8 @@
     "allow_headers": [
       "Origin",
       "Authorization",
-      "Content-Type"
+      "Content-Type",
+      "X-Model"
     ],
     "expose_headers": [
       "Content-Length"
@@ -247,12 +285,50 @@
     "P": 1e-7,
     "port": 1234,
     "token_keys": [
-      "jti"
+      "jti",
+      "sub"
     ],
     "TTL": 1500,
     "revoke_server_ping_url": "http://{{.hosts.revoker}}/instances",
     "revoke_server_ping_interval": "30s",
     "revoke_server_api_key": "639ee23f-f4c5-40c4-855c-912bf01fae87",
     "revoke_server_max_workers": 5
+  },
+  "redis": {
+    "connection_pools": [
+      {
+        "name": "default",
+        "address": "redis:6379"
+      }
+    ]
+  },
+  "governance/processors": {
+    "quotas": [
+      {
+        "name": "llm_tokens",
+        "connection_name": "default",
+        "hash_keys": true,
+        "on_failure_allow": true,
+        "rejecter_cache": {
+          "N": 10000000,
+          "P": 1e-8,
+          "hash_name": "optimal"
+        },
+        "rules": [
+          {
+            "name": "poweruser",
+            "limits": [
+              { "amount": 10000, "unit": "day" }
+            ]
+          },
+          {
+            "name": "basic",
+            "limits": [
+              { "amount": 1000, "unit": "day" }
+            ]
+          }
+        ]
+      }
+    ]
   }
 }

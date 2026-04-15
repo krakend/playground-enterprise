@@ -12,6 +12,10 @@ services:
       - "1234:1234"
       - "8080:8080"
     command: ["run", "-d", "-c", "krakend.json"]
+    env_file:
+      - ./config/krakend/.env
+      - path: ./config/krakend/.env.local
+        required: false
     # Uncomment to automatically compile using flexible configuration
     #command: ["run", "-d", "-c", "./extended/krakend.tmpl"]
     #environment:
@@ -20,6 +24,7 @@ services:
     depends_on:
       - jaeger
       - chat
+      - redis
   grafana:
     image: grafana/grafana:latest
     ports:
@@ -133,3 +138,12 @@ services:
       - KEYCLOAK_ADMIN=admin
       - KEYCLOAK_ADMIN_PASSWORD=admin
     command: ["start-dev", "--import-realm"]
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+  prompt-guard:
+    build:
+      context: images/prompt-guard
+    ports:
+      - "8091:8090"

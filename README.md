@@ -55,13 +55,25 @@ KrakenD can export telemetry to several services; this demonstration has a few e
     make elastic
 
 ### Web client
-This consumer of the API gateway is a simple Express JS application that interacts with KrakenD to fetch the data. All code is under `images/demo-app/`.
+An interactive demo SPA at `images/demo-app/` with three sections:
 
-The client is a Single Page Application using the builtin [Keycloak](https://www.keycloak.org/) instance to generate JWT tokens.
-
-**You don't need to install any npm locally**; the docker image will download and install the dependencies in the container.
+- **AI Gateway** — Test 5 AI use cases: LLM routing, role-based routing, token quotas, and prompt guardrails (deterministic + AI-based)
+- **Auth Demo** — Test authentication patterns: JWT (Keycloak), API keys, Basic Auth, and GDPR cookie policies
+- **WebSocket Chat** — Real-time bidirectional chat through KrakenD's WebSocket proxy
 
 Visit [http://localhost:3000](http://localhost:3000)
+
+### AI Gateway services
+The AI Gateway examples require additional services:
+
+- **Redis** — Persistent token quota tracking on port `6379`
+- **Prompt Guard** — Meta's Prompt Guard 2 22M (ONNX) classifier for prompt injection detection on port `8090`. Requires building: `docker compose build prompt-guard`
+
+API keys for LLM providers are configured via environment variables:
+```bash
+cp config/krakend/.env config/krakend/.env.local
+# Edit .env.local with your GEMINI_API_KEY, OPENAI_API_KEY, ANTHROPIC_API_KEY
+```
 
 ### The async agent
 A RabbitMQ instance is ready to accept AMQP messages to be delivered to the gateway.
@@ -180,7 +192,12 @@ The following endpoints are worth noticing:
 | Geolocation / Geofencing                                | [`/fake-api-geofence/*`](http://localhost:8080/fake-api-geofence/user/1.json) | Expose information from internal service at fake API using wildcard and applying geofencing (only accessible ) <br>_Note: to use geofencing, you should download a [Maxmind GeoIP City database](https://dev.maxmind.com/geoip/geolite2-free-geolocation-data?lang=en) (commercial or free) and store it on `config/krakend/geoip/`_ |
 | JWT-based Authentication                                | [`/private/moderate`](http://localhost:8080/private/moderate)                       | Protects an endpoint validating JWT tokens issued by built-in Keycloak instance. You can access http://localhost:3000/ to test it.                                                                                                                                                                                                                       |
 | API Keys based Authentication                           | [`/api-key`](http://localhost:8080/api-key)                                   | Protects and endpoint using an API-Key. You can use `curl -iG -H 'Authorization: Bearer 58427514-be32-0b52-b7c6-d01fada30497' 'http://localhost:8080/api-key'` to test it.                                                                                                                                                           |
-| Model Context Protocol (MCP) Server / AI Gateway        | `/mcp` (POST)                                                                  | **Enterprise-only** MCP server that exposes tools for aggregating country data from multiple APIs (REST + GraphQL). Designed for AI/LLM integration following the Model Context Protocol standard. Example: POST MCP protocol request to retrieve comprehensive country information.                                                |
+| Model Context Protocol (MCP) Server / AI Gateway        | `/mcp` (POST)                                                                  | **Enterprise-only** MCP server that exposes tools for aggregating country data from multiple APIs (REST + GraphQL). Designed for AI/LLM integration following the Model Context Protocol standard.                                                |
+| LLM Routing by Header                                  | [`/llm-routing`](http://localhost:8080/llm-routing) (POST)                     | Route requests to Gemini, OpenAI, or Anthropic (fallback) based on `X-Model` header using conditional backends.                                                                                                                                 |
+| Role-Based LLM Routing                                 | [`/llm-conditional`](http://localhost:8080/llm-conditional) (POST)             | JWT role determines which LLM responds: moderators get OpenAI, readers get Gemini. Requires Keycloak authentication.                                                                                                                            |
+| Token Quota Management                                 | [`/llm-quota`](http://localhost:8080/llm-quota) (POST)                         | Per-user token budget enforcement via Redis. Moderators: 10k tokens/day, readers: 1k tokens/day.                                                                                                                                                |
+| Deterministic Prompt Guardrail                          | [`/prompt-guardrail-deterministic`](http://localhost:8080/prompt-guardrail-deterministic) (POST) | Blocks prompts containing credit card numbers, passwords, secrets, or API keys using JSON Schema regex validation.                                                                                                              |
+| Intelligent Prompt Guardrail                            | [`/prompt-guardrail-intelligent`](http://localhost:8080/prompt-guardrail-intelligent) (POST)     | AI-based prompt classification using Meta's Prompt Guard 2 22M via sequential proxy. Blocks injection/jailbreak attempts with HTTP 403.                                                                                         |
 
 You will find more examples with comments in `config/krakend/krakend.json`
 

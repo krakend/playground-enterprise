@@ -239,6 +239,9 @@
                 ]
             },
             {
+                "host": [
+                    "http://fake_api"
+                ],
                 "url_pattern": "/destinations/{resp0_destination_id}.json"
             }
         ],
