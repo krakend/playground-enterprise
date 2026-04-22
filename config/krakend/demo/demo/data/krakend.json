@@ -1182,7 +1182,7 @@
             "ai/llm": {
               "gemini": {
                 "v1beta": {
-                  "credentials": "<REDACTED_GEMINI_API_KEY>",
+                  "credentials": "<env_local_empty_credential>",
                   "variables": {
                     "candidate_count": 1
                   }
@@ -1209,7 +1209,7 @@
             "ai/llm": {
               "openai": {
                 "v1": {
-                  "credentials": "<REDACTED_OPENAI_API_KEY>",
+                  "credentials": "<env_local_empty_credential>",
                   "variables": {
                     "model": "gpt-4o-mini"
                   }
@@ -1236,7 +1236,7 @@
             "ai/llm": {
               "anthropic": {
                 "v1": {
-                  "credentials": "<REDACTED_ANTHROPIC_API_KEY>",
+                  "credentials": "<env_local_empty_credential>",
                   "variables": {
                     "model": "claude-haiku-4-5"
                   }
@@ -1287,7 +1287,7 @@
             "ai/llm": {
               "openai": {
                 "v1": {
-                  "credentials": "<REDACTED_OPENAI_API_KEY>",
+                  "credentials": "<env_local_empty_credential>",
                   "variables": {
                     "model": "gpt-4o-mini"
                   }
@@ -1313,7 +1313,7 @@
             "ai/llm": {
               "gemini": {
                 "v1beta": {
-                  "credentials": "<REDACTED_GEMINI_API_KEY>",
+                  "credentials": "<env_local_empty_credential>",
                   "variables": {
                     "candidate_count": 1
                   }
@@ -1384,7 +1384,7 @@
             "ai/llm": {
               "gemini": {
                 "v1beta": {
-                  "credentials": "<REDACTED_GEMINI_API_KEY>",
+                  "credentials": "<env_local_empty_credential>",
                   "variables": {
                     "candidate_count": 1
                   }
@@ -1448,7 +1448,7 @@
               "tier_value_as": "*"
             }
           ],
-          "weight_key": "credits_consumed",
+          "weight_key": "usage",
           "weight_strategy": "body"
         }
       }
@@ -1469,7 +1469,7 @@
             "ai/llm": {
               "gemini": {
                 "v1beta": {
-                  "credentials": "<REDACTED_GEMINI_API_KEY>",
+                  "credentials": "<env_local_empty_credential>",
                   "variables": {
                     "candidate_count": 1
                   }
@@ -1552,7 +1552,7 @@
           "host": [
             "https://generativelanguage.googleapis.com"
           ],
-          "url_pattern": "/v1beta/models/gemini-2.5-flash:generateContent?key=<REDACTED_GEMINI_API_KEY>",
+          "url_pattern": "/v1beta/models/gemini-2.5-flash:generateContent?key=<env_local_empty_credential>",
           "method": "POST",
           "group": "llm",
           "extra_config": {
