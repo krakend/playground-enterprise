@@ -306,8 +306,8 @@
       }
     },
     {
-      "@comment": "Feature: Authentication and authorization",
-      "endpoint": "/auth/*",
+      "@comment": "Feature: Demo SPA fronted by the gateway",
+      "endpoint": "/spa/*",
       "output_encoding": "no-op",
       "backend": [
         {
@@ -320,16 +320,16 @@
       ],
       "extra_config": {
         "documentation/openapi": {
-          "description": "This endpoint offers a web interface to present auth/authz flow with Keycloack.",
-          "summary": "Full example for JWT based authentication / authorization with Keycloack",
+          "description": "KrakenD fronts the demo-app SPA so clients can reach it through the gateway. The SPA covers AI Gateway, Auth Demo, and WebSocket Chat sections.",
+          "summary": "Interactive demo SPA proxied by the gateway",
           "tags": [
-            "Authentication & Security"
+            "Demo UI"
           ]
         },
         "documentation/postman": {
-          "description": "Interactive web interface demonstrating complete JWT authentication and authorization flow using Keycloak",
-          "folder": "/Authentication & Security",
-          "name": "JWT Auth Demo Web Interface (Keycloak)"
+          "description": "Interactive web interface proxied through KrakenD. Hosts three demo sections: AI Gateway, Auth Demo (Keycloak JWT, API keys, Basic auth), and WebSocket Chat.",
+          "folder": "/Demo UI",
+          "name": "Demo SPA (AI Gateway, Auth Demo, WebSocket Chat)"
         }
       }
     },
