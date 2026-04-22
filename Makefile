@@ -43,7 +43,7 @@ check-ai-credentials:
 	@echo "  [OK] AI credentials resolved from .env.local or .env"
 
 stop:
-	docker compose down --volumes
+	docker compose --profile ai-gateway down --volumes --remove-orphans
 
 restart:
 	docker compose restart
