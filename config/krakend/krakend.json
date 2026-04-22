@@ -1448,7 +1448,7 @@
               "tier_value_as": "*"
             }
           ],
-          "weight_key": "credits_consumed",
+          "weight_key": "usage",
           "weight_strategy": "body"
         }
       }

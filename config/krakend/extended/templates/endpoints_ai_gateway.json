@@ -215,7 +215,7 @@
         },
         "governance/quota": {
             "quota_name": "llm_tokens",
-            "weight_key": "credits_consumed",
+            "weight_key": "usage",
             "weight_strategy": "body",
             "tier_key": "X-Role",
             "tiers": [

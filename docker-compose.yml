@@ -12,15 +12,6 @@ services:
       - "1234:1234"
       - "8080:8080"
     command: ["run", "-d", "-c", "krakend.json"]
-    env_file:
-      - ./config/krakend/.env
-      - path: ./config/krakend/.env.local
-        required: false
-    # Uncomment to automatically compile using flexible configuration
-    #command: ["run", "-d", "-c", "./extended/krakend.tmpl"]
-    #environment:
-    #  - "FC_CONFIG=/etc/krakend/fc_config.json"
-    #  - "FC_DEBUG=true"
     depends_on:
       - jaeger
       - chat
@@ -108,7 +99,7 @@ services:
     ports:
       - "3000:3000"
   revoker:
-    image: krakend/krakend-ee:2.6
+    image: krakend/krakend-ee:2.13
     ports:
       - 8081:8081
     volumes:
