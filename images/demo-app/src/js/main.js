@@ -10,7 +10,7 @@ const USE_CASES = {
         endpoint: '/llm-routing',
         method: 'POST',
         requiresAuth: false,
-        description: 'Route requests to different LLM providers using the <code>X-Model</code> header. Omit the header to use the default (Anthropic).',
+        description: 'Route requests to different LLM providers using the <code>X-Model</code> header. Omit the header to use the default (Anthropic). The <strong>Direct-to-LLM</strong> panel shows what you would have to build yourself without KrakenD.',
         features: ['ai/llm', 'backend/conditional', 'header strategy', 'fallback'],
         fields: [
             { id: 'model', type: 'select', label: 'Model Provider', options: [
@@ -29,6 +29,115 @@ const USE_CASES = {
             { label: 'Route to OpenAI', prompt: 'Write a haiku about APIs', model: 'openai' },
             { label: 'Default (Anthropic)', prompt: 'Name 3 benefits of API gateways in a short list', model: '' },
         ],
+        comparison: {
+            providerFromFields: (fields) => fields.model || 'anthropic',
+            providers: {
+                anthropic: {
+                    label: 'Anthropic Claude',
+                    request: (prompt) => ({
+                        method: 'POST',
+                        url: 'https://api.anthropic.com/v1/messages',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'x-api-key': '$ANTHROPIC_API_KEY',
+                            'anthropic-version': '2023-06-01',
+                        },
+                        body: {
+                            model: 'claude-haiku-4-5',
+                            max_tokens: 1024,
+                            stream: false,
+                            messages: [
+                                { role: 'user', content: prompt || '<your prompt>' },
+                            ],
+                        },
+                    }),
+                    response: (text, totalTokens) => {
+                        const total = parseInt(totalTokens, 10) || 0
+                        const input = Math.max(8, Math.round(total * 0.3))
+                        const output = Math.max(1, total - input)
+                        return {
+                            id: 'msg_01AbCdEf123',
+                            type: 'message',
+                            role: 'assistant',
+                            model: 'claude-haiku-4-5',
+                            content: [{ type: 'text', text: text || '<model reply>' }],
+                            stop_reason: 'end_turn',
+                            usage: { input_tokens: input, output_tokens: output },
+                        }
+                    },
+                },
+                openai: {
+                    label: 'OpenAI',
+                    request: (prompt) => ({
+                        method: 'POST',
+                        url: 'https://api.openai.com/v1/responses',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': 'Bearer $OPENAI_API_KEY',
+                        },
+                        body: {
+                            model: 'gpt-4o-mini',
+                            stream: false,
+                            truncation: 'disabled',
+                            input: prompt || '<your prompt>',
+                        },
+                    }),
+                    response: (text, totalTokens) => {
+                        const total = parseInt(totalTokens, 10) || 0
+                        const input = Math.max(8, Math.round(total * 0.3))
+                        const output = Math.max(1, total - input)
+                        return {
+                            id: 'resp_01AbCdEf123',
+                            object: 'response',
+                            model: 'gpt-4o-mini',
+                            output: [
+                                {
+                                    type: 'message',
+                                    role: 'assistant',
+                                    content: [{ type: 'output_text', text: text || '<model reply>' }],
+                                },
+                            ],
+                            usage: { input_tokens: input, output_tokens: output, total_tokens: total || (input + output) },
+                        }
+                    },
+                },
+                gemini: {
+                    label: 'Google Gemini',
+                    request: (prompt) => ({
+                        method: 'POST',
+                        url: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=$GEMINI_API_KEY',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: {
+                            generationConfig: { candidateCount: 1 },
+                            contents: [
+                                { parts: [{ text: prompt || '<your prompt>' }] },
+                            ],
+                        },
+                    }),
+                    response: (text, totalTokens) => {
+                        const total = parseInt(totalTokens, 10) || 0
+                        const input = Math.max(8, Math.round(total * 0.3))
+                        const output = Math.max(1, total - input)
+                        return {
+                            candidates: [
+                                {
+                                    content: { role: 'model', parts: [{ text: text || '<model reply>' }] },
+                                    finishReason: 'STOP',
+                                    index: 0,
+                                },
+                            ],
+                            usageMetadata: {
+                                promptTokenCount: input,
+                                candidatesTokenCount: output,
+                                totalTokenCount: total || (input + output),
+                            },
+                        }
+                    },
+                },
+            },
+        },
     },
     'llm-conditional': {
         title: 'Role-Based LLM Routing',
@@ -206,13 +315,37 @@ function setupNavigation() {
 
 /* ======================== USE CASE SELECTOR ======================== */
 
+const USECASE_DEMO_PATHS = {
+    'llm-routing': '/demo/use-cases/llm-routing/',
+    'llm-conditional': '/demo/use-cases/llm-conditional/',
+    'llm-quota': '/demo/use-cases/llm-quota/',
+    'guardrail-deterministic': '/demo/use-cases/prompt-guardrail-deterministic/',
+    'guardrail-intelligent': '/demo/use-cases/prompt-guardrail-intelligent/',
+}
+
 function setupUseCaseSelector() {
     // Restore active card
     document.querySelectorAll('#__usecase-grid .usecase-card').forEach(c => c.classList.remove('active'))
     const activeCard = document.querySelector(`#__usecase-grid .usecase-card[data-usecase="${currentUseCase}"]`)
     if (activeCard) activeCard.classList.add('active')
 
+    const demoBase = `${location.protocol}//${location.hostname}:8080`
+
     document.querySelectorAll('#__usecase-grid .usecase-card').forEach(card => {
+        const uc = card.dataset.usecase
+        const demoPath = USECASE_DEMO_PATHS[uc]
+        if (demoPath && !card.querySelector('.usecase-link')) {
+            const link = document.createElement('a')
+            link.className = 'usecase-link'
+            link.href = `${demoBase}${demoPath}`
+            link.target = '_blank'
+            link.rel = 'noopener noreferrer'
+            link.innerHTML = `<span>View config example</span><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M4.25 5.5a.75.75 0 0 0-.75.75v8.5c0 .414.336.75.75.75h8.5a.75.75 0 0 0 .75-.75v-4a.75.75 0 0 1 1.5 0v4A2.25 2.25 0 0 1 12.75 17h-8.5A2.25 2.25 0 0 1 2 14.75v-8.5A2.25 2.25 0 0 1 4.25 4h5a.75.75 0 0 1 0 1.5h-5Z" clip-rule="evenodd"/><path fill-rule="evenodd" d="M6.194 12.753a.75.75 0 0 0 1.06.053L16.5 4.44v2.81a.75.75 0 0 0 1.5 0v-4.5a.75.75 0 0 0-.75-.75h-4.5a.75.75 0 0 0 0 1.5h2.553l-9.056 8.194a.75.75 0 0 0-.053 1.06Z" clip-rule="evenodd"/></svg>`
+            link.setAttribute('aria-label', 'View config example (opens in new tab)')
+            link.addEventListener('click', e => e.stopPropagation())
+            card.appendChild(link)
+        }
+
         card.addEventListener('click', () => {
             document.querySelectorAll('#__usecase-grid .usecase-card').forEach(c => c.classList.remove('active'))
             card.classList.add('active')
@@ -369,6 +502,67 @@ function setupRequestPreview(uc) {
     update()
 }
 
+function renderHeadersBlock(headers) {
+    const entries = Object.entries(headers || {})
+    if (!entries.length) {
+        return '<div><span class="header-value" style="color: var(--text-muted);">No headers</span></div>'
+    }
+    return entries.map(([k, v]) =>
+        `<div><span class="header-name">${k}:</span> <span class="header-value">${v}</span></div>`
+    ).join('')
+}
+
+function renderReqBlock(method, url, headers, body) {
+    const bodyJson = typeof body === 'string' ? body : JSON.stringify(body, null, 2)
+    return `
+        <div class="req-preview">
+            <div class="req-line">
+                <span class="method">${method}</span>
+                <span class="url">${url}</span>
+            </div>
+            <div class="req-headers">${renderHeadersBlock(headers)}</div>
+            <div class="req-body-label">Body</div>
+            <div class="req-body-content">
+                <pre><code class="language-json">${bodyJson}</code></pre>
+            </div>
+        </div>
+    `
+}
+
+function renderRespBlock(headers, body) {
+    const bodyJson = typeof body === 'string' ? body : JSON.stringify(body, null, 2)
+    const headersHtml = Object.entries(headers || {}).map(([k, v]) =>
+        `<div><span class="header-name">${k}:</span> <span class="header-value">${v}</span></div>`
+    ).join('') || '<div><span class="header-value" style="color: var(--text-muted);">No headers exposed</span></div>'
+    return `
+        <div class="req-preview">
+            <div class="req-headers">${headersHtml}</div>
+            <div class="req-body-label">Body</div>
+            <div class="req-body-content">
+                <pre><code class="language-json">${bodyJson}</code></pre>
+            </div>
+        </div>
+    `
+}
+
+function wrapComparisonGroup(kind, title, note, inner) {
+    return `
+        <div class="comparison-group ${kind}">
+            <div class="comparison-group-header ${kind}">
+                <span>${title}</span>
+                ${note ? `<span class="label-note">${note}</span>` : ''}
+            </div>
+            ${inner}
+        </div>
+    `
+}
+
+function getComparisonProvider(uc, fields) {
+    if (!uc.comparison) return null
+    const key = uc.comparison.providerFromFields(fields)
+    return uc.comparison.providers[key] || null
+}
+
 function updateRequestPreview(uc) {
     const fields = {}
     document.querySelectorAll('[data-field]').forEach(el => {
@@ -384,23 +578,18 @@ function updateRequestPreview(uc) {
     const container = document.getElementById('__rtab-request')
     if (!container) return
 
-    const headersHtml = Object.entries(allHeaders).map(([k, v]) =>
-        `<div><span class="header-name">${k}:</span> <span class="header-value">${v}</span></div>`
-    ).join('')
+    const krakendBlock = renderReqBlock(uc.method, `${API_URL}${uc.endpoint}`, allHeaders, body)
 
-    container.innerHTML = `
-        <div class="req-preview">
-            <div class="req-line">
-                <span class="method">${uc.method}</span>
-                <span class="url">${API_URL}${uc.endpoint}</span>
-            </div>
-            <div class="req-headers">${headersHtml}</div>
-            <div class="req-body-label">Body</div>
-            <div class="req-body-content">
-                <pre><code class="language-json">${JSON.stringify(body, null, 2)}</code></pre>
-            </div>
-        </div>
-    `
+    const provider = getComparisonProvider(uc, fields)
+    if (provider) {
+        const direct = provider.request(fields.prompt)
+        const directBlock = renderReqBlock(direct.method, direct.url, direct.headers, direct.body)
+        container.innerHTML =
+            wrapComparisonGroup('krakend', 'KrakenD Request', 'Universal format', krakendBlock) +
+            wrapComparisonGroup('direct', 'Direct-to-LLM Request', provider.label, directBlock)
+    } else {
+        container.innerHTML = krakendBlock
+    }
     Prism.highlightAll()
 }
 
@@ -446,22 +635,17 @@ async function submitRequest(uc) {
 
     // Update request preview with final values
     const reqContainer = document.getElementById('__rtab-request')
-    const headersHtml = Object.entries(displayHeaders).map(([k, v]) =>
-        `<div><span class="header-name">${k}:</span> <span class="header-value">${v}</span></div>`
-    ).join('')
-    reqContainer.innerHTML = `
-        <div class="req-preview">
-            <div class="req-line">
-                <span class="method">${uc.method}</span>
-                <span class="url">${API_URL}${uc.endpoint}</span>
-            </div>
-            <div class="req-headers">${headersHtml}</div>
-            <div class="req-body-label">Body</div>
-            <div class="req-body-content">
-                <pre><code class="language-json">${JSON.stringify(body, null, 2)}</code></pre>
-            </div>
-        </div>
-    `
+    const krakendReqBlock = renderReqBlock(uc.method, `${API_URL}${uc.endpoint}`, displayHeaders, body)
+    const provider = getComparisonProvider(uc, fields)
+    if (provider) {
+        const direct = provider.request(fields.prompt)
+        const directReqBlock = renderReqBlock(direct.method, direct.url, direct.headers, direct.body)
+        reqContainer.innerHTML =
+            wrapComparisonGroup('krakend', 'KrakenD Request', 'Universal format', krakendReqBlock) +
+            wrapComparisonGroup('direct', 'Direct-to-LLM Request', provider.label, directReqBlock)
+    } else {
+        reqContainer.innerHTML = krakendReqBlock
+    }
     Prism.highlightAll()
 
     const startTime = Date.now()
@@ -489,19 +673,25 @@ async function submitRequest(uc) {
 
         // Response tab (Postman style)
         const rawEl = document.getElementById('__rtab-raw')
-        const respHeadersHtml = [...response.headers.entries()].map(([k, v]) =>
-            `<div><span class="header-name">${k}:</span> <span class="header-value">${v}</span></div>`
-        ).join('') || '<div><span class="header-value" style="color: var(--text-muted);">No headers exposed</span></div>'
+        const respHeaders = Object.fromEntries([...response.headers.entries()])
+        const krakendRespBody = responseJson ? JSON.stringify(responseJson, null, 2) : responseText
+        const krakendRespBlock = renderRespBlock(respHeaders, krakendRespBody)
 
-        rawEl.innerHTML = `
-            <div class="req-preview">
-                <div class="req-headers">${respHeadersHtml}</div>
-                <div class="req-body-label">Body</div>
-                <div class="req-body-content">
-                    <pre><code class="language-json">${responseJson ? JSON.stringify(responseJson, null, 2) : responseText}</code></pre>
-                </div>
-            </div>
-        `
+        if (provider && response.ok && responseJson) {
+            const aiText = responseJson?.ai_gateway_response?.[0]?.contents?.join('\n\n') || ''
+            const usage = responseJson?.usage || ''
+            const directResp = provider.response(aiText, usage)
+            const directRespHeaders = {
+                'content-type': 'application/json',
+                'x-simulated': 'illustrative — no direct call was made',
+            }
+            const directRespBlock = renderRespBlock(directRespHeaders, directResp)
+            rawEl.innerHTML =
+                wrapComparisonGroup('krakend', 'KrakenD Response', 'Universal format', krakendRespBlock) +
+                wrapComparisonGroup('direct', 'Direct-to-LLM Response', provider.label, directRespBlock)
+        } else {
+            rawEl.innerHTML = krakendRespBlock
+        }
 
         // Rendered tab
         const renderedEl = document.getElementById('__rtab-rendered')

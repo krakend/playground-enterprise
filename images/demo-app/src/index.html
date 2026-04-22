@@ -162,6 +162,26 @@
             font-size: 0.65rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em;
             padding: 0.15rem 0.4rem; border-radius: 3px;
         }
+        .usecase-link {
+            position: absolute;
+            top: 0.7rem;
+            right: 0.8rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            font-family: var(--font-mono);
+            font-size: 0.65rem;
+            letter-spacing: 0.03em;
+            color: var(--text-muted);
+            text-decoration: none;
+            white-space: nowrap;
+            transition: color 0.2s;
+            z-index: 1;
+        }
+        .usecase-link svg { width: 11px; height: 11px; }
+        .usecase-link:hover {
+            color: var(--card-accent, var(--accent-blue));
+        }
 
         /* Panel */
         .panel {
@@ -264,6 +284,7 @@
         .response-tabs {
             display: flex; gap: 0;
             border-bottom: 1px solid var(--border);
+            flex-shrink: 0;
         }
         .response-tab {
             padding: 0.5rem 1rem;
@@ -280,7 +301,6 @@
             padding: 1rem;
             background: var(--bg-secondary);
             border-radius: 0 0 6px 6px;
-            max-height: 400px;
             overflow: auto;
             min-width: 0;
         }
@@ -444,6 +464,62 @@
             border-radius: 0 0 6px 6px;
         }
         .req-body-content pre { margin: 0; white-space: pre-wrap; word-break: break-all; }
+        /* Let Prism code blocks inherit the surrounding surface — override theme bg globally */
+        pre[class*="language-"],
+        :not(pre) > code[class*="language-"] {
+            background: transparent;
+        }
+
+        /* Comparison groups (Direct-to-LLM vs KrakenD) */
+        .comparison-group { margin-bottom: 0.9rem; }
+        .comparison-group:last-child { margin-bottom: 0; }
+        .comparison-group-header {
+            display: flex; align-items: center; gap: 0.55rem;
+            padding: 0.45rem 0.75rem;
+            border-radius: 6px 6px 0 0;
+            font-family: var(--font-mono);
+            font-size: 0.68rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            border: 1px solid var(--border);
+            border-bottom: none;
+        }
+        .comparison-group-header::before {
+            content: '';
+            width: 6px; height: 6px;
+            border-radius: 50%;
+            background: currentColor;
+            box-shadow: 0 0 6px currentColor;
+        }
+        .comparison-group-header.direct {
+            background: linear-gradient(180deg, var(--glow-amber), rgba(245, 158, 11, 0.06));
+            color: var(--accent-amber);
+            border-color: rgba(245, 158, 11, 0.28);
+        }
+        .comparison-group-header.krakend {
+            background: linear-gradient(180deg, var(--glow-green), rgba(16, 185, 129, 0.06));
+            color: var(--accent-green);
+            border-color: rgba(16, 185, 129, 0.28);
+        }
+        .comparison-group-header .label-note {
+            margin-left: auto;
+            font-size: 0.7rem;
+            font-weight: 500;
+            text-transform: none;
+            letter-spacing: 0.01em;
+            color: var(--text-secondary);
+            font-family: var(--font-display);
+        }
+        .comparison-group .req-preview {
+            border: 1px solid var(--border);
+            border-radius: 0 0 6px 6px;
+            overflow: hidden;
+            border-left-width: 3px;
+        }
+        .comparison-group.direct .req-preview { border-left-color: rgba(245, 158, 11, 0.55); }
+        .comparison-group.krakend .req-preview { border-left-color: rgba(16, 185, 129, 0.55); }
+        .comparison-group .req-body-label { border-bottom: none; padding-bottom: 0.15rem; }
 
         /* Utilities */
         .hidden { display: none !important; }
@@ -475,6 +551,7 @@
             grid-template-columns: 1fr 1fr;
             gap: 1.5rem;
             min-width: 0;
+            align-items: start;
         }
         .ai-layout > div { min-width: 0; overflow: hidden; }
         .panel { min-width: 0; overflow: hidden; }
