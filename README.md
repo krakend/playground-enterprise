@@ -185,7 +185,7 @@ When you change the `krakend.json`, the changes are applied automatically.
 | The `krakend.json` file was automatically generated using the [extended flexible configuration](https://www.krakend.io/docs/enterprise/configuration/flexible-config/), and you will find the source code under `extended/krakend.tmpl`. <br><br> When working with the flexible configuration, you can optionally ask KrakenD to save the "compiled" output to a file. We've added a command `make compile-flexible-config` so you can see quickly and easily how KrakenD builds the final configuration file based on the existing templates.<br><br>Internally KrakenD's flexible configuration uses [Golang templating syntax](https://pkg.go.dev/text/template#hdr-Examples). |
 
 ## Editing the API Gateway endpoints
-To add or remove endpoints, edit the file `krakend/krakend.json`. The easiest way to do it is by **dragging this file to the [KrakenD Designer](https://designer.krakend.io/)** and downloading the edited file. If you move the downloaded file to `krakend/krakend.json` the server will apply the changes automatically. If y ou use Chrome, you can edit it directly in the website.
+To add or remove endpoints, edit the file `krakend/krakend.json`. The easiest way to do it is by **dragging this file to the [KrakenD Designer](https://designer.krakend.io/)** and downloading the edited file. If you move the downloaded file to `krakend/krakend.json` the server will apply the changes automatically. If you use Chrome, you can edit it directly in the website.
 
 To change the data in the static server (simulating your backend API), edit, add or delete files in the **`data/`** folder.
 
