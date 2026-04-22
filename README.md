@@ -63,13 +63,14 @@ An interactive demo SPA at `images/demo-app/` with three sections:
 
 Visit [http://localhost:3000](http://localhost:3000)
 
-### AI Gateway services
-The AI Gateway examples require additional services:
+### AI Gateway services (opt-in)
+The AI Gateway use cases need extra pieces that are **not started by default** so the regular `make start` stays fast:
 
-- **Redis** — Persistent token quota tracking on port `6379`
-- **Prompt Guard** — Meta's Prompt Guard 2 22M (ONNX) classifier for prompt injection detection on port `8090`. Requires building: `docker compose build prompt-guard`
+- **Redis** — token quota tracking on port `6379` (always on, also used elsewhere).
+- **Prompt Guard** — non-gated community mirror of Meta's Prompt Guard 2 22M (ONNX) on port `8091`. Only built and started when the `ai-gateway` compose profile is active.
+- **Provider API keys** (Gemini / OpenAI / Anthropic), set in `config/krakend/.env.local` (git-ignored) or `config/krakend/.env`.
 
-API keys for LLM providers are set via `config/krakend/.env.local`. See [Trying the AI Gateway use cases](#trying-the-ai-gateway-use-cases) for the full flow.
+See [Trying the AI Gateway use cases](#trying-the-ai-gateway-use-cases) for the one-command flow.
 
 ### The async agent
 A RabbitMQ instance is ready to accept AMQP messages to be delivered to the gateway.
@@ -141,28 +142,26 @@ To shut down the complete stack, removing all the volumes
 ```
 
 ## Trying the AI Gateway use cases
-The AI Gateway endpoints (`/llm-routing`, `/llm-conditional`, `/llm-quota`, `/prompt-guardrail-*`) call real LLM providers and need valid API keys.
+The AI Gateway endpoints (`/llm-routing`, `/llm-conditional`, `/llm-quota`, `/prompt-guardrail-*`) call real LLM providers and the intelligent guardrail also needs the prompt-guard container. Both are opt-in.
 
-1. **Set your credentials.** The tracked `config/krakend/.env` serves as the template, with placeholder values. Copy it to `.env.local` (git-ignored) and fill in your keys:
+1. **Set your credentials.** The tracked `config/krakend/.env` is a placeholder template. Copy it to `.env.local` (git-ignored) and fill in your keys:
 
     ```shell
     cp config/krakend/.env config/krakend/.env.local
     # Edit .env.local and set GEMINI_API_KEY, OPENAI_API_KEY, ANTHROPIC_API_KEY
     ```
 
-2. **Re-compile the gateway config** so the credentials are injected into `krakend.json`:
+    Alternatively, you can edit `.env` directly — but keep in mind it's tracked in git, so don't commit real keys.
+
+2. **Start the stack with the AI Gateway profile.** One command — validates credentials, re-compiles `krakend.json` with them injected, then builds and starts the prompt-guard container together with the rest:
 
     ```shell
-    make compile-flexible-config
+    make start-with-ai-gateway
     ```
 
-3. **Start (or restart) the stack:**
+    The first run builds the prompt-guard image (downloads the ONNX model, ~80 MB), so it takes a couple of minutes. Subsequent runs are cached.
 
-    ```shell
-    make start
-    ```
-
-If you skip the `.env.local` step, the compiled config keeps the placeholder `<env_local_empty_credential>` values and the LLM endpoints will fail at runtime.
+If the credentials check fails or the keys are still the placeholder, the target aborts before touching Docker. If you want to run without the AI Gateway, just use `make start` as usual.
 
 Try them from the [demo SPA](http://localhost:3000) under *AI Gateway*.
 

@@ -143,3 +143,6 @@ services:
       context: images/prompt-guard
     ports:
       - "8091:8090"
+    # Opt-in: only starts when the "ai-gateway" compose profile is active.
+    # Use `make start-with-ai-gateway` (or `docker compose --profile ai-gateway up`).
+    profiles: ["ai-gateway"]

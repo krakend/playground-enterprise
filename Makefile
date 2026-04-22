@@ -1,7 +1,46 @@
-.PHONY: start stop restart logs compile-flexible-config elastic audit check
+.PHONY: start start-with-ai-gateway stop restart logs compile-flexible-config check-ai-credentials elastic audit check
 
 start:
 	docker compose build web && docker compose up -d
+	@echo ""
+	@echo "  Playground is up. AI Gateway endpoints (/llm-*, /prompt-guardrail-*) won't"
+	@echo "  work without provider credentials and the prompt-guard container."
+	@echo "  To enable them, run:  make start-with-ai-gateway"
+	@echo ""
+
+start-with-ai-gateway: check-ai-credentials compile-flexible-config
+	docker compose --profile ai-gateway build prompt-guard web
+	docker compose --profile ai-gateway up -d
+	@echo ""
+	@echo "  Playground is up with AI Gateway enabled."
+	@echo ""
+
+check-ai-credentials:
+	@MISSING=""; \
+	for K in GEMINI_API_KEY OPENAI_API_KEY ANTHROPIC_API_KEY; do \
+	    VAL=""; \
+	    if [ -f ./config/krakend/.env.local ]; then \
+	        VAL=$$(grep -E "^$$K=" ./config/krakend/.env.local | head -1 | cut -d= -f2-); \
+	    fi; \
+	    if [ -z "$$VAL" ] && [ -f ./config/krakend/.env ]; then \
+	        VAL=$$(grep -E "^$$K=" ./config/krakend/.env | head -1 | cut -d= -f2-); \
+	    fi; \
+	    if [ -z "$$VAL" ] || [ "$$VAL" = "<env_local_empty_credential>" ]; then \
+	        MISSING="$$MISSING $$K"; \
+	    fi; \
+	done; \
+	if [ -n "$$MISSING" ]; then \
+	    echo ""; \
+	    echo "  [!] Missing or placeholder AI credentials:$$MISSING"; \
+	    echo "      Set them in config/krakend/.env.local (preferred, git-ignored)"; \
+	    echo "      or in config/krakend/.env (tracked — watch out for leaks)."; \
+	    echo "      To start from the template:"; \
+	    echo "        cp config/krakend/.env config/krakend/.env.local"; \
+	    echo "        # then edit .env.local with real keys"; \
+	    echo ""; \
+	    exit 1; \
+	fi
+	@echo "  [OK] AI credentials resolved from .env.local or .env"
 
 stop:
 	docker compose down --volumes
