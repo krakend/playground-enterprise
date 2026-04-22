@@ -3,8 +3,14 @@
 start:
 	docker compose build web && docker compose up -d
 	@echo ""
-	@echo "  Playground is up. AI Gateway endpoints (/llm-*, /prompt-guardrail-*) won't"
-	@echo "  work without provider credentials and the prompt-guard container."
+	@echo "  Playground is up!"
+	@echo ""
+	@echo "    API Gateway:       http://localhost:8080"
+	@echo "    Documented demos:  http://localhost:8080/demo/"
+	@echo "    Interactive SPA:   http://localhost:8080/spa/"
+	@echo ""
+	@echo "  AI Gateway endpoints (/llm-*, /prompt-guardrail-*) won't work without"
+	@echo "  provider credentials and the prompt-guard container."
 	@echo "  To enable them, run:  make start-with-ai-gateway"
 	@echo ""
 
@@ -12,7 +18,11 @@ start-with-ai-gateway: check-ai-credentials compile-flexible-config
 	docker compose --profile ai-gateway build prompt-guard web
 	docker compose --profile ai-gateway up -d
 	@echo ""
-	@echo "  Playground is up with AI Gateway enabled."
+	@echo "  Playground is up with AI Gateway enabled!"
+	@echo ""
+	@echo "    API Gateway:       http://localhost:8080"
+	@echo "    Documented demos:  http://localhost:8080/demo/"
+	@echo "    Interactive SPA:   http://localhost:8080/spa/"
 	@echo ""
 
 check-ai-credentials:
