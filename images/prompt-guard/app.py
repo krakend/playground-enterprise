@@ -6,8 +6,12 @@ import numpy as np
 
 app = FastAPI()
 
-MODEL_ID = "meta-llama/Llama-Prompt-Guard-2-22M"
-LABELS = ["BENIGN", "INJECTION", "JAILBREAK"]
+# Non-gated community mirror of meta-llama/Llama-Prompt-Guard-2-22M.
+# Same DeBERTa-xsmall backbone. The mirror ships without an id2label map
+# in config.json, so we hardcode the upstream order:
+#   index 0 = BENIGN (safe), index 1 = MALICIOUS (injection / jailbreak)
+MODEL_ID = "hipocap/Llama-Prompt-Guard-2-22M"
+LABELS = ["BENIGN", "MALICIOUS"]
 
 tokenizer = None
 model = None
