@@ -1,43 +1,28 @@
 {
   "$schema": "https://www.krakend.io/schema/krakend.json",
-  "async_agent": [
-    {
-      "backend": [
-        {
-          "host": [
-            "http://127.0.0.1:8080"
-          ],
-          "method": "POST",
-          "url_pattern": "/__debug/async-agent-demo"
-        }
-      ],
-      "connection": {
-        "backoff_strategy": "exponential-jitter",
-        "max_retries": 10
-      },
-      "consumer": {
-        "topic": "*.bar",
-        "workers": 20
-      },
-      "extra_config": {
-        "async/amqp": {
-          "auto_ack": true,
-          "exchange": "foo",
-          "host": "amqp://guest:guest@rabbitmq:5672/",
-          "name": "krakend",
-          "prefetch_count": 40
-        }
-      },
-      "name": "async-agent-demo"
-    }
+  "version": 3,
+  "name": "KrakenD Enterprise API Gateway",
+  "port": 8080,
+  "host": [
+    "http://localhost:8080"
   ],
+  "timeout": "3000ms",
   "cache_ttl": "300s",
   "debug_endpoint": true,
+  "plugin": {
+    "pattern": ".so",
+    "folder": "/opt/krakend/plugins/"
+  },
   "endpoints": [
     {
       "@comment": "Feature: Aggregation and basic transformation",
+      "endpoint": "/git/{user}",
       "backend": [
         {
+          "host": [
+            "https://api.github.com"
+          ],
+          "url_pattern": "/users/{user}",
           "allow": [
             "avatar_url",
             "name",
@@ -50,27 +35,22 @@
             "public_repos",
             "public_gists"
           ],
-          "group": "user",
-          "host": [
-            "https://api.github.com"
-          ],
           "mapping": {
             "blog": "website"
           },
-          "url_pattern": "/users/{user}"
+          "group": "user"
         },
         {
           "host": [
             "https://api.github.com"
           ],
+          "url_pattern": "/users/{user}/repos",
           "is_collection": true,
           "mapping": {
             "collection": "repos"
-          },
-          "url_pattern": "/users/{user}/repos"
+          }
         }
       ],
-      "endpoint": "/git/{user}",
       "extra_config": {
         "documentation/openapi": {
           "description": "This endpoint fetches in parallel the user information and the repository information from Githuib and returns it together. Non interesting fields are removed.",
@@ -88,8 +68,14 @@
     },
     {
       "@comment": "EE only feature: Advanced transformation with query language",
+      "endpoint": "/cryptos/{currency}",
+      "output_encoding": "json-collection",
       "backend": [
         {
+          "host": [
+            "https://api.coingecko.com"
+          ],
+          "url_pattern": "/api/v3/coins/markets?vs_currency={currency}&order=market_cap_desc&per_page=100&page=1&sparkline=false",
           "encoding": "safejson",
           "extra_config": {
             "modifier/martian": {
@@ -102,14 +88,9 @@
                 ]
               }
             }
-          },
-          "host": [
-            "https://api.coingecko.com"
-          ],
-          "url_pattern": "/api/v3/coins/markets?vs_currency={currency}&order=market_cap_desc&per_page=100&page=1&sparkline=false"
+          }
         }
       ],
-      "endpoint": "/cryptos/{currency}",
       "extra_config": {
         "documentation/openapi": {
           "description": "This endpoint fetches some crypto capitalization data from Coingecko for a given currency.",
@@ -127,13 +108,17 @@
           "@comment": "Get first 5 crypto by market capitalization, then reverse sort them by name, finally filter and rename some fields",
           "expr": "reverse(sort_by(collection[:5], &name))[*].{name: name, token: symbol,price: current_price, price_change: price_change_percentage_24h, market_cap: market_cap}"
         }
-      },
-      "output_encoding": "json-collection"
+      }
     },
     {
       "@comment": "Feature: Regular expression manipulation",
+      "endpoint": "/user/creditcard",
       "backend": [
         {
+          "host": [
+            "http://fake_api"
+          ],
+          "url_pattern": "/user/1.json",
           "allow": [
             "credit_card"
           ],
@@ -150,14 +135,9 @@
                 }
               ]
             }
-          },
-          "host": [
-            "http://fake_api"
-          ],
-          "url_pattern": "/user/1.json"
+          }
         }
       ],
-      "endpoint": "/user/creditcard",
       "extra_config": {
         "documentation/openapi": {
           "description": "This endpoint fetches the user information and masks the credit card number",
@@ -175,9 +155,17 @@
     },
     {
       "@comment": "Feature: Backend cache",
+      "endpoint": "/market/cached",
       "backend": [
         {
+          "host": [
+            "https://api.coingecko.com"
+          ],
+          "url_pattern": "/api/v3/coins/markets?vs_currency=eur&ids=bitcoin,ethereum&order=market_cap_desc&per_page=100&page=1&sparkline=false",
           "encoding": "safejson",
+          "mapping": {
+            "collection": "coins"
+          },
           "extra_config": {
             "modifier/martian": {
               "header.Blacklist": {
@@ -192,17 +180,9 @@
             "qos/http-cache": {
               "shared": true
             }
-          },
-          "host": [
-            "https://api.coingecko.com"
-          ],
-          "mapping": {
-            "collection": "coins"
-          },
-          "url_pattern": "/api/v3/coins/markets?vs_currency=eur&ids=bitcoin,ethereum&order=market_cap_desc&per_page=100&page=1&sparkline=false"
+          }
         }
       ],
-      "endpoint": "/market/cached",
       "extra_config": {
         "documentation/openapi": {
           "description": "Demonstrates backend-level caching using Cache-Control headers to reduce expensive API calls to external services",
@@ -220,6 +200,9 @@
     },
     {
       "@comment": "Feature: Mocked response",
+      "endpoint": "/mocked-response",
+      "method": "GET",
+      "output_encoding": "json",
       "backend": [
         {
           "host": [
@@ -228,7 +211,6 @@
           "url_pattern": "/"
         }
       ],
-      "endpoint": "/mocked-response",
       "extra_config": {
         "documentation/openapi": {
           "description": "Returns predefined static JSON data without calling any backend service, useful for testing, prototyping, and development",
@@ -257,21 +239,20 @@
             "strategy": "always"
           }
         }
-      },
-      "method": "GET",
-      "output_encoding": "json"
+      }
     },
     {
       "@comment": "Feature: Sequential calls, using values from 1st call response into 2nd call request",
+      "endpoint": "/sequential",
       "backend": [
         {
-          "allow": [
-            "destination_id"
-          ],
           "host": [
             "http://fake_api"
           ],
-          "url_pattern": "/hotels/1.json"
+          "url_pattern": "/hotels/1.json",
+          "allow": [
+            "destination_id"
+          ]
         },
         {
           "host": [
@@ -280,7 +261,6 @@
           "url_pattern": "/destinations/{resp0_destination_id}.json"
         }
       ],
-      "endpoint": "/sequential",
       "extra_config": {
         "documentation/openapi": {
           "description": "Demonstrates sequential processing where the response from the first backend call is used to construct the second request (hotel lookup followed by destination details)",
@@ -301,6 +281,7 @@
     },
     {
       "@comment": "Feature: A public endpoint that requires no authentication",
+      "endpoint": "/public",
       "backend": [
         {
           "host": [
@@ -309,7 +290,6 @@
           "url_pattern": "/hotels/1.json"
         }
       ],
-      "endpoint": "/public",
       "extra_config": {
         "documentation/openapi": {
           "description": "Baseline example of a completely open endpoint requiring no authentication, useful for testing and comparison",
@@ -327,16 +307,17 @@
     },
     {
       "@comment": "Feature: Authentication and authorization",
+      "endpoint": "/auth/*",
+      "output_encoding": "no-op",
       "backend": [
         {
-          "encoding": "no-op",
           "host": [
             "http://web:3000/"
           ],
-          "url_pattern": "/"
+          "url_pattern": "/",
+          "encoding": "no-op"
         }
       ],
-      "endpoint": "/auth/*",
       "extra_config": {
         "documentation/openapi": {
           "description": "This endpoint offers a web interface to present auth/authz flow with Keycloack.",
@@ -350,11 +331,11 @@
           "folder": "/Authentication & Security",
           "name": "JWT Auth Demo Web Interface (Keycloak)"
         }
-      },
-      "output_encoding": "no-op"
+      }
     },
     {
       "@comment": "Feature: Authorization based on JWT (using Keycloak)",
+      "endpoint": "/private/moderate",
       "backend": [
         {
           "host": [
@@ -363,7 +344,6 @@
           "url_pattern": "/user/1.json"
         }
       ],
-      "endpoint": "/private/moderate",
       "extra_config": {
         "auth/validator": {
           "alg": "RS256",
@@ -395,12 +375,15 @@
     {
       "@comment": "Feature: Security policy engine for requests, responses and claim checking",
       "@test_with": "curl -iG -H'Cookie: GDPR=yes' 'http://localhost:8080/track-user'",
+      "endpoint": "/track-user",
+      "input_headers": [
+        "Cookie"
+      ],
       "backend": [
         {
           "url_pattern": "/__debug/cookie"
         }
       ],
-      "endpoint": "/track-user",
       "extra_config": {
         "documentation/openapi": {
           "description": "Demonstrates security policy engine using CEL (Common Expression Language) to validate GDPR cookie acceptance before allowing tracking",
@@ -425,13 +408,11 @@
             ]
           }
         }
-      },
-      "input_headers": [
-        "Cookie"
-      ]
+      }
     },
     {
       "@comment": "Feature: Authorization based on JWT (using KrakenD JOSE signer)",
+      "endpoint": "/private/custom",
       "backend": [
         {
           "host": [
@@ -440,7 +421,6 @@
           "url_pattern": "/user/1.json"
         }
       ],
-      "endpoint": "/private/custom",
       "extra_config": {
         "auth/validator": {
           "alg": "HS256",
@@ -473,6 +453,7 @@
     },
     {
       "@comment": "Feature: JWT signing, as described at https://www.krakend.io/docs/authorization/jwt-signing/",
+      "endpoint": "/token",
       "backend": [
         {
           "host": [
@@ -481,7 +462,6 @@
           "url_pattern": "/token.json"
         }
       ],
-      "endpoint": "/token",
       "extra_config": {
         "auth/signer": {
           "alg": "HS256",
@@ -510,12 +490,12 @@
     {
       "@comment": "EE only feature: Authorization based on API Keys",
       "@test_with": "curl -iG -H'Authorization: Bearer 58427514-be32-0b52-b7c6-d01fada30497' http://localhost:8080/api-key",
+      "endpoint": "/api-key",
       "backend": [
         {
           "url_pattern": "/__debug/admin"
         }
       ],
-      "endpoint": "/api-key",
       "extra_config": {
         "auth/api-keys": {
           "roles": [
@@ -539,6 +519,8 @@
     {
       "@comment": "EE only feature: Wildcard to our fake API, protected with Basic Auth",
       "@test_with": "curl -iG 'http://admin:admin@localhost:8080/fake-api-auth/articles.json'",
+      "endpoint": "/fake-api-auth/*",
+      "output_encoding": "no-op",
       "backend": [
         {
           "host": [
@@ -547,7 +529,6 @@
           "url_pattern": "/"
         }
       ],
-      "endpoint": "/fake-api-auth/*",
       "extra_config": {
         "@comment": "The simple inclusion of the Auth Basic component enables it for this endpoint",
         "auth/basic": {},
@@ -564,22 +545,26 @@
           "folder": "/Routing & Wildcards",
           "name": "Basic Authentication with Wildcard Proxy"
         }
-      },
-      "output_encoding": "no-op"
+      }
     },
     {
       "@comment": "Feature: Aggregation + backend rate limiting + endpoint rate limiting",
+      "endpoint": "/shop",
       "backend": [
         {
-          "allow": [
-            "campaigns"
-          ],
           "host": [
             "http://fake_api"
           ],
-          "url_pattern": "/shop/campaigns.json"
+          "url_pattern": "/shop/campaigns.json",
+          "allow": [
+            "campaigns"
+          ]
         },
         {
+          "host": [
+            "http://fake_api"
+          ],
+          "url_pattern": "/shop/products.json",
           "allow": [
             "products"
           ],
@@ -588,14 +573,9 @@
               "capacity": 1,
               "max_rate": 1
             }
-          },
-          "host": [
-            "http://fake_api"
-          ],
-          "url_pattern": "/shop/products.json"
+          }
         }
       ],
-      "endpoint": "/shop",
       "extra_config": {
         "documentation/openapi": {
           "description": "Demonstrates both endpoint-level and backend-level rate limiting while aggregating multiple data sources (campaigns and products)",
@@ -617,9 +597,17 @@
     },
     {
       "@comment": "Feature: Concurrent calls - Not enabled",
+      "endpoint": "/market/simple",
       "backend": [
         {
+          "host": [
+            "https://api.coingecko.com"
+          ],
+          "url_pattern": "/api/v3/coins/markets?vs_currency=eur&ids=bitcoin%2Cethereum&order=market_cap_desc&per_page=100&page=1&sparkline=false",
           "encoding": "safejson",
+          "mapping": {
+            "collection": "coins"
+          },
           "extra_config": {
             "modifier/martian": {
               "header.Blacklist": {
@@ -631,17 +619,9 @@
                 ]
               }
             }
-          },
-          "host": [
-            "https://api.coingecko.com"
-          ],
-          "mapping": {
-            "collection": "coins"
-          },
-          "url_pattern": "/api/v3/coins/markets?vs_currency=eur&ids=bitcoin%2Cethereum&order=market_cap_desc&per_page=100&page=1&sparkline=false"
+          }
         }
       ],
-      "endpoint": "/market/simple",
       "extra_config": {
         "documentation/openapi": {
           "description": "This endpoint fetches crypto market information from Coingecko using a single non-concurrent call.",
@@ -659,9 +639,18 @@
     },
     {
       "@comment": "Feature: Concurrent calls - Enabled",
+      "endpoint": "/market/concurrent",
+      "concurrent_calls": 3,
       "backend": [
         {
+          "host": [
+            "https://api.coingecko.com"
+          ],
+          "url_pattern": "/api/v3/coins/markets?vs_currency=eur&ids=bitcoin%2Cethereum&order=market_cap_desc&per_page=100&page=1&sparkline=false",
           "encoding": "safejson",
+          "mapping": {
+            "collection": "coins"
+          },
           "extra_config": {
             "modifier/martian": {
               "header.Blacklist": {
@@ -673,18 +662,9 @@
                 ]
               }
             }
-          },
-          "host": [
-            "https://api.coingecko.com"
-          ],
-          "mapping": {
-            "collection": "coins"
-          },
-          "url_pattern": "/api/v3/coins/markets?vs_currency=eur&ids=bitcoin%2Cethereum&order=market_cap_desc&per_page=100&page=1&sparkline=false"
+          }
         }
       ],
-      "concurrent_calls": 3,
-      "endpoint": "/market/concurrent",
       "extra_config": {
         "documentation/openapi": {
           "description": "This endpoint fetches crypto market information from Coingecko using 3 concurrent calls.",
@@ -702,12 +682,13 @@
     },
     {
       "@comment": "Feature: Only POST method allowed",
+      "endpoint": "/post",
+      "method": "POST",
       "backend": [
         {
           "url_pattern": "/__debug/post"
         }
       ],
-      "endpoint": "/post",
       "extra_config": {
         "documentation/openapi": {
           "description": "This endpoint only allows POST requests",
@@ -721,27 +702,27 @@
           "folder": "/Routing & Wildcards",
           "name": "HTTP Method Restriction (POST Only)"
         }
-      },
-      "method": "POST"
+      }
     },
     {
       "@comment": "EE only feature: Web Server - Static content",
+      "endpoint": "/demo/*",
+      "output_encoding": "no-op",
       "backend": [
         {
+          "host": [
+            "http://localhost:8080"
+          ],
+          "url_pattern": "/",
           "encoding": "no-op",
           "extra_config": {
             "backend/static-filesystem": {
               "directory_listing": false,
               "path": "./demo/"
             }
-          },
-          "host": [
-            "http://localhost:8080"
-          ],
-          "url_pattern": "/"
+          }
         }
       ],
-      "endpoint": "/demo/*",
       "extra_config": {
         "documentation/openapi": {
           "description": "Serves static HTML, CSS, JavaScript, and image files from the demo directory for the playground demo website",
@@ -755,35 +736,34 @@
           "folder": "/Utilities",
           "name": "Serve Static Website Files"
         }
-      },
-      "output_encoding": "no-op"
+      }
     },
     {
       "@comment": "Feature: Expose a GET REST endpoint from POST to SOAP service",
+      "endpoint": "/capital-of/{country}",
       "backend": [
         {
+          "host": [
+            "http://webservices.oorsprong.org"
+          ],
+          "url_pattern": "/websamples.countryinfo/CountryInfoService.wso",
+          "method": "POST",
+          "encoding": "xml",
           "deny": [
             "-m"
           ],
-          "encoding": "xml",
+          "mapping": {
+            "CapitalCityResult": "capital"
+          },
+          "target": "Envelope.Body.CapitalCityResponse",
           "extra_config": {
             "backend/soap": {
               "@comment": "The XML template with variables is in the following path:",
               "path": "./extended/templates/soap_request_capital_city.tmpl.xml"
             }
-          },
-          "host": [
-            "http://webservices.oorsprong.org"
-          ],
-          "mapping": {
-            "CapitalCityResult": "capital"
-          },
-          "method": "POST",
-          "target": "Envelope.Body.CapitalCityResponse",
-          "url_pattern": "/websamples.countryinfo/CountryInfoService.wso"
+          }
         }
       ],
-      "endpoint": "/capital-of/{country}",
       "extra_config": {
         "documentation/openapi": {
           "description": "Converts SOAP XML web service to REST JSON endpoint, fetching country capital information from a legacy SOAP service",
@@ -802,8 +782,14 @@
     {
       "@comment": "Feature: GraphQL to REST",
       "@test_with": "curl http://localhost:8080/starwars_films/1",
+      "endpoint": "/starwars_films/{movie_id}",
       "backend": [
         {
+          "host": [
+            "https://swapi-graphql.netlify.app/"
+          ],
+          "url_pattern": "/.netlify/functions/index",
+          "target": "data.film",
           "extra_config": {
             "backend/graphql": {
               "query": "query Query ($movie_id: ID!) {\nfilm (filmID: $movie_id) {\nid\nepisodeID\ntitle\ndirector\nreleaseDate\nspeciesConnection {\nspecies {\nname\nclassification\nhomeworld {\nname\n}\n}\n}\n}\n}",
@@ -812,15 +798,9 @@
                 "movie_id": "{movie_id}"
               }
             }
-          },
-          "host": [
-            "https://swapi-graphql.netlify.app/"
-          ],
-          "target": "data.film",
-          "url_pattern": "/.netlify/functions/index"
+          }
         }
       ],
-      "endpoint": "/starwars_films/{movie_id}",
       "extra_config": {
         "documentation/openapi": {
           "description": "Converts GraphQL API to REST endpoint, fetching Star Wars movie information including species and homeworld data from SWAPI GraphQL",
@@ -838,8 +818,18 @@
     },
     {
       "@comment": "EE only feature: GRPC",
+      "endpoint": "/travel",
+      "input_query_strings": [
+        "lat",
+        "lon"
+      ],
       "backend": [
         {
+          "host": [
+            "grpc_flights:4242"
+          ],
+          "url_pattern": "/flight_finder.Flights/FindFlight",
+          "group": "flights",
           "extra_config": {
             "backend/grpc": {
               "input_mapping": {
@@ -847,14 +837,14 @@
                 "lon": "where.longitude"
               }
             }
-          },
-          "group": "flights",
-          "host": [
-            "grpc_flights:4242"
-          ],
-          "url_pattern": "/flight_finder.Flights/FindFlight"
+          }
         },
         {
+          "host": [
+            "grpc_trains:4243"
+          ],
+          "url_pattern": "/train_finder.Trains/FindTrains",
+          "group": "trains",
           "extra_config": {
             "backend/grpc": {
               "client_tls": {
@@ -869,21 +859,21 @@
               "output_timestamp_as_string": true,
               "response_naming_convention": "camelCase"
             }
-          },
-          "group": "trains",
-          "host": [
-            "grpc_trains:4243"
-          ],
-          "url_pattern": "/train_finder.Trains/FindTrains"
+          }
         },
         {
-          "group": "hotels",
           "host": [
             "http://fake_api"
           ],
-          "url_pattern": "/hotels/1.json"
+          "url_pattern": "/hotels/1.json",
+          "group": "hotels"
         },
         {
+          "host": [
+            "grpc_trains:4243"
+          ],
+          "url_pattern": "/train_finder.Trains/GetTrainClasses",
+          "group": "trains_classes",
           "extra_config": {
             "backend/grpc": {
               "client_tls": {
@@ -892,15 +882,9 @@
               "output_remove_unset_values": true,
               "response_naming_convention": "camelCase"
             }
-          },
-          "group": "trains_classes",
-          "host": [
-            "grpc_trains:4243"
-          ],
-          "url_pattern": "/train_finder.Trains/GetTrainClasses"
+          }
         }
       ],
-      "endpoint": "/travel",
       "extra_config": {
         "documentation/openapi": {
           "description": "Aggregates multiple gRPC services (flights, trains, hotels) into a single REST endpoint with intelligent parameter mapping and protocol conversion",
@@ -915,16 +899,19 @@
           "folder": "/Protocol Conversion",
           "name": "gRPC to REST Aggregation (Travel Search)"
         }
-      },
-      "input_query_strings": [
-        "lat",
-        "lon"
-      ]
+      }
     },
     {
       "@comment": "EE only feature: GRPC Payload in Body",
+      "endpoint": "/travel_book_flight/{id_flight}/{main_passenger}",
+      "method": "POST",
       "backend": [
         {
+          "host": [
+            "grpc_flights:4242"
+          ],
+          "url_pattern": "/flight_finder.Flights/BookFlight",
+          "group": "flights",
           "extra_config": {
             "backend/grpc": {
               "input_mapping": {
@@ -933,15 +920,9 @@
               },
               "use_request_body": true
             }
-          },
-          "group": "flights",
-          "host": [
-            "grpc_flights:4242"
-          ],
-          "url_pattern": "/flight_finder.Flights/BookFlight"
+          }
         }
       ],
-      "endpoint": "/travel_book_flight/{id_flight}/{main_passenger}",
       "extra_config": {
         "documentation/openapi": {
           "description": "Demonstrates gRPC integration with POST method, mapping request body and path parameters to gRPC fields for flight booking",
@@ -955,21 +936,26 @@
           "folder": "/Protocol Conversion",
           "name": "gRPC POST with Request Body"
         }
-      },
-      "method": "POST"
+      }
     },
     {
       "@comment": "EE only feature: WebSockets (chat example)",
+      "endpoint": "/chat/ws/{room}",
+      "input_headers": [
+        "*"
+      ],
+      "input_query_strings": [
+        "*"
+      ],
       "backend": [
         {
-          "disable_host_sanitize": true,
           "host": [
             "ws://chat:8888"
           ],
-          "url_pattern": "/ws/{room}"
+          "url_pattern": "/ws/{room}",
+          "disable_host_sanitize": true
         }
       ],
-      "endpoint": "/chat/ws/{room}",
       "extra_config": {
         "documentation/openapi": {
           "description": "WebSocket endpoint for real-time bidirectional chat communication with configurable room parameter, connect/disconnect events, and message buffering",
@@ -1000,26 +986,21 @@
           "write_buffer_size": 4096,
           "write_wait": "10s"
         }
-      },
-      "input_headers": [
-        "*"
-      ],
-      "input_query_strings": [
-        "*"
-      ]
+      }
     },
     {
       "@comment": "EE only feature: WebSockets (chat example web interface)",
+      "endpoint": "/chat",
+      "output_encoding": "no-op",
       "backend": [
         {
-          "encoding": "no-op",
           "host": [
             "http://chat:8888"
           ],
-          "url_pattern": "/"
+          "url_pattern": "/",
+          "encoding": "no-op"
         }
       ],
-      "endpoint": "/chat",
       "extra_config": {
         "documentation/openapi": {
           "description": "Web-based user interface for testing and interacting with WebSocket chat functionality in the browser",
@@ -1033,11 +1014,11 @@
           "folder": "/Real-time Communication",
           "name": "WebSocket Chat Web Interface"
         }
-      },
-      "output_encoding": "no-op"
+      }
     },
     {
       "@comment": "EE only feature: Wildcard to our fake API, open",
+      "endpoint": "/fake-api/*",
       "backend": [
         {
           "host": [
@@ -1046,7 +1027,6 @@
           "url_pattern": "/"
         }
       ],
-      "endpoint": "/fake-api/*",
       "extra_config": {
         "documentation/openapi": {
           "description": "This endpoint will send all requests to a designed backend including everything after the /fake-api path",
@@ -1064,6 +1044,10 @@
     },
     {
       "@comment": "EE only feature: Wildcard with geofencing - Allow visits only from Spain",
+      "endpoint": "/fake-api-geofence/*",
+      "input_headers": [
+        "X-Geoip"
+      ],
       "backend": [
         {
           "host": [
@@ -1072,7 +1056,6 @@
           "url_pattern": "/"
         }
       ],
-      "endpoint": "/fake-api-geofence/*",
       "extra_config": {
         "documentation/openapi": {
           "description": "This endpoint will send all requests to a designed backend including everything after the /fake-api-geofence path, adding geofencing (allowing calls only from Spain)",
@@ -1091,13 +1074,11 @@
             "check_expr": "req_headers['X-Geoip'][0].matches('\"IsoCode\":\"ES\"')"
           }
         ]
-      },
-      "input_headers": [
-        "X-Geoip"
-      ]
+      }
     },
     {
       "@comment": "EE only feature: Dynamic routing based on headers (token claim and cookie also available)",
+      "endpoint": "/dynamic/header",
       "backend": [
         {
           "@comment": "We will route to the backend using the content of the 'X-Route' header",
@@ -1108,7 +1089,6 @@
           "url_pattern": "/__debug/{input_headers.x-route}"
         }
       ],
-      "endpoint": "/dynamic/header",
       "extra_config": {
         "documentation/openapi": {
           "description": "Demonstrates dynamic URL path construction using the value of the X-Route header to determine backend routing destination",
@@ -1126,6 +1106,7 @@
     },
     {
       "@comment": "EE only feature: Dynamic routing based on query strings",
+      "endpoint": "/dynamic/qs",
       "backend": [
         {
           "@comment": "We will route to the backend using the content of the 'X-Route' header",
@@ -1136,7 +1117,6 @@
           "url_pattern": "/__debug/{input_query_strings.route}"
         }
       ],
-      "endpoint": "/dynamic/qs",
       "extra_config": {
         "documentation/openapi": {
           "description": "Demonstrates dynamic URL path construction using the 'route' query string parameter to determine backend routing destination",
@@ -1154,6 +1134,9 @@
     },
     {
       "@comment": "EE only feature: MCP Server - Entrypoint for Model Context Protocol",
+      "endpoint": "/mcp",
+      "method": "POST",
+      "timeout": "15s",
       "backend": [
         {
           "host": [
@@ -1162,7 +1145,6 @@
           "url_pattern": "/ignore"
         }
       ],
-      "endpoint": "/mcp",
       "extra_config": {
         "ai/mcp": {
           "server_name": "country-data-aggregator"
@@ -1179,19 +1161,28 @@
           "folder": "/AI Integration",
           "name": "MCP Server Entrypoint (AI Gateway)"
         }
-      },
-      "method": "POST",
-      "timeout": "15s"
+      }
     },
     {
       "@comment": "AI Integration: LLM Routing",
+      "endpoint": "/llm-routing",
+      "method": "POST",
+      "timeout": "60000ms",
+      "input_headers": [
+        "X-Model"
+      ],
       "backend": [
         {
+          "host": [
+            "https://generativelanguage.googleapis.com"
+          ],
+          "url_pattern": "/v1beta/models/gemini-2.5-flash:generateContent",
+          "method": "POST",
           "extra_config": {
             "ai/llm": {
               "gemini": {
                 "v1beta": {
-                  "credentials": "<REDACTED_GEMINI_API_KEY>",
+                  "credentials": "<env_local_empty_credential>",
                   "variables": {
                     "candidate_count": 1
                   }
@@ -1206,19 +1197,19 @@
             "telemetry/logging": {
               "custom_format": "{\"ts\":\"%{time:rfc3339}\", \"endpoint\":\"/llm-routing\", \"vendor\":\"gemini\", \"latency\":\"%{latencyMs}\", \"tokenUsage\":\"%{resp.usageMetadata.totalTokenCount}\"}\n"
             }
-          },
-          "host": [
-            "https://generativelanguage.googleapis.com"
-          ],
-          "method": "POST",
-          "url_pattern": "/v1beta/models/gemini-2.5-flash:generateContent"
+          }
         },
         {
+          "host": [
+            "https://api.openai.com"
+          ],
+          "url_pattern": "/v1/responses",
+          "method": "POST",
           "extra_config": {
             "ai/llm": {
               "openai": {
                 "v1": {
-                  "credentials": "<REDACTED_OPENAI_API_KEY>",
+                  "credentials": "<env_local_empty_credential>",
                   "variables": {
                     "model": "gpt-4o-mini"
                   }
@@ -1233,21 +1224,21 @@
             "telemetry/logging": {
               "custom_format": "{\"ts\":\"%{time:rfc3339}\", \"endpoint\":\"/llm-routing\", \"vendor\":\"openai\", \"latency\":\"%{latencyMs}\", \"tokenUsage\":\"%{resp.usage.total_tokens}\"}\n"
             }
-          },
-          "host": [
-            "https://api.openai.com"
-          ],
-          "method": "POST",
-          "url_pattern": "/v1/responses"
+          }
         },
         {
+          "host": [
+            "https://api.anthropic.com"
+          ],
+          "url_pattern": "/v1/messages",
+          "method": "POST",
           "extra_config": {
             "ai/llm": {
               "anthropic": {
                 "v1": {
-                  "credentials": "<REDACTED_ANTHROPIC_API_KEY>",
+                  "credentials": "<env_local_empty_credential>",
                   "variables": {
-                    "model": "claude-3-haiku-20240307"
+                    "model": "claude-haiku-4-5"
                   }
                 }
               }
@@ -1258,15 +1249,9 @@
             "telemetry/logging": {
               "custom_format": "{\"ts\":\"%{time:rfc3339}\", \"endpoint\":\"/llm-routing\", \"vendor\":\"anthropic\", \"latency\":\"%{latencyMs}\", \"tokenUsage\":\"%{resp.usage.input_tokens}\"}\n"
             }
-          },
-          "host": [
-            "https://api.anthropic.com"
-          ],
-          "method": "POST",
-          "url_pattern": "/v1/messages"
+          }
         }
       ],
-      "endpoint": "/llm-routing",
       "extra_config": {
         "documentation/openapi": {
           "description": "Demonstrates header-based LLM routing using conditional backends. Send X-Model: gemini, openai, or omit for Anthropic fallback.",
@@ -1280,22 +1265,29 @@
           "folder": "/AI Integration",
           "name": "LLM Routing by Header"
         }
-      },
-      "input_headers": [
-        "X-Model"
-      ],
-      "method": "POST",
-      "timeout": "60000ms"
+      }
     },
     {
       "@comment": "AI Integration: Conditional LLM Routing",
+      "endpoint": "/llm-conditional",
+      "method": "POST",
+      "timeout": "60000ms",
+      "input_headers": [
+        "X-Role",
+        "X-User-Id"
+      ],
       "backend": [
         {
+          "host": [
+            "https://api.openai.com"
+          ],
+          "url_pattern": "/v1/responses",
+          "method": "POST",
           "extra_config": {
             "ai/llm": {
               "openai": {
                 "v1": {
-                  "credentials": "<REDACTED_OPENAI_API_KEY>",
+                  "credentials": "<env_local_empty_credential>",
                   "variables": {
                     "model": "gpt-4o-mini"
                   }
@@ -1309,19 +1301,19 @@
             "telemetry/logging": {
               "custom_format": "{\"ts\":\"%{time:rfc3339}\", \"endpoint\":\"/llm-conditional\", \"vendor\":\"openai\", \"latency\":\"%{latencyMs}\", \"tokenUsage\":\"%{resp.usage.total_tokens}\", \"userId\":\"%{reqHeader.X-User-Id}\", \"role\":\"%{reqHeader.X-Role}\"}\n"
             }
-          },
-          "host": [
-            "https://api.openai.com"
-          ],
-          "method": "POST",
-          "url_pattern": "/v1/responses"
+          }
         },
         {
+          "host": [
+            "https://generativelanguage.googleapis.com"
+          ],
+          "url_pattern": "/v1beta/models/gemini-2.5-flash:generateContent",
+          "method": "POST",
           "extra_config": {
             "ai/llm": {
               "gemini": {
                 "v1beta": {
-                  "credentials": "<REDACTED_GEMINI_API_KEY>",
+                  "credentials": "<env_local_empty_credential>",
                   "variables": {
                     "candidate_count": 1
                   }
@@ -1334,15 +1326,9 @@
             "telemetry/logging": {
               "custom_format": "{\"ts\":\"%{time:rfc3339}\", \"endpoint\":\"/llm-conditional\", \"vendor\":\"gemini\", \"latency\":\"%{latencyMs}\", \"tokenUsage\":\"%{resp.usageMetadata.totalTokenCount}\", \"userId\":\"%{reqHeader.X-User-Id}\", \"role\":\"%{reqHeader.X-Role}\"}\n"
             }
-          },
-          "host": [
-            "https://generativelanguage.googleapis.com"
-          ],
-          "method": "POST",
-          "url_pattern": "/v1beta/models/gemini-2.5-flash:generateContent"
+          }
         }
       ],
-      "endpoint": "/llm-conditional",
       "extra_config": {
         "auth/validator": {
           "alg": "RS256",
@@ -1376,23 +1362,29 @@
           "folder": "/AI Integration",
           "name": "Conditional LLM Routing by Role"
         }
-      },
+      }
+    },
+    {
+      "@comment": "AI Integration: Token Quota Management",
+      "endpoint": "/llm-quota",
+      "method": "POST",
+      "timeout": "60000ms",
       "input_headers": [
         "X-Role",
         "X-User-Id"
       ],
-      "method": "POST",
-      "timeout": "60000ms"
-    },
-    {
-      "@comment": "AI Integration: Token Quota Management",
       "backend": [
         {
+          "host": [
+            "https://generativelanguage.googleapis.com"
+          ],
+          "url_pattern": "/v1beta/models/gemini-2.5-flash:generateContent",
+          "method": "POST",
           "extra_config": {
             "ai/llm": {
               "gemini": {
                 "v1beta": {
-                  "credentials": "<REDACTED_GEMINI_API_KEY>",
+                  "credentials": "<env_local_empty_credential>",
                   "variables": {
                     "candidate_count": 1
                   }
@@ -1402,15 +1394,9 @@
             "telemetry/logging": {
               "custom_format": "{\"ts\":\"%{time:rfc3339}\", \"endpoint\":\"/llm-quota\", \"vendor\":\"gemini\", \"latency\":\"%{latencyMs}\", \"tokenUsage\":\"%{resp.usageMetadata.totalTokenCount}\", \"userId\":\"%{reqHeader.X-User-Id}\", \"role\":\"%{reqHeader.X-Role}\"}\n"
             }
-          },
-          "host": [
-            "https://generativelanguage.googleapis.com"
-          ],
-          "method": "POST",
-          "url_pattern": "/v1beta/models/gemini-2.5-flash:generateContent"
+          }
         }
       ],
-      "endpoint": "/llm-quota",
       "extra_config": {
         "auth/validator": {
           "alg": "RS256",
@@ -1465,23 +1451,25 @@
           "weight_key": "credits_consumed",
           "weight_strategy": "body"
         }
-      },
-      "input_headers": [
-        "X-Role",
-        "X-User-Id"
-      ],
-      "method": "POST",
-      "timeout": "60000ms"
+      }
     },
     {
       "@comment": "AI Integration: Deterministic Prompt Guardrail",
+      "endpoint": "/prompt-guardrail-deterministic",
+      "method": "POST",
+      "timeout": "60000ms",
       "backend": [
         {
+          "host": [
+            "https://generativelanguage.googleapis.com"
+          ],
+          "url_pattern": "/v1beta/models/gemini-2.5-flash:generateContent",
+          "method": "POST",
           "extra_config": {
             "ai/llm": {
               "gemini": {
                 "v1beta": {
-                  "credentials": "<REDACTED_GEMINI_API_KEY>",
+                  "credentials": "<env_local_empty_credential>",
                   "variables": {
                     "candidate_count": 1
                   }
@@ -1491,15 +1479,9 @@
             "telemetry/logging": {
               "custom_format": "{\"ts\":\"%{time:rfc3339}\", \"endpoint\":\"/prompt-guardrail-deterministic\", \"vendor\":\"gemini\", \"latency\":\"%{latencyMs}\", \"tokenUsage\":\"%{resp.usageMetadata.totalTokenCount}\"}\n"
             }
-          },
-          "host": [
-            "https://generativelanguage.googleapis.com"
-          ],
-          "method": "POST",
-          "url_pattern": "/v1beta/models/gemini-2.5-flash:generateContent"
+          }
         }
       ],
-      "endpoint": "/prompt-guardrail-deterministic",
       "extra_config": {
         "documentation/openapi": {
           "description": "Demonstrates deterministic prompt guardrails using JSON Schema regex validation. Rejects requests containing credit card numbers, passwords, secrets, or API keys before reaching the LLM.",
@@ -1546,26 +1528,33 @@
           ],
           "type": "object"
         }
-      },
-      "method": "POST",
-      "timeout": "60000ms"
+      }
     },
     {
       "@comment": "AI Integration: Intelligent Prompt Guardrail",
+      "endpoint": "/prompt-guardrail-intelligent",
+      "method": "POST",
+      "timeout": "60000ms",
       "backend": [
         {
+          "host": [
+            "http://prompt-guard:8090"
+          ],
+          "url_pattern": "/classify",
+          "method": "POST",
           "extra_config": {
             "telemetry/logging": {
               "custom_format": "{\"ts\":\"%{time:rfc3339}\", \"endpoint\":\"/prompt-guardrail-intelligent\", \"vendor\":\"prompt-guard\", \"latency\":\"%{latencyMs}\"}\n"
             }
-          },
-          "host": [
-            "http://prompt-guard:8090"
-          ],
-          "method": "POST",
-          "url_pattern": "/classify"
+          }
         },
         {
+          "host": [
+            "https://generativelanguage.googleapis.com"
+          ],
+          "url_pattern": "/v1beta/models/gemini-2.5-flash:generateContent?key=<env_local_empty_credential>",
+          "method": "POST",
+          "group": "llm",
           "extra_config": {
             "backend/conditional": {
               "strategy": "policy",
@@ -1578,16 +1567,9 @@
             "telemetry/logging": {
               "custom_format": "{\"ts\":\"%{time:rfc3339}\", \"endpoint\":\"/prompt-guardrail-intelligent\", \"vendor\":\"gemini\", \"latency\":\"%{latencyMs}\"}\n"
             }
-          },
-          "group": "llm",
-          "host": [
-            "https://generativelanguage.googleapis.com"
-          ],
-          "method": "POST",
-          "url_pattern": "/v1beta/models/gemini-2.5-flash:generateContent?key=<REDACTED_GEMINI_API_KEY>"
+          }
         }
       ],
-      "endpoint": "/prompt-guardrail-intelligent",
       "extra_config": {
         "documentation/openapi": {
           "description": "Demonstrates AI-based prompt guardrails using sequential proxy. First classifies the prompt with Prompt Guard 2 22M model, then only forwards to Gemini if classified as BENIGN. Blocks injection and jailbreak attempts with a 403 error.",
@@ -1620,9 +1602,39 @@
             ]
           }
         }
+      }
+    }
+  ],
+  "sequential_start": true,
+  "async_agent": [
+    {
+      "name": "async-agent-demo",
+      "consumer": {
+        "topic": "*.bar",
+        "workers": 20
       },
-      "method": "POST",
-      "timeout": "60000ms"
+      "connection": {
+        "backoff_strategy": "exponential-jitter",
+        "max_retries": 10
+      },
+      "backend": [
+        {
+          "host": [
+            "http://127.0.0.1:8080"
+          ],
+          "url_pattern": "/__debug/async-agent-demo",
+          "method": "POST"
+        }
+      ],
+      "extra_config": {
+        "async/amqp": {
+          "auto_ack": true,
+          "exchange": "foo",
+          "host": "amqp://guest:guest@rabbitmq:5672/",
+          "name": "krakend",
+          "prefetch_count": 40
+        }
+      }
     }
   ],
   "extra_config": {
@@ -1793,7 +1805,7 @@
     },
     "auth/revoker": {
       "N": 10000000,
-      "P": 1e-7,
+      "P": 1e-07,
       "TTL": 1500,
       "hash_name": "optimal",
       "port": 1234,
@@ -1877,7 +1889,7 @@
           "on_failure_allow": true,
           "rejecter_cache": {
             "N": 10000000,
-            "P": 1e-8,
+            "P": 1e-08,
             "hash_name": "optimal"
           },
           "rules": [
@@ -2109,17 +2121,5 @@
         }
       ]
     }
-  },
-  "host": [
-    "http://localhost:8080"
-  ],
-  "name": "KrakenD Enterprise API Gateway",
-  "plugin": {
-    "folder": "/opt/krakend/plugins/",
-    "pattern": ".so"
-  },
-  "port": 8080,
-  "sequential_start": true,
-  "timeout": "3000ms",
-  "version": 3
+  }
 }

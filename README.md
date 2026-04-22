@@ -69,11 +69,7 @@ The AI Gateway examples require additional services:
 - **Redis** — Persistent token quota tracking on port `6379`
 - **Prompt Guard** — Meta's Prompt Guard 2 22M (ONNX) classifier for prompt injection detection on port `8090`. Requires building: `docker compose build prompt-guard`
 
-API keys for LLM providers are configured via environment variables:
-```bash
-cp config/krakend/.env config/krakend/.env.local
-# Edit .env.local with your GEMINI_API_KEY, OPENAI_API_KEY, ANTHROPIC_API_KEY
-```
+API keys for LLM providers are set via `config/krakend/.env.local`. See [Trying the AI Gateway use cases](#trying-the-ai-gateway-use-cases) for the full flow.
 
 ### The async agent
 A RabbitMQ instance is ready to accept AMQP messages to be delivered to the gateway.
@@ -143,6 +139,32 @@ To shut down the complete stack, removing all the volumes
 ```shell
     $ make stop
 ```
+
+## Trying the AI Gateway use cases
+The AI Gateway endpoints (`/llm-routing`, `/llm-conditional`, `/llm-quota`, `/prompt-guardrail-*`) call real LLM providers and need valid API keys.
+
+1. **Set your credentials.** The tracked `config/krakend/.env` serves as the template, with placeholder values. Copy it to `.env.local` (git-ignored) and fill in your keys:
+
+    ```shell
+    cp config/krakend/.env config/krakend/.env.local
+    # Edit .env.local and set GEMINI_API_KEY, OPENAI_API_KEY, ANTHROPIC_API_KEY
+    ```
+
+2. **Re-compile the gateway config** so the credentials are injected into `krakend.json`:
+
+    ```shell
+    make compile-flexible-config
+    ```
+
+3. **Start (or restart) the stack:**
+
+    ```shell
+    make start
+    ```
+
+If you skip the `.env.local` step, the compiled config keeps the placeholder `<env_local_empty_credential>` values and the LLM endpoints will fail at runtime.
+
+Try them from the [demo SPA](http://localhost:3000) under *AI Gateway*.
 
 ## Play!
 Fire up your browser, curl, postman, httpie, or anything else you like to interact with any published services.

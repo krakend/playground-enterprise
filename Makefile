@@ -13,13 +13,24 @@ logs:
 	docker compose logs -f logstash
 
 compile-flexible-config:
+	@if [ ! -f ./config/krakend/.env.local ]; then \
+        echo ""; \
+        echo "  [!] config/krakend/.env.local not found."; \
+        echo "      LLM credentials will be compiled as placeholders and AI Gateway"; \
+        echo "      endpoints (/llm-*, /prompt-guardrail-*) will fail at runtime."; \
+        echo "      To enable them:"; \
+        echo "        cp config/krakend/.env config/krakend/.env.local"; \
+        echo "        # then edit .env.local with your GEMINI / OPENAI / ANTHROPIC keys"; \
+        echo ""; \
+    fi
 	docker run \
+        --env-file ./config/krakend/.env \
+        $$([ -f ./config/krakend/.env.local ] && echo "--env-file ./config/krakend/.env.local") \
         -v "$(PWD)/config/krakend/:/etc/krakend/" \
         -e "FC_DEBUG=true" \
         -e "FC_CONFIG=/etc/krakend/fc_config.json" \
         krakend/krakend-ee \
         check -c extended/krakend.tmpl
-
 
 check:
 	docker run \

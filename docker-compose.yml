@@ -2,7 +2,7 @@ services:
   krakend_ee:
     # The :watch image restarts the service automatically when the configuration files change.
     # Do not use this image in production, it's meant to speed up your testing and development.
-    image: krakend/krakend-ee:2.12-watch
+    image: krakend/krakend-ee:2.13-watch
     volumes:
       - ./config/krakend:/etc/krakend
       - ./dumps:/tmp/krakend-http-logger
@@ -25,6 +25,7 @@ services:
       - jaeger
       - chat
       - redis
+    stop_grace_period: 2s
   grafana:
     image: grafana/grafana:latest
     ports:
@@ -95,11 +96,12 @@ services:
       - "5672:5672"
   fake_api:
     image: busybox:latest
+    init: true
     volumes:
       - ./data:/var/www
     ports:
       - "8000:80"
-    command: httpd -f -h /var/www/
+    command: ["httpd", "-f", "-h", "/var/www/"]
   web:
     build:
       context: images/demo-app
@@ -116,10 +118,12 @@ services:
       - krakend_ee
     restart: always
   grpc_flights:
+    platform: linux/amd64
     image: krakend/grpc_flights_fake:latest
     ports:
       - "4242:4242"
   grpc_trains:
+    platform: linux/amd64
     image: krakend/grpc_trains_fake:latest
     ports:
       - "4243:4243"
@@ -138,6 +142,7 @@ services:
       - KEYCLOAK_ADMIN=admin
       - KEYCLOAK_ADMIN_PASSWORD=admin
     command: ["start-dev", "--import-realm"]
+    stop_grace_period: 2s
   redis:
     image: redis:7-alpine
     ports:
