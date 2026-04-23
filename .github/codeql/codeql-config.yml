@@ -1,0 +1,15 @@
+name: "KrakenD Playground CodeQL config"
+
+# Exclude vendored build output from analysis.
+#
+# CodeQL rules such as js/incomplete-sanitization fire repeatedly on minified
+# framework/bundler output (e.g. the Next.js runtime shipped with the static
+# demo pages at /demo/). We don't author that code, patching the minified
+# output is reverted on every rebuild, and the official CodeQL guidance is
+# to exclude build artifacts from analysis. See:
+#   https://codeql.github.com/codeql-query-help/javascript/js-incomplete-sanitization/
+#   https://learn.microsoft.com/en-us/answers/questions/1413395/codeql-bugs-js-insecure-randomness-and-js-incomple
+paths-ignore:
+  - "config/krakend/demo/_next/**"
+  - "images/demo-app/dist/**"
+  - "images/demo-app/node_modules/**"

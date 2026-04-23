@@ -7,6 +7,6 @@ RUN npm install
 COPY . .
 RUN npm run build
 
-CMD ["npm", "run", "prod"]
+CMD ["node_modules/.bin/serve", "-p", "3000", "dist/"]
 
 EXPOSE 3000

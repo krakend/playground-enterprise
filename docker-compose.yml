@@ -2,7 +2,7 @@ services:
   krakend_ee:
     # The :watch image restarts the service automatically when the configuration files change.
     # Do not use this image in production, it's meant to speed up your testing and development.
-    image: krakend/krakend-ee:2.12-watch
+    image: krakend/krakend-ee:2.13-watch
     volumes:
       - ./config/krakend:/etc/krakend
       - ./dumps:/tmp/krakend-http-logger
@@ -12,14 +12,11 @@ services:
       - "1234:1234"
       - "8080:8080"
     command: ["run", "-d", "-c", "krakend.json"]
-    # Uncomment to automatically compile using flexible configuration
-    #command: ["run", "-d", "-c", "./extended/krakend.tmpl"]
-    #environment:
-    #  - "FC_CONFIG=/etc/krakend/fc_config.json"
-    #  - "FC_DEBUG=true"
     depends_on:
       - jaeger
       - chat
+      - redis
+    stop_grace_period: 2s
   grafana:
     image: grafana/grafana:latest
     ports:
@@ -90,18 +87,19 @@ services:
       - "5672:5672"
   fake_api:
     image: busybox:latest
+    init: true
     volumes:
       - ./data:/var/www
     ports:
       - "8000:80"
-    command: httpd -f -h /var/www/
+    command: ["httpd", "-f", "-h", "/var/www/"]
   web:
     build:
       context: images/demo-app
     ports:
       - "3000:3000"
   revoker:
-    image: krakend/krakend-ee:2.6
+    image: krakend/krakend-ee:2.13
     ports:
       - 8081:8081
     volumes:
@@ -111,10 +109,12 @@ services:
       - krakend_ee
     restart: always
   grpc_flights:
+    platform: linux/amd64
     image: krakend/grpc_flights_fake:latest
     ports:
       - "4242:4242"
   grpc_trains:
+    platform: linux/amd64
     image: krakend/grpc_trains_fake:latest
     ports:
       - "4243:4243"
@@ -133,3 +133,16 @@ services:
       - KEYCLOAK_ADMIN=admin
       - KEYCLOAK_ADMIN_PASSWORD=admin
     command: ["start-dev", "--import-realm"]
+    stop_grace_period: 2s
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+  prompt-guard:
+    build:
+      context: images/prompt-guard
+    ports:
+      - "8091:8090"
+    # Opt-in: only starts when the "ai-gateway" compose profile is active.
+    # Use `make start-with-ai-gateway` (or `docker compose --profile ai-gateway up`).
+    profiles: ["ai-gateway"]

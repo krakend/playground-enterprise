@@ -1,0 +1,366 @@
+{
+    "@comment": "AI Integration: LLM Routing",
+    "endpoint": "/llm-routing",
+    "method": "POST",
+    "timeout": "60000ms",
+    "input_headers": ["X-Model"],
+    "backend": [
+        {
+            "host": ["https://generativelanguage.googleapis.com"],
+            "url_pattern": "/v1beta/models/gemini-2.5-flash:generateContent",
+            "method": "POST",
+            "extra_config": {
+                "backend/conditional": {
+                    "strategy": "header",
+                    "name": "X-Model",
+                    "value": "gemini"
+                },
+                "ai/llm": {
+                    "gemini": {
+                        "v1beta": {
+                            "credentials": "{{ env "GEMINI_API_KEY" }}",
+                            "variables": {
+                                "candidate_count": 1
+                            }
+                        }
+                    }
+                },
+                "telemetry/logging": {
+                    "custom_format": "{\"ts\":\"%{time:rfc3339}\", \"endpoint\":\"/llm-routing\", \"vendor\":\"gemini\", \"latency\":\"%{latencyMs}\", \"tokenUsage\":\"%{resp.usageMetadata.totalTokenCount}\"}\n"
+                }
+            }
+        },
+        {
+            "host": ["https://api.openai.com"],
+            "url_pattern": "/v1/responses",
+            "method": "POST",
+            "extra_config": {
+                "backend/conditional": {
+                    "strategy": "header",
+                    "name": "X-Model",
+                    "value": "openai"
+                },
+                "ai/llm": {
+                    "openai": {
+                        "v1": {
+                            "credentials": "{{ env "OPENAI_API_KEY" }}",
+                            "variables": {
+                                "model": "gpt-4o-mini"
+                            }
+                        }
+                    }
+                },
+                "telemetry/logging": {
+                    "custom_format": "{\"ts\":\"%{time:rfc3339}\", \"endpoint\":\"/llm-routing\", \"vendor\":\"openai\", \"latency\":\"%{latencyMs}\", \"tokenUsage\":\"%{resp.usage.total_tokens}\"}\n"
+                }
+            }
+        },
+        {
+            "host": ["https://api.anthropic.com"],
+            "url_pattern": "/v1/messages",
+            "method": "POST",
+            "extra_config": {
+                "backend/conditional": {
+                    "strategy": "fallback"
+                },
+                "ai/llm": {
+                    "anthropic": {
+                        "v1": {
+                            "credentials": "{{ env "ANTHROPIC_API_KEY" }}",
+                            "variables": {
+                                "model": "claude-haiku-4-5"
+                            }
+                        }
+                    }
+                },
+                "telemetry/logging": {
+                    "custom_format": "{\"ts\":\"%{time:rfc3339}\", \"endpoint\":\"/llm-routing\", \"vendor\":\"anthropic\", \"latency\":\"%{latencyMs}\", \"tokenUsage\":\"%{resp.usage.input_tokens}\"}\n"
+                }
+            }
+        }
+    ],
+    "extra_config": {
+        "documentation/openapi": {
+            "summary": "Routes requests to different LLM providers based on X-Model header",
+            "description": "Demonstrates header-based LLM routing using conditional backends. Send X-Model: gemini, openai, or omit for Anthropic fallback.",
+            "tags": ["AI Integration"]
+        },
+        "documentation/postman": {
+            "name": "LLM Routing by Header",
+            "description": "Route to Gemini, OpenAI, or Anthropic (fallback) based on X-Model header",
+            "folder": "/AI Integration"
+        }
+    }
+},
+{
+    "@comment": "AI Integration: Conditional LLM Routing",
+    "endpoint": "/llm-conditional",
+    "method": "POST",
+    "timeout": "60000ms",
+    "input_headers": ["X-Role", "X-User-Id"],
+    "backend": [
+        {
+            "host": ["https://api.openai.com"],
+            "url_pattern": "/v1/responses",
+            "method": "POST",
+            "extra_config": {
+                "backend/conditional": {
+                    "strategy": "policy",
+                    "value": "req_headers['X-Role'][0].contains('moderator')"
+                },
+                "ai/llm": {
+                    "openai": {
+                        "v1": {
+                            "credentials": "{{ env "OPENAI_API_KEY" }}",
+                            "variables": {
+                                "model": "gpt-4o-mini"
+                            }
+                        }
+                    }
+                },
+                "telemetry/logging": {
+                    "custom_format": "{\"ts\":\"%{time:rfc3339}\", \"endpoint\":\"/llm-conditional\", \"vendor\":\"openai\", \"latency\":\"%{latencyMs}\", \"tokenUsage\":\"%{resp.usage.total_tokens}\", \"userId\":\"%{reqHeader.X-User-Id}\", \"role\":\"%{reqHeader.X-Role}\"}\n"
+                }
+            }
+        },
+        {
+            "host": ["https://generativelanguage.googleapis.com"],
+            "url_pattern": "/v1beta/models/gemini-2.5-flash:generateContent",
+            "method": "POST",
+            "extra_config": {
+                "backend/conditional": {
+                    "strategy": "fallback"
+                },
+                "ai/llm": {
+                    "gemini": {
+                        "v1beta": {
+                            "credentials": "{{ env "GEMINI_API_KEY" }}",
+                            "variables": {
+                                "candidate_count": 1
+                            }
+                        }
+                    }
+                },
+                "telemetry/logging": {
+                    "custom_format": "{\"ts\":\"%{time:rfc3339}\", \"endpoint\":\"/llm-conditional\", \"vendor\":\"gemini\", \"latency\":\"%{latencyMs}\", \"tokenUsage\":\"%{resp.usageMetadata.totalTokenCount}\", \"userId\":\"%{reqHeader.X-User-Id}\", \"role\":\"%{reqHeader.X-Role}\"}\n"
+                }
+            }
+        }
+    ],
+    "extra_config": {
+        "auth/validator": {
+            "alg": "RS256",
+            "audience": ["playground"],
+            "roles_key_is_nested": true,
+            "roles_key": "realm_access.roles",
+            "jwk_url": "http://keycloak:8080/realms/krakend/protocol/openid-connect/certs",
+            "disable_jwk_security": true,
+            "propagate_claims": [
+                ["realm_access.roles", "X-Role"],
+                ["email", "X-User-Id"]
+            ]
+        },
+        "documentation/openapi": {
+            "summary": "Routes to different LLMs based on JWT role claims",
+            "description": "Demonstrates conditional routing by user role. Moderators get routed to OpenAI (premium), readers get Gemini (basic). Requires JWT authentication via Keycloak.",
+            "tags": ["AI Integration"]
+        },
+        "documentation/postman": {
+            "name": "Conditional LLM Routing by Role",
+            "description": "Moderator → OpenAI, Reader → Gemini based on JWT role",
+            "folder": "/AI Integration"
+        }
+    }
+},
+{
+    "@comment": "AI Integration: Token Quota Management",
+    "endpoint": "/llm-quota",
+    "method": "POST",
+    "timeout": "60000ms",
+    "input_headers": ["X-Role", "X-User-Id"],
+    "backend": [
+        {
+            "host": ["https://generativelanguage.googleapis.com"],
+            "url_pattern": "/v1beta/models/gemini-2.5-flash:generateContent",
+            "method": "POST",
+            "extra_config": {
+                "ai/llm": {
+                    "gemini": {
+                        "v1beta": {
+                            "credentials": "{{ env "GEMINI_API_KEY" }}",
+                            "variables": {
+                                "candidate_count": 1
+                            }
+                        }
+                    }
+                },
+                "telemetry/logging": {
+                    "custom_format": "{\"ts\":\"%{time:rfc3339}\", \"endpoint\":\"/llm-quota\", \"vendor\":\"gemini\", \"latency\":\"%{latencyMs}\", \"tokenUsage\":\"%{resp.usageMetadata.totalTokenCount}\", \"userId\":\"%{reqHeader.X-User-Id}\", \"role\":\"%{reqHeader.X-Role}\"}\n"
+                }
+            }
+        }
+    ],
+    "extra_config": {
+        "auth/validator": {
+            "alg": "RS256",
+            "audience": ["playground"],
+            "roles_key_is_nested": true,
+            "roles_key": "realm_access.roles",
+            "jwk_url": "http://keycloak:8080/realms/krakend/protocol/openid-connect/certs",
+            "disable_jwk_security": true,
+            "propagate_claims": [
+                ["realm_access.roles", "X-Role"],
+                ["email", "X-User-Id"]
+            ]
+        },
+        "governance/quota": {
+            "quota_name": "llm_tokens",
+            "weight_key": "usage",
+            "weight_strategy": "body",
+            "tier_key": "X-Role",
+            "tiers": [
+                {
+                    "rule_name": "poweruser",
+                    "tier_value": "moderator",
+                    "tier_value_as": "literal",
+                    "strategy": "header",
+                    "key": "X-User-Id"
+                },
+                {
+                    "rule_name": "basic",
+                    "tier_value_as": "*",
+                    "strategy": "header",
+                    "key": "X-User-Id"
+                }
+            ]
+        },
+        "documentation/openapi": {
+            "summary": "Enforces token-based usage quotas per user for LLM requests",
+            "description": "Demonstrates AI cost control with token quotas. Moderators get 10000 tokens/day, readers get 1000 tokens/day. Uses Redis for persistent quota tracking.",
+            "tags": ["AI Integration"]
+        },
+        "documentation/postman": {
+            "name": "Token Quota Management",
+            "description": "LLM endpoint with per-user token quotas enforced via Redis",
+            "folder": "/AI Integration"
+        }
+    }
+},
+{
+    "@comment": "AI Integration: Deterministic Prompt Guardrail",
+    "endpoint": "/prompt-guardrail-deterministic",
+    "method": "POST",
+    "timeout": "60000ms",
+    "backend": [
+        {
+            "host": ["https://generativelanguage.googleapis.com"],
+            "url_pattern": "/v1beta/models/gemini-2.5-flash:generateContent",
+            "method": "POST",
+            "extra_config": {
+                "ai/llm": {
+                    "gemini": {
+                        "v1beta": {
+                            "credentials": "{{ env "GEMINI_API_KEY" }}",
+                            "variables": {
+                                "candidate_count": 1
+                            }
+                        }
+                    }
+                },
+                "telemetry/logging": {
+                    "custom_format": "{\"ts\":\"%{time:rfc3339}\", \"endpoint\":\"/prompt-guardrail-deterministic\", \"vendor\":\"gemini\", \"latency\":\"%{latencyMs}\", \"tokenUsage\":\"%{resp.usageMetadata.totalTokenCount}\"}\n"
+                }
+            }
+        }
+    ],
+    "extra_config": {
+        "validation/json-schema": {
+            "type": "object",
+            "required": ["contents"],
+            "properties": {
+                "contents": {
+                    "type": "string",
+                    "allOf": [
+                        { "not": { "pattern": "\\b\\d{4}[\\s\\-]?\\d{4}[\\s\\-]?\\d{4}[\\s\\-]?\\d{4}\\b" } },
+                        { "not": { "pattern": "(?i)password\\s*(is)?\\s*[:=]" } },
+                        { "not": { "pattern": "(?i)secret\\s*(is)?\\s*[:=]" } },
+                        { "not": { "pattern": "(?i)api[_\\s\\-]?key\\s*[:=]" } }
+                    ]
+                }
+            }
+        },
+        "documentation/openapi": {
+            "summary": "Blocks prompts containing sensitive data patterns using regex validation",
+            "description": "Demonstrates deterministic prompt guardrails using JSON Schema regex validation. Rejects requests containing credit card numbers, passwords, secrets, or API keys before reaching the LLM.",
+            "tags": ["AI Integration"]
+        },
+        "documentation/postman": {
+            "name": "Deterministic Prompt Guardrail",
+            "description": "Pattern-based prompt validation blocking sensitive data",
+            "folder": "/AI Integration"
+        }
+    }
+},
+{
+    "@comment": "AI Integration: Intelligent Prompt Guardrail",
+    "endpoint": "/prompt-guardrail-intelligent",
+    "method": "POST",
+    "timeout": "60000ms",
+    "backend": [
+        {
+            "host": ["http://prompt-guard:8090"],
+            "url_pattern": "/classify",
+            "method": "POST",
+            "extra_config": {
+                "telemetry/logging": {
+                    "custom_format": "{\"ts\":\"%{time:rfc3339}\", \"endpoint\":\"/prompt-guardrail-intelligent\", \"vendor\":\"prompt-guard\", \"latency\":\"%{latencyMs}\"}\n"
+                }
+            }
+        },
+        {
+            "host": ["https://generativelanguage.googleapis.com"],
+            "url_pattern": "/v1beta/models/gemini-2.5-flash:generateContent?key={{ env "GEMINI_API_KEY" }}",
+            "method": "POST",
+            "group": "llm",
+            "extra_config": {
+                "backend/conditional": {
+                    "strategy": "policy",
+                    "value": "req_params['Resp0_label'] == 'BENIGN'"
+                },
+                "modifier/body-generator": {
+                    "path": "./templates/gemini_from_params.tmpl",
+                    "content_type": "application/json"
+                },
+                "telemetry/logging": {
+                    "custom_format": "{\"ts\":\"%{time:rfc3339}\", \"endpoint\":\"/prompt-guardrail-intelligent\", \"vendor\":\"gemini\", \"latency\":\"%{latencyMs}\"}\n"
+                }
+            }
+        }
+    ],
+    "extra_config": {
+        "proxy": {
+            "sequential": true,
+            "sequential_propagated_params": ["resp0_label", "resp0_contents"]
+        },
+        "security/policies": {
+            "resp": {
+                "policies": ["resp_data.label == 'BENIGN'"],
+                "error": {
+                    "body": "{\"error\":\"Prompt blocked\",\"message\":\"Your prompt was classified as potentially unsafe and has been blocked by the AI guardrail\"}",
+                    "status": 403,
+                    "content_type": "application/json"
+                }
+            }
+        },
+        "documentation/openapi": {
+            "summary": "Classifies prompts with AI safety model before forwarding to LLM",
+            "description": "Demonstrates AI-based prompt guardrails using sequential proxy. First classifies the prompt with Prompt Guard 2 22M model, then only forwards to Gemini if classified as BENIGN. Blocks injection and jailbreak attempts with a 403 error.",
+            "tags": ["AI Integration"]
+        },
+        "documentation/postman": {
+            "name": "Intelligent Prompt Guardrail",
+            "description": "AI-based prompt classifier + Gemini LLM via sequential proxy",
+            "folder": "/AI Integration"
+        }
+    }
+}

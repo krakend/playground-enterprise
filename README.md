@@ -55,13 +55,22 @@ KrakenD can export telemetry to several services; this demonstration has a few e
     make elastic
 
 ### Web client
-This consumer of the API gateway is a simple Express JS application that interacts with KrakenD to fetch the data. All code is under `images/demo-app/`.
+An interactive demo SPA at `images/demo-app/` with three sections:
 
-The client is a Single Page Application using the builtin [Keycloak](https://www.keycloak.org/) instance to generate JWT tokens.
-
-**You don't need to install any npm locally**; the docker image will download and install the dependencies in the container.
+- **AI Gateway** — Test 5 AI use cases: LLM routing, role-based routing, token quotas, and prompt guardrails (deterministic + AI-based)
+- **Auth Demo** — Test authentication patterns: JWT (Keycloak), API keys, Basic Auth, and GDPR cookie policies
+- **WebSocket Chat** — Real-time bidirectional chat through KrakenD's WebSocket proxy
 
 Visit [http://localhost:3000](http://localhost:3000)
+
+### AI Gateway services (opt-in)
+The AI Gateway use cases need extra pieces that are **not started by default** so the regular `make start` stays fast:
+
+- **Redis** — token quota tracking on port `6379` (always on, also used elsewhere).
+- **Prompt Guard** — non-gated community mirror of Meta's Prompt Guard 2 22M (ONNX) on port `8091`. Only built and started when the `ai-gateway` compose profile is active.
+- **Provider API keys** (Gemini / OpenAI / Anthropic), set in `config/krakend/.env.local` (git-ignored) or `config/krakend/.env`.
+
+See [Trying the AI Gateway use cases](#trying-the-ai-gateway-use-cases) for the one-command flow.
 
 ### The async agent
 A RabbitMQ instance is ready to accept AMQP messages to be delivered to the gateway.
@@ -132,6 +141,30 @@ To shut down the complete stack, removing all the volumes
     $ make stop
 ```
 
+## Trying the AI Gateway use cases
+The AI Gateway endpoints (`/llm-routing`, `/llm-conditional`, `/llm-quota`, `/prompt-guardrail-*`) call real LLM providers and the intelligent guardrail also needs the prompt-guard container. Both are opt-in.
+
+1. **Set your credentials.** The tracked `config/krakend/.env` is a placeholder template. Copy it to `.env.local` (git-ignored) and fill in your keys:
+
+    ```shell
+    cp config/krakend/.env config/krakend/.env.local
+    # Edit .env.local and set GEMINI_API_KEY, OPENAI_API_KEY, ANTHROPIC_API_KEY
+    ```
+
+    Alternatively, you can edit `.env` directly — but keep in mind it's tracked in git, so don't commit real keys.
+
+2. **Start the stack with the AI Gateway profile.** One command — validates credentials, re-compiles `krakend.json` with them injected, then builds and starts the prompt-guard container together with the rest:
+
+    ```shell
+    make start-with-ai-gateway
+    ```
+
+    The first run builds the prompt-guard image (downloads the ONNX model, ~80 MB), so it takes a couple of minutes. Subsequent runs are cached.
+
+If the credentials check fails or the keys are still the placeholder, the target aborts before touching Docker. If you want to run without the AI Gateway, just use `make start` as usual.
+
+Try them from the [demo SPA](http://localhost:3000) under *AI Gateway*.
+
 ## Play!
 Fire up your browser, curl, postman, httpie, or anything else you like to interact with any published services.
 
@@ -140,7 +173,7 @@ Fire up your browser, curl, postman, httpie, or anything else you like to intera
 - Jaeger (tracing): [http://localhost:16686](http://localhost:16686)
 - Kibana (logs): [http://localhost:5601](http://localhost:5601)
 - Grafana (metrics): [http://localhost:4000](http://localhost:4000) (krakend/krakend)
-- Sample SPA for auth: [http://localhost:8080/auth/](http://localhost:8080/auth/)
+- Demo SPA via gateway: [http://localhost:8080/spa/](http://localhost:8080/spa/) (AI Gateway, Auth Demo, WebSocket Chat)
 - JWT revoker: [http://localhost:9000](http://localhost:9000)
 - Keycloak (IdP): [http://localhost:8085](http://localhost:8085)
 
@@ -151,7 +184,7 @@ When you change the `krakend.json`, the changes are applied automatically.
 | The `krakend.json` file was automatically generated using the [extended flexible configuration](https://www.krakend.io/docs/enterprise/configuration/flexible-config/), and you will find the source code under `extended/krakend.tmpl`. <br><br> When working with the flexible configuration, you can optionally ask KrakenD to save the "compiled" output to a file. We've added a command `make compile-flexible-config` so you can see quickly and easily how KrakenD builds the final configuration file based on the existing templates.<br><br>Internally KrakenD's flexible configuration uses [Golang templating syntax](https://pkg.go.dev/text/template#hdr-Examples). |
 
 ## Editing the API Gateway endpoints
-To add or remove endpoints, edit the file `krakend/krakend.json`. The easiest way to do it is by **dragging this file to the [KrakenD Designer](https://designer.krakend.io/)** and downloading the edited file. If you move the downloaded file to `krakend/krakend.json` the server will apply the changes automatically. If y ou use Chrome, you can edit it directly in the website.
+To add or remove endpoints, edit the file `krakend/krakend.json`. The easiest way to do it is by **dragging this file to the [KrakenD Designer](https://designer.krakend.io/)** and downloading the edited file. If you move the downloaded file to `krakend/krakend.json` the server will apply the changes automatically. If you use Chrome, you can edit it directly in the website.
 
 To change the data in the static server (simulating your backend API), edit, add or delete files in the **`data/`** folder.
 
@@ -180,7 +213,12 @@ The following endpoints are worth noticing:
 | Geolocation / Geofencing                                | [`/fake-api-geofence/*`](http://localhost:8080/fake-api-geofence/user/1.json) | Expose information from internal service at fake API using wildcard and applying geofencing (only accessible ) <br>_Note: to use geofencing, you should download a [Maxmind GeoIP City database](https://dev.maxmind.com/geoip/geolite2-free-geolocation-data?lang=en) (commercial or free) and store it on `config/krakend/geoip/`_ |
 | JWT-based Authentication                                | [`/private/moderate`](http://localhost:8080/private/moderate)                       | Protects an endpoint validating JWT tokens issued by built-in Keycloak instance. You can access http://localhost:3000/ to test it.                                                                                                                                                                                                                       |
 | API Keys based Authentication                           | [`/api-key`](http://localhost:8080/api-key)                                   | Protects and endpoint using an API-Key. You can use `curl -iG -H 'Authorization: Bearer 58427514-be32-0b52-b7c6-d01fada30497' 'http://localhost:8080/api-key'` to test it.                                                                                                                                                           |
-| Model Context Protocol (MCP) Server / AI Gateway        | `/mcp` (POST)                                                                  | **Enterprise-only** MCP server that exposes tools for aggregating country data from multiple APIs (REST + GraphQL). Designed for AI/LLM integration following the Model Context Protocol standard. Example: POST MCP protocol request to retrieve comprehensive country information.                                                |
+| Model Context Protocol (MCP) Server / AI Gateway        | `/mcp` (POST)                                                                  | **Enterprise-only** MCP server that exposes tools for aggregating country data from multiple APIs (REST + GraphQL). Designed for AI/LLM integration following the Model Context Protocol standard.                                                |
+| LLM Routing by Header                                  | [`/llm-routing`](http://localhost:8080/llm-routing) (POST)                     | Route requests to Gemini, OpenAI, or Anthropic (fallback) based on `X-Model` header using conditional backends.                                                                                                                                 |
+| Role-Based LLM Routing                                 | [`/llm-conditional`](http://localhost:8080/llm-conditional) (POST)             | JWT role determines which LLM responds: moderators get OpenAI, readers get Gemini. Requires Keycloak authentication.                                                                                                                            |
+| Token Quota Management                                 | [`/llm-quota`](http://localhost:8080/llm-quota) (POST)                         | Per-user token budget enforcement via Redis. Moderators: 10k tokens/day, readers: 1k tokens/day.                                                                                                                                                |
+| Deterministic Prompt Guardrail                          | [`/prompt-guardrail-deterministic`](http://localhost:8080/prompt-guardrail-deterministic) (POST) | Blocks prompts containing credit card numbers, passwords, secrets, or API keys using JSON Schema regex validation.                                                                                                              |
+| Intelligent Prompt Guardrail                            | [`/prompt-guardrail-intelligent`](http://localhost:8080/prompt-guardrail-intelligent) (POST)     | AI-based prompt classification using Meta's Prompt Guard 2 22M via sequential proxy. Blocks injection/jailbreak attempts with HTTP 403.                                                                                         |
 
 You will find more examples with comments in `config/krakend/krakend.json`
 

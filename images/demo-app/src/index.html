@@ -1,158 +1,792 @@
 <!doctype html>
 <html lang="en">
-
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Demo app</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>KrakenD Enterprise Playground</title>
 
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-okaidia.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-json.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-bash.min.js"></script>
 
     <script type="module" src="./js/main.js"></script>
-    <link rel=icon type=image/png href=https://www.krakend.io/favicon/favicon-196x196.png sizes=196x196>
     <link rel=icon type=image/png href=https://www.krakend.io/favicon/favicon-96x96.png sizes=96x96>
-    <link rel=icon type=image/png href=https://www.krakend.io/favicon/favicon-32x32.png sizes=32x32>
-    <link rel=icon type=image/png href=https://www.krakend.io/favicon/favicon-16x16.png sizes=16x16>
-    <link rel=icon type=image/png href=https://www.krakend.io/favicon/favicon-128.png sizes=128x128>
+
+    <style>
+        :root {
+            --bg-primary: #0a0e17;
+            --bg-secondary: #111827;
+            --bg-card: #1a1f2e;
+            --bg-input: #0d1117;
+            --border: #1e293b;
+            --border-active: #3b82f6;
+            --text-primary: #e2e8f0;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --accent-blue: #3b82f6;
+            --accent-green: #10b981;
+            --accent-amber: #f59e0b;
+            --accent-red: #ef4444;
+            --accent-violet: #8b5cf6;
+            --accent-cyan: #06b6d4;
+            --glow-blue: rgba(59, 130, 246, 0.15);
+            --glow-green: rgba(16, 185, 129, 0.15);
+            --glow-amber: rgba(245, 158, 11, 0.15);
+            --glow-red: rgba(239, 68, 68, 0.15);
+            --glow-violet: rgba(139, 92, 246, 0.15);
+            --font-display: 'DM Sans', sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-family: var(--font-display);
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Header */
+        .site-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 2rem;
+            border-bottom: 1px solid var(--border);
+            background: var(--bg-secondary);
+        }
+        .site-header a { text-decoration: none; color: inherit; }
+        .site-header img { height: 28px; }
+        .header-brand { display: flex; align-items: center; gap: 0.75rem; }
+        .header-brand span { font-weight: 600; font-size: 0.9rem; color: var(--text-secondary); letter-spacing: 0.02em; }
+        .header-user { display: flex; align-items: center; gap: 1rem; font-size: 0.85rem; }
+        .header-user a { color: var(--accent-blue); cursor: pointer; font-weight: 500; }
+        .header-user a:hover { text-decoration: underline; }
+        .header-user .login-link {
+            background: var(--glow-blue);
+            padding: 0.4rem 0.9rem;
+            border-radius: 5px;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+        }
+        .user-badge {
+            display: inline-flex; align-items: center; gap: 0.4rem;
+            padding: 0.25rem 0.6rem; border-radius: 4px;
+            background: var(--glow-blue); color: var(--accent-blue);
+            font-size: 0.8rem; font-weight: 500;
+        }
+        .role-badge {
+            padding: 0.2rem 0.5rem; border-radius: 3px;
+            font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;
+        }
+        .role-moderator { background: var(--glow-green); color: var(--accent-green); }
+        .role-reader { background: var(--glow-amber); color: var(--accent-amber); }
+
+        /* Main navigation tabs */
+        .main-nav {
+            display: flex;
+            border-bottom: 1px solid var(--border);
+            background: var(--bg-secondary);
+            padding: 0 2rem;
+        }
+        .nav-tab {
+            padding: 0.75rem 1.25rem;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: var(--text-muted);
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+            display: flex; align-items: center; gap: 0.5rem;
+        }
+        .nav-tab:hover { color: var(--text-secondary); }
+        .nav-tab.active {
+            color: var(--accent-blue);
+            border-bottom-color: var(--accent-blue);
+        }
+        .nav-tab svg { width: 16px; height: 16px; }
+
+        /* Content area */
+        .content { max-width: 1400px; margin: 0 auto; padding: 1.5rem 2rem; }
+        .page { display: none; }
+        .page.active { display: block; }
+
+        /* AI Use case selector */
+        .usecase-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 0.6rem;
+            margin-bottom: 1.25rem;
+        }
+        .usecase-card {
+            padding: 1rem 1.25rem;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: var(--bg-card);
+            cursor: pointer;
+            transition: all 0.25s;
+            position: relative;
+            overflow: hidden;
+        }
+        .usecase-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 2px;
+            background: var(--card-accent, var(--accent-blue));
+            opacity: 0;
+            transition: opacity 0.25s;
+        }
+        .usecase-card:hover, .usecase-card.active {
+            border-color: var(--card-accent, var(--accent-blue));
+            background: var(--bg-secondary);
+        }
+        .usecase-card:hover::before, .usecase-card.active::before { opacity: 1; }
+        .usecase-card .card-icon {
+            width: 32px; height: 32px;
+            border-radius: 6px;
+            display: flex; align-items: center; justify-content: center;
+            margin-bottom: 0.6rem;
+            font-size: 1rem;
+        }
+        .usecase-card h4 { font-size: 0.85rem; font-weight: 600; margin-bottom: 0.3rem; color: var(--text-primary); }
+        .usecase-card p { font-size: 0.72rem; color: var(--text-secondary); line-height: 1.4; }
+        .usecase-tag {
+            display: inline-block; margin-top: 0.5rem;
+            font-size: 0.65rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em;
+            padding: 0.15rem 0.4rem; border-radius: 3px;
+        }
+        .usecase-link {
+            position: absolute;
+            top: 0.7rem;
+            right: 0.8rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            font-family: var(--font-mono);
+            font-size: 0.65rem;
+            letter-spacing: 0.03em;
+            color: var(--text-muted);
+            text-decoration: none;
+            white-space: nowrap;
+            transition: color 0.2s;
+            z-index: 1;
+        }
+        .usecase-link svg { width: 11px; height: 11px; }
+        .usecase-link:hover {
+            color: var(--card-accent, var(--accent-blue));
+        }
+
+        /* Panel */
+        .panel {
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            background: var(--bg-card);
+            overflow: hidden;
+        }
+        .panel-header {
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid var(--border);
+            display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem;
+            flex-wrap: wrap;
+        }
+        .panel-header h3 { font-size: 0.95rem; font-weight: 600; color: var(--text-primary); }
+        .panel-body { padding: 1.5rem; }
+        .panel-footer {
+            padding: 1rem 1.5rem;
+            border-top: 1px solid var(--border);
+            display: flex; justify-content: space-between; align-items: center;
+        }
+
+        /* Form elements */
+        .form-group { margin-bottom: 1rem; }
+        .panel-description {
+            font-size: 0.85rem;
+            color: var(--text-primary);
+            line-height: 1.6;
+            margin-bottom: 1rem;
+        }
+        .panel-description code {
+            font-family: var(--font-mono);
+            background: var(--bg-input);
+            padding: 0.15rem 0.4rem;
+            border-radius: 3px;
+            font-size: 0.82rem;
+            color: var(--accent-cyan);
+        }
+        .panel-description strong { color: #fff; }
+        .form-label {
+            display: block;
+            font-size: 0.78rem;
+            font-weight: 500;
+            color: var(--text-primary);
+            margin-bottom: 0.4rem;
+        }
+        textarea.form-input, input.form-input, select.form-input {
+            width: 100%;
+            padding: 0.65rem 0.85rem;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            background: var(--bg-input);
+            color: var(--text-primary);
+            font-family: var(--font-display);
+            font-size: 0.85rem;
+            transition: border-color 0.2s;
+            resize: vertical;
+        }
+        textarea.form-input:focus, input.form-input:focus, select.form-input:focus {
+            outline: none;
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 0 3px var(--glow-blue);
+        }
+        select.form-input { cursor: pointer; appearance: auto; }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex; align-items: center; gap: 0.5rem;
+            padding: 0.6rem 1.2rem;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+            font-family: var(--font-display);
+        }
+        .btn svg { width: 16px; height: 16px; }
+        .btn-primary {
+            background: var(--accent-blue);
+            color: white;
+        }
+        .btn-primary:hover { background: #2563eb; }
+        .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn-secondary {
+            background: transparent;
+            color: var(--text-secondary);
+            border: 1px solid var(--border);
+        }
+        .btn-secondary:hover { border-color: var(--text-muted); color: var(--text-primary); }
+        .btn-login {
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-violet));
+            color: white;
+            padding: 0.7rem 1.5rem;
+        }
+        .btn-login:hover { opacity: 0.9; }
+
+        /* Response display */
+        .response-area { margin-top: 1.5rem; }
+        .response-tabs {
+            display: flex; gap: 0;
+            border-bottom: 1px solid var(--border);
+            flex-shrink: 0;
+        }
+        .response-tab {
+            padding: 0.5rem 1rem;
+            font-size: 0.78rem;
+            font-weight: 500;
+            color: var(--text-muted);
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            font-family: var(--font-mono);
+        }
+        .response-tab:hover { color: var(--text-secondary); }
+        .response-tab.active { color: var(--accent-green); border-bottom-color: var(--accent-green); }
+        .response-content {
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 0 0 6px 6px;
+            overflow: auto;
+            min-width: 0;
+        }
+        .response-content pre {
+            margin: 0;
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            line-height: 1.5;
+            white-space: pre-wrap;
+            word-break: break-all;
+            overflow-wrap: break-word;
+        }
+        .response-content code { font-family: var(--font-mono); }
+
+        /* AI response rendered */
+        .ai-rendered {
+            padding: 1.25rem;
+            background: var(--bg-input);
+            border-radius: 6px;
+            line-height: 1.7;
+            font-size: 0.9rem;
+        }
+        .ai-rendered p { margin-bottom: 0.8rem; }
+        .ai-rendered strong { color: var(--text-primary); }
+        .ai-rendered code {
+            font-family: var(--font-mono);
+            background: var(--bg-card);
+            padding: 0.15rem 0.4rem;
+            border-radius: 3px;
+            font-size: 0.82rem;
+        }
+
+        /* Status indicators */
+        .status-pill {
+            display: inline-flex; align-items: center; gap: 0.35rem;
+            padding: 0.25rem 0.6rem;
+            border-radius: 100px;
+            font-size: 0.72rem;
+            font-weight: 600;
+            font-family: var(--font-mono);
+        }
+        .status-pill .dot {
+            width: 6px; height: 6px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+        .status-success { background: var(--glow-green); color: var(--accent-green); }
+        .status-success .dot { background: var(--accent-green); }
+        .status-error { background: var(--glow-red); color: var(--accent-red); }
+        .status-error .dot { background: var(--accent-red); }
+        .status-warning { background: var(--glow-amber); color: var(--accent-amber); }
+        .status-warning .dot { background: var(--accent-amber); }
+        .status-info { background: var(--glow-blue); color: var(--accent-blue); }
+        .status-info .dot { background: var(--accent-blue); }
+
+        /* Loading spinner */
+        .spinner {
+            width: 16px; height: 16px;
+            border: 2px solid var(--border);
+            border-top-color: var(--accent-blue);
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Auth section */
+        .auth-prompt {
+            text-align: center;
+            padding: 3rem 2rem;
+        }
+        .auth-prompt h2 { font-size: 1.5rem; margin-bottom: 0.5rem; }
+        .auth-prompt p { color: var(--text-secondary); margin-bottom: 1.5rem; font-size: 0.9rem; }
+        .credentials-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 0.75rem;
+            max-width: 500px;
+            margin: 0 auto 1.5rem;
+            text-align: left;
+        }
+        .credential-item {
+            padding: 0.6rem 0.8rem;
+            border-radius: 6px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+        }
+        .credential-item .label { font-size: 0.7rem; color: var(--text-muted); margin-bottom: 0.2rem; }
+        .credential-item code { font-family: var(--font-mono); font-size: 0.8rem; color: var(--accent-cyan); }
+
+        /* Endpoint info */
+        .endpoint-badge {
+            font-family: var(--font-mono);
+            font-size: 0.78rem;
+            padding: 0.3rem 0.6rem;
+            border-radius: 4px;
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            color: var(--accent-cyan);
+        }
+        .method-badge {
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+            font-weight: 600;
+            padding: 0.2rem 0.4rem;
+            border-radius: 3px;
+            background: var(--glow-green);
+            color: var(--accent-green);
+        }
+
+        /* Feature tags */
+        .features-row {
+            display: flex; flex-wrap: wrap; gap: 0.4rem;
+            margin-top: 0.5rem;
+        }
+        .feature-tag {
+            font-size: 0.68rem;
+            padding: 0.2rem 0.45rem;
+            border-radius: 3px;
+            background: var(--bg-input);
+            color: var(--text-muted);
+            border: 1px solid var(--border);
+            font-family: var(--font-mono);
+        }
+
+        /* Request preview */
+        .req-preview { font-family: var(--font-mono); font-size: 0.8rem; }
+        .req-line {
+            display: flex; align-items: center; gap: 0.5rem;
+            padding: 0.6rem 0.8rem;
+            background: var(--bg-card);
+            border-bottom: 1px solid var(--border);
+            border-radius: 6px 6px 0 0;
+        }
+        .req-line .method {
+            font-weight: 700; color: var(--accent-green);
+            font-size: 0.75rem; letter-spacing: 0.03em;
+        }
+        .req-line .url { color: var(--text-primary); word-break: break-all; }
+        .req-headers {
+            padding: 0.5rem 0.8rem;
+            background: var(--bg-card);
+            border-bottom: 1px solid var(--border);
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+        .req-headers .header-name { color: var(--accent-cyan); }
+        .req-headers .header-value { color: var(--text-secondary); }
+        .req-body-label {
+            padding: 0.4rem 0.8rem;
+            background: var(--bg-card);
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            border-bottom: 1px solid var(--border);
+        }
+        .req-body-content {
+            padding: 0.6rem 0.8rem;
+            background: var(--bg-input);
+            border-radius: 0 0 6px 6px;
+        }
+        .req-body-content pre { margin: 0; white-space: pre-wrap; word-break: break-all; }
+        /* Let Prism code blocks inherit the surrounding surface — override theme bg globally */
+        pre[class*="language-"],
+        :not(pre) > code[class*="language-"] {
+            background: transparent;
+        }
+
+        /* Comparison groups (Direct-to-LLM vs KrakenD) */
+        .comparison-group { margin-bottom: 0.9rem; }
+        .comparison-group:last-child { margin-bottom: 0; }
+        .comparison-group-header {
+            display: flex; align-items: center; gap: 0.55rem;
+            padding: 0.45rem 0.75rem;
+            border-radius: 6px 6px 0 0;
+            font-family: var(--font-mono);
+            font-size: 0.68rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            border: 1px solid var(--border);
+            border-bottom: none;
+        }
+        .comparison-group-header::before {
+            content: '';
+            width: 6px; height: 6px;
+            border-radius: 50%;
+            background: currentColor;
+            box-shadow: 0 0 6px currentColor;
+        }
+        .comparison-group-header.direct {
+            background: linear-gradient(180deg, var(--glow-amber), rgba(245, 158, 11, 0.06));
+            color: var(--accent-amber);
+            border-color: rgba(245, 158, 11, 0.28);
+        }
+        .comparison-group-header.krakend {
+            background: linear-gradient(180deg, var(--glow-green), rgba(16, 185, 129, 0.06));
+            color: var(--accent-green);
+            border-color: rgba(16, 185, 129, 0.28);
+        }
+        .comparison-group-header .label-note {
+            margin-left: auto;
+            font-size: 0.7rem;
+            font-weight: 500;
+            text-transform: none;
+            letter-spacing: 0.01em;
+            color: var(--text-secondary);
+            font-family: var(--font-display);
+        }
+        .comparison-group .req-preview {
+            border: 1px solid var(--border);
+            border-radius: 0 0 6px 6px;
+            overflow: hidden;
+            border-left-width: 3px;
+        }
+        .comparison-group.direct .req-preview { border-left-color: rgba(245, 158, 11, 0.55); }
+        .comparison-group.krakend .req-preview { border-left-color: rgba(16, 185, 129, 0.55); }
+        .comparison-group .req-body-label { border-bottom: none; padding-bottom: 0.15rem; }
+
+        /* Utilities */
+        .hidden { display: none !important; }
+        .flex { display: flex; }
+        .gap-2 { gap: 0.5rem; }
+        .gap-4 { gap: 1rem; }
+        .items-center { align-items: center; }
+        .text-muted { color: var(--text-secondary); }
+        .text-sm { font-size: 0.85rem; }
+        .text-xs { font-size: 0.75rem; }
+        .mt-2 { margin-top: 0.5rem; }
+        .mt-4 { margin-top: 1rem; }
+        .mb-2 { margin-bottom: 0.5rem; }
+        .mb-4 { margin-bottom: 1rem; }
+
+        /* Smooth transitions */
+        .fade-in { animation: fadeIn 0.3s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: var(--bg-primary); }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+        /* Two-column layout for AI panel */
+        .ai-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            min-width: 0;
+            align-items: start;
+        }
+        .ai-layout > div { min-width: 0; overflow: hidden; }
+        .panel { min-width: 0; overflow: hidden; }
+        @media (max-width: 1100px) {
+            .usecase-grid { grid-template-columns: repeat(3, 1fr); }
+        }
+        @media (max-width: 900px) {
+            .ai-layout { grid-template-columns: 1fr; }
+            .usecase-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+    </style>
 </head>
-
-<body class="bg-gray-900 text-gray-100">
-<header class="container flex justify-between items-center py-4">
-    <h1 class="text-xl font-bold">
-        <a href="./" class="flex items-center no-underline">
-            <img src=https://www.krakend.io/images/logo-krakend.svg width=157 height=31 alt="KrakenD API Gateway">
-            <span class="ml-3">Auth Demo</span>
+<body>
+    <!-- Header -->
+    <header class="site-header">
+        <a href="./" class="header-brand">
+            <img src="https://www.krakend.io/images/logo-krakend.svg" alt="KrakenD">
+            <span>Enterprise Playground</span>
         </a>
-    </h1>
-    <a href="https://github.com/krakend/playground-enterprise" target="_blank" rel="noopener" class="text-blue-600 hover:underline">
-        Go to Playground
-        <svg class="inline align-bottom h-6 w-6" width="22" height="22" viewBox="0 0 24 24">
-            <path d="M12 0c6.628.0 12 5.508 12 12.304.0 5.434-3.434 10.045-8.2 11.673-.608.121-.824-.263-.824-.59.0-.406.014-1.73.014-3.377.0-1.147-.384-1.896-.814-2.278 2.672-.304 5.48-1.345 5.48-6.07.0-1.344-.466-2.441-1.236-3.303.125-.31.536-1.562-.118-3.257.0.0-1.005-.33-3.296 1.262A11.275 11.275.0 0012 5.95a11.25 11.25.0 00-3.004.414c-2.293-1.592-3.3-1.262-3.3-1.262-.652 1.695-.24 2.946-.117 3.257-.767.862-1.236 1.959-1.236 3.303.0 4.713 2.802 5.77 5.467 6.08-.343.307-.654.85-.762 1.645-.684.315-2.422.858-3.492-1.022.0.0-.635-1.182-1.84-1.269.0.0-1.17-.015-.081.748.0.0.786.378 1.332 1.8.0.0.704 2.196 4.043 1.452.006 1.028.016 1.998.016 2.29.0.326-.22.706-.82.592C3.439 22.352.0 17.74.0 12.304.0 5.508 5.374.0 12 0"
-                  fill="currentcolor" fill-rule="nonzero"></path>
-        </svg>
-    </a>
-</header>
+        <div class="header-user">
+            <span id="__user-not-logged" class="hidden">
+                <a id="__btn-login" class="login-link">Log in</a>
+            </span>
+            <span id="__user-logged" class="hidden">
+                <span class="user-badge">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" width="14" height="14"><path fill-rule="evenodd" d="M18 10a8 8 0 1 1-16 0 8 8 0 0 1 16 0Zm-5.5-2.5a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0ZM10 12a5.99 5.99 0 0 0-4.793 2.39A6.483 6.483 0 0 0 10 16.5a6.483 6.483 0 0 0 4.793-2.11A5.99 5.99 0 0 0 10 12Z" clip-rule="evenodd"/></svg>
+                    <span id="__user-name"></span>
+                </span>
+                <span id="__user-role-badge" class="role-badge"></span>
+                <a id="__btn-logout" style="color: var(--accent-red); cursor: pointer; font-size: 0.8rem;">Logout</a>
+            </span>
+        </div>
+    </header>
 
-<nav class="bg-gradient-to-r from-violet-500 to-blue-500 py-2">
-    <div class="container mx-auto flex justify-between items-center">
-        <ul class="flex space-x-4">
-            <li><a href="./" id="__menu-home" class="text-white font-medium hover:underline">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="inline align-bottom h-6 w-6">
-                    <path fill-rule="evenodd" d="M9.293 2.293a1 1 0 0 1 1.414 0l7 7A1 1 0 0 1 17 11h-1v6a1 1 0 0 1-1 1h-2a1 1 0 0 1-1-1v-3a1 1 0 0 0-1-1H9a1 1 0 0 0-1 1v3a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-6H3a1 1 0 0 1-.707-1.707l7-7Z" clip-rule="evenodd" />
-                </svg>
+    <!-- Main Nav -->
+    <nav class="main-nav">
+        <div class="nav-tab active" data-page="ai-gateway">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M4.464 3.162A2 2 0 0 1 6.28 2h7.44a2 2 0 0 1 1.816 1.162l1.154 2.5c.09.196.14.408.14.622v1.394a3.5 3.5 0 0 1-1.138 2.587l-.354.328a3.5 3.5 0 0 1-4.14.42L10 10.068l-1.197.945a3.5 3.5 0 0 1-4.14-.42l-.354-.328A3.5 3.5 0 0 1 3.17 7.678V6.284c0-.214.05-.426.14-.622l1.154-2.5ZM3 12.135v3.515a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-3.515a4.984 4.984 0 0 1-1.835.903 5.5 5.5 0 0 1-3.024.15L10 12.638l-2.14.965a5.5 5.5 0 0 1-3.025-.15A4.984 4.984 0 0 1 3 12.135Z"/></svg>
+            AI Gateway
+        </div>
+        <div class="nav-tab" data-page="auth-demo">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 1a4.5 4.5 0 0 0-4.5 4.5V9H5a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6a2 2 0 0 0-2-2h-.5V5.5A4.5 4.5 0 0 0 10 1Zm3 8V5.5a3 3 0 1 0-6 0V9h6Z" clip-rule="evenodd"/></svg>
+            Auth Demo
+        </div>
+        <div class="nav-tab" data-page="websocket-chat">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3.43 2.524A41.29 41.29 0 0 1 10 2c2.236 0 4.43.18 6.57.524 1.437.231 2.43 1.49 2.43 2.902v5.148c0 1.413-.993 2.67-2.43 2.902a41.102 41.102 0 0 1-3.55.414c-.28.02-.521.18-.643.413l-1.712 3.293a.75.75 0 0 1-1.33 0l-1.713-3.293a.783.783 0 0 0-.642-.413 41.108 41.108 0 0 1-3.55-.414C1.993 13.245 1 11.986 1 10.574V5.426c0-1.413.993-2.67 2.43-2.902Z" clip-rule="evenodd"/></svg>
+            Chat (WebSockets)
+        </div>
+    </nav>
 
-                Home
-            </a></li>
-        </ul>
-        <span class="text-white">
-            <span id="__menu-not-logged-in"><a id="__menu-login" class="hover:underline" href="#">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="inline align-bottom h-6 w-6">
-              <path fill-rule="evenodd" d="M18.685 19.097A9.723 9.723 0 0 0 21.75 12c0-5.385-4.365-9.75-9.75-9.75S2.25 6.615 2.25 12a9.723 9.723 0 0 0 3.065 7.097A9.716 9.716 0 0 0 12 21.75a9.716 9.716 0 0 0 6.685-2.653Zm-12.54-1.285A7.486 7.486 0 0 1 12 15a7.486 7.486 0 0 1 5.855 2.812A8.224 8.224 0 0 1 12 20.25a8.224 8.224 0 0 1-5.855-2.438ZM15.75 9a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0Z" clip-rule="evenodd" />
-            </svg> Login
-            </a></span>
-            <span id="__menu-logged-in">Hi,
-                <a id="__menu-profile" href="#profile" class="hover:underline">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="inline align-bottom h-6 w-6">
-                      <path fill-rule="evenodd" d="M18.685 19.097A9.723 9.723 0 0 0 21.75 12c0-5.385-4.365-9.75-9.75-9.75S2.25 6.615 2.25 12a9.723 9.723 0 0 0 3.065 7.097A9.716 9.716 0 0 0 12 21.75a9.716 9.716 0 0 0 6.685-2.653Zm-12.54-1.285A7.486 7.486 0 0 1 12 15a7.486 7.486 0 0 1 5.855 2.812A8.224 8.224 0 0 1 12 20.25a8.224 8.224 0 0 1-5.855-2.438ZM15.75 9a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0Z" clip-rule="evenodd" />
-                    </svg>
-                    <span id="__menu-profile-username">{{ username }}</span></a> <span class="text-blue-100">&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;</span>
-                <a id="__menu-logout" href="#" class="text-red-800 hover:underline">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="inline align-middle h-4 w-4">
-                      <path fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14Zm2.78-4.22a.75.75 0 0 1-1.06 0L8 9.06l-1.72 1.72a.75.75 0 1 1-1.06-1.06L6.94 8 5.22 6.28a.75.75 0 0 1 1.06-1.06L8 6.94l1.72-1.72a.75.75 0 1 1 1.06 1.06L9.06 8l1.72 1.72a.75.75 0 0 1 0 1.06Z" clip-rule="evenodd" />
-                    </svg>
+    <!-- Content -->
+    <div class="content">
 
-                    Logout
-                </a></span>
-        </span>
-    </div>
-</nav>
+        <!-- ==================== AI GATEWAY PAGE ==================== -->
+        <div id="page-ai-gateway" class="page active">
 
-<div class="container mx-auto py-4 px-3">
-
-
-    <div class="w-full" id="__alert-not-logged-in">
-        <div class="rounded-md bg-yellow-50 p-4 my-4">
-            <div class="flex">
-                <div class="shrink-0">
-                    <svg class="size-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true" data-slot="icon">
-                        <path fill-rule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495ZM10 5a.75.75 0 0 1 .75.75v3.5a.75.75 0 0 1-1.5 0v-3.5A.75.75 0 0 1 10 5Zm0 9a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z" clip-rule="evenodd" />
-                    </svg>
+            <!-- Use case selector -->
+            <div class="usecase-grid" id="__usecase-grid">
+                <div class="usecase-card active" data-usecase="llm-routing" style="--card-accent: var(--accent-blue)">
+                    <div class="card-icon" style="background: var(--glow-blue); color: var(--accent-blue);">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" width="18" height="18"><path fill-rule="evenodd" d="M2 4.75A.75.75 0 0 1 2.75 4h14.5a.75.75 0 0 1 0 1.5H2.75A.75.75 0 0 1 2 4.75Zm0 10.5a.75.75 0 0 1 .75-.75h7.5a.75.75 0 0 1 0 1.5h-7.5a.75.75 0 0 1-.75-.75ZM2 10a.75.75 0 0 1 .75-.75h14.5a.75.75 0 0 1 0 1.5H2.75A.75.75 0 0 1 2 10Z" clip-rule="evenodd"/></svg>
+                    </div>
+                    <h4>LLM Routing</h4>
+                    <p>Route to Gemini, OpenAI, or Anthropic via header</p>
+                    <span class="usecase-tag" style="background: var(--glow-blue); color: var(--accent-blue);">No auth</span>
                 </div>
-                <div class="ml-3">
-                    <p class="text-sm text-yellow-700"><strong>You are not logged in!</strong> Please <a id="__section-login" href="#" class="underline">log in</a> to send authenticated requests to your server.</p>
-                    <p class="mt-4 text-sm text-yellow-700">The default credentials in the Playground's Keycloak are <em>moderator:moderator</em></p>
+
+                <div class="usecase-card" data-usecase="llm-conditional" style="--card-accent: var(--accent-green)">
+                    <div class="card-icon" style="background: var(--glow-green); color: var(--accent-green);">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" width="18" height="18"><path d="M10 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM3.465 14.493a1.23 1.23 0 0 0 .41 1.412A9.957 9.957 0 0 0 10 18c2.31 0 4.438-.784 6.131-2.1.43-.333.604-.903.408-1.41a7.002 7.002 0 0 0-13.074.003Z"/></svg>
+                    </div>
+                    <h4>Role-Based Routing</h4>
+                    <p>JWT role determines which LLM model responds</p>
+                    <span class="usecase-tag" style="background: var(--glow-green); color: var(--accent-green);">JWT required</span>
+                </div>
+
+                <div class="usecase-card" data-usecase="llm-quota" style="--card-accent: var(--accent-amber)">
+                    <div class="card-icon" style="background: var(--glow-amber); color: var(--accent-amber);">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" width="18" height="18"><path fill-rule="evenodd" d="M1 4a1 1 0 0 1 1-1h16a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V4Zm12 4a3 3 0 1 1-6 0 3 3 0 0 1 6 0ZM4 9a1 1 0 1 0 0-2 1 1 0 0 0 0 2Zm13-1a1 1 0 1 1-2 0 1 1 0 0 1 2 0ZM1.75 14.5a.75.75 0 0 0 0 1.5c4.417 0 8.693.603 12.749 1.73 1.111.309 2.251-.512 2.251-1.696v-.784a.75.75 0 0 0-1.5 0v.784a.272.272 0 0 1-.35.25A49.043 49.043 0 0 0 1.75 14.5Z" clip-rule="evenodd"/></svg>
+                    </div>
+                    <h4>Token Quotas</h4>
+                    <p>Per-user token budget enforcement via Redis</p>
+                    <span class="usecase-tag" style="background: var(--glow-amber); color: var(--accent-amber);">JWT required</span>
+                </div>
+
+                <div class="usecase-card" data-usecase="guardrail-deterministic" style="--card-accent: var(--accent-red)">
+                    <div class="card-icon" style="background: var(--glow-red); color: var(--accent-red);">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" width="18" height="18"><path fill-rule="evenodd" d="M10 1a4.5 4.5 0 0 0-4.5 4.5V9H5a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6a2 2 0 0 0-2-2h-.5V5.5A4.5 4.5 0 0 0 10 1Zm3 8V5.5a3 3 0 1 0-6 0V9h6Z" clip-rule="evenodd"/></svg>
+                    </div>
+                    <h4>Pattern Guardrail</h4>
+                    <p>Block credit cards, passwords via regex</p>
+                    <span class="usecase-tag" style="background: var(--glow-red); color: var(--accent-red);">No auth</span>
+                </div>
+
+                <div class="usecase-card" data-usecase="guardrail-intelligent" style="--card-accent: var(--accent-violet)">
+                    <div class="card-icon" style="background: var(--glow-violet); color: var(--accent-violet);">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" width="18" height="18"><path d="M10 2a.75.75 0 0 1 .75.75v1.5a.75.75 0 0 1-1.5 0v-1.5A.75.75 0 0 1 10 2Zm0 13a.75.75 0 0 1 .75.75v1.5a.75.75 0 0 1-1.5 0v-1.5A.75.75 0 0 1 10 15Zm-6.657-4.343a.75.75 0 0 1 0-1.06l1.06-1.061a.75.75 0 1 1 1.061 1.06l-1.06 1.061a.75.75 0 0 1-1.061 0Zm11.314-3.536a.75.75 0 0 1 0-1.06l1.06-1.061a.75.75 0 0 1 1.061 1.06l-1.06 1.06a.75.75 0 0 1-1.061 0ZM10 6.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7Z"/></svg>
+                    </div>
+                    <h4>AI Guardrail</h4>
+                    <p>Prompt Guard 2 22M blocks injections</p>
+                    <span class="usecase-tag" style="background: var(--glow-violet); color: var(--accent-violet);">Sequential proxy</span>
+                </div>
+            </div>
+
+            <!-- Active use case panel -->
+            <div id="__ai-panel" class="fade-in">
+                <!-- Dynamically populated by JS -->
+            </div>
+        </div>
+
+        <!-- ==================== AUTH DEMO PAGE ==================== -->
+        <div id="page-auth-demo" class="page">
+            <div class="usecase-grid" id="__auth-usecase-grid" style="grid-template-columns: repeat(4, 1fr);">
+                <div class="usecase-card active" data-auth-usecase="public-private" style="--card-accent: var(--accent-green)">
+                    <div class="card-icon" style="background: var(--glow-green); color: var(--accent-green);">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" width="18" height="18"><path d="M12.232 4.232a2.5 2.5 0 0 1 3.536 3.536l-1.225 1.224a.75.75 0 0 0 1.061 1.06l1.224-1.224a4 4 0 0 0-5.656-5.656l-3 3a4 4 0 0 0 .225 5.865.75.75 0 0 0 .977-1.138 2.5 2.5 0 0 1-.142-3.667l3-3Z"/><path d="M11.603 7.963a.75.75 0 0 0-.977 1.138 2.5 2.5 0 0 1 .142 3.667l-3 3a2.5 2.5 0 0 1-3.536-3.536l1.225-1.224a.75.75 0 0 0-1.061-1.06l-1.224 1.224a4 4 0 1 0 5.656 5.656l3-3a4 4 0 0 0-.225-5.865Z"/></svg>
+                    </div>
+                    <h4>Public vs Private</h4>
+                    <p>Compare open and JWT-protected endpoints</p>
+                    <span class="usecase-tag" style="background: var(--glow-green); color: var(--accent-green);">JWT</span>
+                </div>
+                <div class="usecase-card" data-auth-usecase="api-key" style="--card-accent: var(--accent-amber)">
+                    <div class="card-icon" style="background: var(--glow-amber); color: var(--accent-amber);">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" width="18" height="18"><path fill-rule="evenodd" d="M8 7a5 5 0 1 1 3.61 4.804l-1.903 1.903A1 1 0 0 1 9 14H8v1a1 1 0 0 1-1 1H6v1a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1v-1.586a1 1 0 0 1 .293-.707l5.964-5.964A5.014 5.014 0 0 1 8 7Zm5-3a.75.75 0 0 0 0 1.5A1.5 1.5 0 0 1 14.5 7 .75.75 0 0 0 16 7a3 3 0 0 0-3-3Z" clip-rule="evenodd"/></svg>
+                    </div>
+                    <h4>API Key Auth</h4>
+                    <p>Authenticate with static API keys</p>
+                    <span class="usecase-tag" style="background: var(--glow-amber); color: var(--accent-amber);">Enterprise</span>
+                </div>
+                <div class="usecase-card" data-auth-usecase="basic-auth" style="--card-accent: var(--accent-blue)">
+                    <div class="card-icon" style="background: var(--glow-blue); color: var(--accent-blue);">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" width="18" height="18"><path fill-rule="evenodd" d="M10 1a4.5 4.5 0 0 0-4.5 4.5V9H5a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6a2 2 0 0 0-2-2h-.5V5.5A4.5 4.5 0 0 0 10 1Zm3 8V5.5a3 3 0 1 0-6 0V9h6Z" clip-rule="evenodd"/></svg>
+                    </div>
+                    <h4>Basic Auth</h4>
+                    <p>HTTP Basic authentication with wildcard proxy</p>
+                    <span class="usecase-tag" style="background: var(--glow-blue); color: var(--accent-blue);">Wildcard</span>
+                </div>
+                <div class="usecase-card" data-auth-usecase="gdpr-policy" style="--card-accent: var(--accent-violet)">
+                    <div class="card-icon" style="background: var(--glow-violet); color: var(--accent-violet);">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" width="18" height="18"><path fill-rule="evenodd" d="M10 1c-1.828 0-3.623.149-5.371.435a.75.75 0 0 0-.629.74v.659c0 4.589 2.472 8.833 6.466 11.109a.75.75 0 0 0 .737.003A13.065 13.065 0 0 0 17.75 2.834v-.659a.75.75 0 0 0-.63-.74A49.17 49.17 0 0 0 10 1Z" clip-rule="evenodd"/></svg>
+                    </div>
+                    <h4>GDPR Policy</h4>
+                    <p>Cookie-based security policy enforcement</p>
+                    <span class="usecase-tag" style="background: var(--glow-violet); color: var(--accent-violet);">CEL</span>
+                </div>
+            </div>
+            <div id="__auth-panel" class="fade-in"></div>
+        </div>
+
+        <!-- ==================== WEBSOCKET CHAT PAGE ==================== -->
+        <div id="page-websocket-chat" class="page">
+            <div class="ai-layout">
+                <div>
+                    <div class="panel" style="height: 100%; display: flex; flex-direction: column;">
+                        <div class="panel-header" style="flex-direction: column; align-items: stretch;">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <h3>WebSocket Chat</h3>
+                                <div style="display: flex; gap: 0.4rem; align-items: center;">
+                                    <span id="__ws-status" class="status-pill status-warning"><span class="dot"></span>Disconnected</span>
+                                </div>
+                            </div>
+                            <div class="features-row" style="margin-top: 0.5rem;">
+                                <span class="feature-tag">WebSocket proxy</span>
+                                <span class="feature-tag">Enterprise</span>
+                                <span class="feature-tag">bidirectional</span>
+                            </div>
+                        </div>
+                        <div class="panel-body" style="flex: 1; display: flex; flex-direction: column;">
+                            <p class="panel-description">Real-time bidirectional communication through KrakenD's WebSocket proxy. Messages are relayed between clients via the gateway.</p>
+                            <div class="form-group">
+                                <label class="form-label">Room</label>
+                                <div style="display: flex; gap: 0.5rem;">
+                                    <input id="__ws-room" class="form-input" value="playground" style="flex: 1;" placeholder="Room name">
+                                    <button id="__ws-connect" class="btn btn-primary">Connect</button>
+                                </div>
+                            </div>
+                            <div id="__ws-messages" style="flex: 1; min-height: 300px; max-height: 400px; overflow-y: auto; background: var(--bg-input); border: 1px solid var(--border); border-radius: 6px; padding: 0.75rem; margin-bottom: 0.75rem; font-family: var(--font-mono); font-size: 0.8rem; line-height: 1.6;">
+                                <div style="color: var(--text-muted); text-align: center; padding: 2rem 0;">Click Connect to join a chat room.</div>
+                            </div>
+                            <div style="display: flex; gap: 0.5rem;">
+                                <input id="__ws-input" class="form-input" placeholder="Type a message and press Enter..." disabled style="flex: 1;">
+                                <button id="__ws-send" class="btn btn-primary" disabled>Send</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <div class="panel">
+                        <div class="panel-header">
+                            <h3>About this demo</h3>
+                            <span class="endpoint-badge">/chat/ws/{room}</span>
+                        </div>
+                        <div class="panel-body">
+                            <p class="panel-description">KrakenD proxies WebSocket connections to backend services, enabling real-time features while maintaining gateway-level control.</p>
+                            <div style="margin-bottom: 1rem;">
+                                <h4 style="font-size: 0.85rem; font-weight: 600; margin-bottom: 0.5rem;">How it works</h4>
+                                <ol style="font-size: 0.82rem; color: var(--text-secondary); line-height: 1.8; padding-left: 1.2rem;">
+                                    <li>Client opens WebSocket to <code style="font-family: var(--font-mono); color: var(--accent-cyan); background: var(--bg-input); padding: 0.1rem 0.3rem; border-radius: 3px;">ws://gateway:8080/chat/ws/{room}</code></li>
+                                    <li>KrakenD upgrades the connection and proxies to the chat backend</li>
+                                    <li>Messages flow bidirectionally through the gateway</li>
+                                    <li>Open multiple browser tabs to see real-time messaging</li>
+                                </ol>
+                            </div>
+                            <div>
+                                <h4 style="font-size: 0.85rem; font-weight: 600; margin-bottom: 0.5rem;">Configuration highlights</h4>
+                                <div class="response-content" style="max-height: 200px;">
+                                    <pre><code class="language-json">{
+  "endpoint": "/chat/ws/{room}",
+  "input_headers": ["*"],
+  "backend": [{
+    "url_pattern": "/ws/{room}",
+    "host": ["ws://chat:8888"],
+    "encoding": "no-op",
+    "extra_config": {
+      "backend/websocket": {
+        "input_headers": ["*"]
+      }
+    }
+  }]
+}</code></pre>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
-
-    <div class="w-full hidden" id="__alert-logged-in">
-        <div class="rounded-md bg-blue-50 p-4 my-4">
-            <div class="flex">
-                <div class="shrink-0">
-                    <svg class="size-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true" data-slot="icon">
-                        <path fill-rule="evenodd" d="M18 10a8 8 0 1 1-16 0 8 8 0 0 1 16 0Zm-7-4a1 1 0 1 1-2 0 1 1 0 0 1 2 0ZM9 9a.75.75 0 0 0 0 1.5h.253a.25.25 0 0 1 .244.304l-.459 2.066A1.75 1.75 0 0 0 10.747 15H11a.75.75 0 0 0 0-1.5h-.253a.25.25 0 0 1-.244-.304l.459-2.066A1.75 1.75 0 0 0 9.253 9H9Z" clip-rule="evenodd" />
-                    </svg>
-                </div>
-                <div class="ml-3 flex-1 md:flex md:justify-between">
-                    <p class="text-sm text-blue-700">You are logged in! You can now send authenticated requests to your server.</p>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div id="__section-ping" class="w-full">
-        <h3 class="text-lg font-semibold mb-3">Make a Call to the Server</h3>
-        <p class="mb-3">Log in to call a private (secured) server endpoint.</p>
-        <button id="__btn-ping-public" class="bg-gradient-to-r from-violet-500 to-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="h-6 w-6 inline align-bottom">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9.004 9.004 0 0 0 8.716-6.747M12 21a9.004 9.004 0 0 1-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 0 1 7.843 4.582M12 3a8.997 8.997 0 0 0-7.843 4.582m15.686 0A11.953 11.953 0 0 1 12 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0 1 21 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0 1 12 16.5c-3.162 0-6.133-.815-8.716-2.247m0 0A9.015 9.015 0 0 1 3 12c0-1.605.42-3.113 1.157-4.418" />
-            </svg>
-
-            Call Public
-        </button>
-        <button id="__btn-ping-private" class="bg-gray-300 text-gray-600 py-2 px-4 rounded ml-2 disabled">
-            <svg id="__icon-lock-closed" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="h-6 w-6 inline align-bottom">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
-            </svg>
-
-            <svg id="__icon-lock-opened" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="h-6 w-6 inline align-bottom hidden">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 10.5V6.75a4.5 4.5 0 1 1 9 0v3.75M3.75 21.75h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H3.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
-            </svg>
-            Call Private
-        </button>
-
-        <div id="__call-response" class="w-full hidden">
-            <h4 class="text-lg font-semibold mb-3">Response</h4>
-            <pre class="bg-gray-800 text-white p-4 rounded"><code class="language-json"></code></pre>
-        </div>
 
     </div>
 
-    <div id="__section-profile" class="w-full hidden">
-        <h3 class="text-lg font-semibold mb-3">Profile</h3>
-        <table class="w-full text-left border-collapse mb-4">
-            <tbody></tbody>
-        </table>
-        <h5 class="text-md font-semibold">Full profile</h5>
-        <pre class="bg-gray-800 text-white p-4 rounded"><code class="language-json"></code></pre>
-    </div>
-
-</div>
-<hr class="my-8 border-gray-300">
-
-<footer class="text-center text-gray-600">
-    <p>Made with <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="text-red-500 inline align-bottom h-5 w-5">
-        <path d="m9.653 16.915-.005-.003-.019-.01a20.759 20.759 0 0 1-1.162-.682 22.045 22.045 0 0 1-2.582-1.9C4.045 12.733 2 10.352 2 7.5a4.5 4.5 0 0 1 8-2.828A4.5 4.5 0 0 1 18 7.5c0 2.852-2.044 5.233-3.885 6.82a22.049 22.049 0 0 1-3.744 2.582l-.019.01-.005.003h-.002a.739.739 0 0 1-.69.001l-.002-.001Z" />
-    </svg>
-        by KrakenD team</p>
-    <p>
-        <a href="https://www.krakend.io/" target="_blank" class="hover:underline">krakend.io</a> | <a href="https://www.krakend.io/docs/enterprise/authorization/" target="_blank" class="hover:underline">Auth Docs</a> | <a href="https://www.krakend.io/contact-sales/" target="_blank" class="hover:underline">Contact with sales</a>
-    </p>
-</footer>
+    <footer style="text-align: center; padding: 2rem; color: var(--text-muted); font-size: 0.8rem; border-top: 1px solid var(--border);">
+        <p>KrakenD Enterprise Playground &mdash;
+            <a href="https://www.krakend.io/" target="_blank" style="color: var(--accent-blue); text-decoration: none;">krakend.io</a> |
+            <a href="https://www.krakend.io/docs/enterprise/ai-gateway/" target="_blank" style="color: var(--accent-blue); text-decoration: none;">AI Gateway Docs</a>
+        </p>
+    </footer>
 </body>
-
 </html>
