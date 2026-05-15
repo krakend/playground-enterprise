@@ -433,7 +433,7 @@
         }
     },
     {
-        "@comment": "Internal aggregation endpoint feeding the KYC LEGACY tool (verbose JSON output of the REST entity + GraphQL ownership + SOAP sanctions merge).",
+        "@comment": "Internal: Aggregation endpoint feeding the KYC LEGACY tool (verbose JSON output of the REST entity + GraphQL ownership + SOAP sanctions merge).",
         "endpoint": "/__kyc/aggregate/{lei}",
         "method": "GET",
         "timeout": "15s",
@@ -479,7 +479,7 @@
         ]
     },
     {
-        "@comment": "Internal TOON-formatted aggregator feeding the KYC TOON MCP tool. Same 3 backends as /__kyc/aggregate, plus a Lua post-merge transform that rewrites the response into a single `content` field carrying compact TOON text (LLM-optimized).",
+        "@comment": "Internal: TOON-formatted aggregator feeding the KYC TOON MCP tool. Same 3 backends as /__kyc/aggregate, plus a Lua post-merge transform that rewrites the response into a single `content` field carrying compact TOON text (LLM-optimized).",
         "endpoint": "/__kyc/aggregate-toon/{lei}",
         "method": "GET",
         "timeout": "15s",

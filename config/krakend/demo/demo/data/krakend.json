@@ -116,7 +116,7 @@
       "backend": [
         {
           "host": [
-            "http://fake_api"
+            "http://mocked_apis:8091"
           ],
           "url_pattern": "/user/1.json",
           "allow": [
@@ -247,7 +247,7 @@
       "backend": [
         {
           "host": [
-            "http://fake_api"
+            "http://mocked_apis:8091"
           ],
           "url_pattern": "/hotels/1.json",
           "allow": [
@@ -256,7 +256,7 @@
         },
         {
           "host": [
-            "http://fake_api"
+            "http://mocked_apis:8091"
           ],
           "url_pattern": "/destinations/{resp0_destination_id}.json"
         }
@@ -285,7 +285,7 @@
       "backend": [
         {
           "host": [
-            "http://fake_api"
+            "http://mocked_apis:8091"
           ],
           "url_pattern": "/hotels/1.json"
         }
@@ -306,13 +306,13 @@
       }
     },
     {
-      "@comment": "Feature: Authentication and authorization",
-      "endpoint": "/auth/*",
+      "@comment": "Utility: Interactive demos SPA fronted by the gateway. The /interactive-demo backend serves the playground SPA (AI Gateway, Agentic Gateway/MCP, Auth Demo, WebSocket Chat) and its own backend endpoints under the same path.",
+      "endpoint": "/interactive-demo/*",
       "output_encoding": "no-op",
       "backend": [
         {
           "host": [
-            "http://web:3000/"
+            "http://interactive-demo:3000/"
           ],
           "url_pattern": "/",
           "encoding": "no-op"
@@ -320,16 +320,46 @@
       ],
       "extra_config": {
         "documentation/openapi": {
-          "description": "This endpoint offers a web interface to present auth/authz flow with Keycloack.",
-          "summary": "Full example for JWT based authentication / authorization with Keycloack",
+          "description": "Serves the four-tab playground SPA and its backend endpoints under /interactive-demo.",
+          "summary": "Interactive demos SPA proxied by the gateway",
           "tags": [
-            "Authentication & Security"
+            "Demo UI"
           ]
         },
         "documentation/postman": {
-          "description": "Interactive web interface demonstrating complete JWT authentication and authorization flow using Keycloak",
-          "folder": "/Authentication & Security",
-          "name": "JWT Auth Demo Web Interface (Keycloak)"
+          "description": "Single-page app proxied through KrakenD that hosts the four playground demos (AI Gateway, Agentic Gateway/MCP, Auth Demo, WebSocket Chat) plus its backend endpoints (POST /api/chat with SSE streaming, GET /api/health, WS /ws/{room}).",
+          "folder": "/Demo UI",
+          "name": "Interactive demos SPA"
+        }
+      }
+    },
+    {
+      "@comment": "Utility: Interactive demos POST proxy. Used by the Agentic Gateway (MCP) chat (POST /api/chat returns an SSE stream that may run for tens of seconds while Claude is calling MCP tools), so the timeout is bumped well above the 3s service default.",
+      "endpoint": "/interactive-demo/*",
+      "method": "POST",
+      "output_encoding": "no-op",
+      "timeout": "120s",
+      "backend": [
+        {
+          "host": [
+            "http://interactive-demo:3000/"
+          ],
+          "url_pattern": "/",
+          "encoding": "no-op"
+        }
+      ],
+      "extra_config": {
+        "documentation/openapi": {
+          "description": "Proxies POST requests to the interactive-demo backend. Hosts the Agentic Gateway (MCP) chat SSE endpoint at /api/chat.",
+          "summary": "Interactive demos POST proxy",
+          "tags": [
+            "/AI & MCP Server"
+          ]
+        },
+        "documentation/postman": {
+          "description": "POST proxy for the interactive-demo backend. Currently powers the Agentic Gateway (MCP) chat at POST /api/chat (SSE streaming, Anthropic Claude + KrakenD MCP tools).",
+          "folder": "/Demo UI",
+          "name": "Interactive demos backend (POST)"
         }
       }
     },
@@ -339,7 +369,7 @@
       "backend": [
         {
           "host": [
-            "http://fake_api"
+            "http://mocked_apis:8091"
           ],
           "url_pattern": "/user/1.json"
         }
@@ -416,7 +446,7 @@
       "backend": [
         {
           "host": [
-            "http://fake_api"
+            "http://mocked_apis:8091"
           ],
           "url_pattern": "/user/1.json"
         }
@@ -457,7 +487,7 @@
       "backend": [
         {
           "host": [
-            "http://fake_api"
+            "http://mocked_apis:8091"
           ],
           "url_pattern": "/token.json"
         }
@@ -524,7 +554,7 @@
       "backend": [
         {
           "host": [
-            "http://fake_api"
+            "http://mocked_apis:8091"
           ],
           "url_pattern": "/"
         }
@@ -553,7 +583,7 @@
       "backend": [
         {
           "host": [
-            "http://fake_api"
+            "http://mocked_apis:8091"
           ],
           "url_pattern": "/shop/campaigns.json",
           "allow": [
@@ -562,7 +592,7 @@
         },
         {
           "host": [
-            "http://fake_api"
+            "http://mocked_apis:8091"
           ],
           "url_pattern": "/shop/products.json",
           "allow": [
@@ -705,7 +735,7 @@
       }
     },
     {
-      "@comment": "EE only feature: Web Server - Static content",
+      "@comment": "Utility: Static doc site (Web Server feature, EE only)",
       "endpoint": "/demo/*",
       "output_encoding": "no-op",
       "backend": [
@@ -735,6 +765,40 @@
           "description": "Serves static HTML/CSS/JS files from the demo directory for the playground demo website",
           "folder": "/Utilities",
           "name": "Serve Static Website Files"
+        }
+      }
+    },
+    {
+      "@comment": "Utility: Static slide decks (sales / talks). Lives outside ./demo/ so the demo-site builder doesn't overwrite them on regeneration.",
+      "endpoint": "/slides/*",
+      "output_encoding": "no-op",
+      "backend": [
+        {
+          "host": [
+            "http://localhost:8080"
+          ],
+          "url_pattern": "/",
+          "encoding": "no-op",
+          "extra_config": {
+            "backend/static-filesystem": {
+              "directory_listing": false,
+              "path": "./slides/"
+            }
+          }
+        }
+      ],
+      "extra_config": {
+        "documentation/openapi": {
+          "description": "Serves HTML/CSS/JS slide decks from config/krakend/slides/. Kept outside the /demo/ tree so the demo-site builder never overwrites them.",
+          "summary": "Static slide deck server",
+          "tags": [
+            "Utilities"
+          ]
+        },
+        "documentation/postman": {
+          "description": "Serves static slide decks (HTML + assets) from config/krakend/slides/. Each subfolder is a separate deck.",
+          "folder": "/Utilities",
+          "name": "Serve Slide Decks"
         }
       }
     },
@@ -863,7 +927,7 @@
         },
         {
           "host": [
-            "http://fake_api"
+            "http://mocked_apis:8091"
           ],
           "url_pattern": "/hotels/1.json",
           "group": "hotels"
@@ -950,7 +1014,7 @@
       "backend": [
         {
           "host": [
-            "ws://chat:8888"
+            "ws://interactive-demo:3000"
           ],
           "url_pattern": "/ws/{room}",
           "disable_host_sanitize": true
@@ -989,40 +1053,12 @@
       }
     },
     {
-      "@comment": "EE only feature: WebSockets (chat example web interface)",
-      "endpoint": "/chat",
-      "output_encoding": "no-op",
-      "backend": [
-        {
-          "host": [
-            "http://chat:8888"
-          ],
-          "url_pattern": "/",
-          "encoding": "no-op"
-        }
-      ],
-      "extra_config": {
-        "documentation/openapi": {
-          "description": "Web-based user interface for testing and interacting with WebSocket chat functionality in the browser",
-          "summary": "WebSocket chat web interface",
-          "tags": [
-            "Real-time Communication"
-          ]
-        },
-        "documentation/postman": {
-          "description": "Web interface for testing WebSocket chat functionality",
-          "folder": "/Real-time Communication",
-          "name": "WebSocket Chat Web Interface"
-        }
-      }
-    },
-    {
       "@comment": "EE only feature: Wildcard to our fake API, open",
       "endpoint": "/fake-api/*",
       "backend": [
         {
           "host": [
-            "http://fake_api"
+            "http://mocked_apis:8091"
           ],
           "url_pattern": "/"
         }
@@ -1051,7 +1087,7 @@
       "backend": [
         {
           "host": [
-            "http://fake_api"
+            "http://mocked_apis:8091"
           ],
           "url_pattern": "/"
         }
@@ -1133,6 +1169,120 @@
       }
     },
     {
+      "@comment": "Internal: Aggregation endpoint feeding the KYC LEGACY tool (verbose JSON output of the REST entity + GraphQL ownership + SOAP sanctions merge).",
+      "endpoint": "/__kyc/aggregate/{lei}",
+      "method": "GET",
+      "timeout": "15s",
+      "backend": [
+        {
+          "@comment": "REST entity registry - static JSON served by mocked_apis",
+          "host": [
+            "http://mocked_apis:8091"
+          ],
+          "url_pattern": "/kyc/entity/{lei}.json",
+          "encoding": "safejson",
+          "group": "entity"
+        },
+        {
+          "@comment": "GraphQL ownership API on mocked_apis",
+          "host": [
+            "http://mocked_apis:8091"
+          ],
+          "url_pattern": "/graphql",
+          "encoding": "json",
+          "target": "data.ownership",
+          "group": "ownership",
+          "extra_config": {
+            "backend/graphql": {
+              "query": "query GetOwnership($lei: ID!) { ownership(lei: $lei) { chain { level name lei jurisdiction percentage } ubos { name control_percentage country } } }",
+              "type": "query",
+              "variables": {
+                "lei": "{lei}"
+              }
+            }
+          }
+        },
+        {
+          "@comment": "SOAP sanctions screening on mocked_apis",
+          "host": [
+            "http://mocked_apis:8091"
+          ],
+          "url_pattern": "/soap/sanctions",
+          "method": "POST",
+          "encoding": "xml",
+          "target": "Envelope.Body.ScreenResponse",
+          "group": "sanctions",
+          "extra_config": {
+            "backend/soap": {
+              "path": "./extended/templates/soap_request_sanctions.tmpl.xml"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "@comment": "Internal: TOON-formatted aggregator feeding the KYC TOON MCP tool. Same 3 backends as /__kyc/aggregate, plus a Lua post-merge transform that rewrites the response into a single `content` field carrying compact TOON text (LLM-optimized).",
+      "endpoint": "/__kyc/aggregate-toon/{lei}",
+      "method": "GET",
+      "timeout": "15s",
+      "backend": [
+        {
+          "@comment": "REST entity registry",
+          "host": [
+            "http://mocked_apis:8091"
+          ],
+          "url_pattern": "/kyc/entity/{lei}.json",
+          "encoding": "safejson",
+          "group": "entity"
+        },
+        {
+          "@comment": "GraphQL ownership API",
+          "host": [
+            "http://mocked_apis:8091"
+          ],
+          "url_pattern": "/graphql",
+          "encoding": "json",
+          "target": "data.ownership",
+          "group": "ownership",
+          "extra_config": {
+            "backend/graphql": {
+              "query": "query GetOwnership($lei: ID!) { ownership(lei: $lei) { chain { level name lei jurisdiction percentage } ubos { name control_percentage country } } }",
+              "type": "query",
+              "variables": {
+                "lei": "{lei}"
+              }
+            }
+          }
+        },
+        {
+          "@comment": "SOAP sanctions screening",
+          "host": [
+            "http://mocked_apis:8091"
+          ],
+          "url_pattern": "/soap/sanctions",
+          "method": "POST",
+          "encoding": "xml",
+          "target": "Envelope.Body.ScreenResponse",
+          "group": "sanctions",
+          "extra_config": {
+            "backend/soap": {
+              "path": "./extended/templates/soap_request_sanctions.tmpl.xml"
+            }
+          }
+        }
+      ],
+      "extra_config": {
+        "modifier/lua-proxy": {
+          "allow_open_libs": false,
+          "live": true,
+          "post": "to_toon_response()",
+          "sources": [
+            "/etc/krakend/lua/to_toon.lua"
+          ]
+        }
+      }
+    },
+    {
       "@comment": "EE only feature: MCP Server - Entrypoint for Model Context Protocol",
       "endpoint": "/mcp",
       "method": "POST",
@@ -1147,17 +1297,17 @@
       ],
       "extra_config": {
         "ai/mcp": {
-          "server_name": "country-data-aggregator"
+          "server_name": "kyc-dossier-aggregator"
         },
         "documentation/openapi": {
-          "description": "Model Context Protocol (MCP) server exposing country information aggregation tools. Accepts MCP protocol requests and routes them to appropriate handlers that aggregate REST and GraphQL APIs.",
-          "summary": "MCP Server entrypoint for country data tools",
+          "description": "Model Context Protocol (MCP) server exposing KYC counterparty risk dossier aggregation tools. Accepts MCP protocol requests and routes them to handlers that aggregate REST entity data, GraphQL ownership chains, and SOAP sanctions screening.",
+          "summary": "MCP Server entrypoint for KYC dossier tools",
           "tags": [
             "AI Integration"
           ]
         },
         "documentation/postman": {
-          "description": "Model Context Protocol server endpoint that exposes country data aggregation tools for AI/LLM integration",
+          "description": "Model Context Protocol server endpoint that exposes KYC counterparty risk dossier tools for AI/LLM integration",
           "folder": "/AI Integration",
           "name": "MCP Server Entrypoint (AI Gateway)"
         }
@@ -1641,137 +1791,98 @@
     "ai/mcp": {
       "servers": [
         {
-          "instructions": "Provides unified country data by aggregating REST and GraphQL APIs. Use this to retrieve comprehensive information about countries including geography, demographics, and cultural data.",
-          "name": "country-data-aggregator",
+          "instructions": "Provides KYC (Know-Your-Customer) counterparty risk dossiers by aggregating entity identification (REST), ownership chain (GraphQL), and sanctions screening (SOAP) for a given Legal Entity Identifier (LEI). Two tools are available: get_kyc_dossier returns a compact TOON-formatted dossier optimized for LLM consumption, while get_kyc_dossier_legacy returns verbose JSON for comparison purposes.",
+          "name": "kyc-dossier-aggregator",
           "stateless": true,
-          "title": "Country Information Aggregator",
+          "title": "KYC Counterparty Risk Dossier",
           "tools": [
             {
-              "description": "Retrieves comprehensive country data by aggregating multiple public APIs (REST + GraphQL). Returns unified information including capital, population, area, languages, currency, flag, and bordering countries.",
+              "description": "Aggregates entity identification (REST), ownership chain (GraphQL), and sanctions screening (SOAP) into a compact TOON-formatted dossier optimized for LLM consumption. Use this for AI-driven counterparty risk assessment.",
               "input_schema": {
                 "properties": {
-                  "country_code": {
-                    "description": "Two-letter ISO 3166-1 alpha-2 country code (e.g., ES for Spain, FR for France, US for United States)",
-                    "pattern": "^[A-Z]{2}$",
+                  "lei": {
+                    "description": "ISO 17442 Legal Entity Identifier (20 alphanumeric chars)",
+                    "pattern": "^[A-Z0-9]{20}$",
                     "type": "string"
                   }
                 },
                 "required": [
-                  "country_code"
+                  "lei"
                 ],
                 "type": "object"
               },
-              "name": "get_country_info",
+              "name": "get_kyc_dossier",
               "output_schema": {
                 "properties": {
-                  "area_km2": {
-                    "type": [
-                      "number",
-                      "null"
-                    ]
-                  },
-                  "borders": {
-                    "items": {
-                      "type": "string"
-                    },
-                    "type": [
-                      "array",
-                      "null"
-                    ]
-                  },
-                  "capital": {
-                    "type": [
-                      "string",
-                      "null"
-                    ]
-                  },
-                  "country": {
-                    "type": [
-                      "string",
-                      "null"
-                    ]
-                  },
-                  "currency": {
-                    "type": [
-                      "string",
-                      "null"
-                    ]
-                  },
-                  "flag_emoji": {
-                    "type": [
-                      "string",
-                      "null"
-                    ]
-                  },
-                  "languages": {
-                    "items": {
-                      "type": "string"
-                    },
-                    "type": [
-                      "array",
-                      "null"
-                    ]
-                  },
-                  "native_name": {
-                    "type": [
-                      "string",
-                      "null"
-                    ]
-                  },
-                  "population": {
-                    "type": [
-                      "number",
-                      "null"
-                    ]
+                  "content": {
+                    "description": "TOON-formatted KYC dossier text — compact representation optimized for LLM token efficiency",
+                    "type": "string"
                   }
                 },
                 "type": "object"
               },
               "return_error_msg": true,
-              "title": "Get Country Information",
+              "title": "Get KYC Dossier (LLM-optimized)",
               "type": "text",
               "workflow": {
                 "backend": [
                   {
-                    "@comment": "REST Countries API - provides geography, population, borders, flags",
-                    "encoding": "safejson",
-                    "group": "rest_data",
-                    "host": [
-                      "https://restcountries.com"
-                    ],
-                    "is_collection": true,
-                    "mapping": {
-                      "collection": "countries"
-                    },
-                    "url_pattern": "/v3.1/alpha/{country_code}"
-                  },
-                  {
-                    "@comment": "GraphQL Countries API - provides currency, native name, emoji, languages",
+                    "@comment": "Calls the public TOON-formatted aggregator. The Lua transform that rewrites the merged JSON into a single TOON `content` field lives on /__kyc/aggregate-toon (multi-backend endpoint), since modifier/lua-proxy does not execute inside MCP tool workflows.",
                     "encoding": "json",
-                    "extra_config": {
-                      "backend/graphql": {
-                        "query": "query GetCountry($code: ID!) { country(code: $code) { name native capital currency emoji languages { code name } } }",
-                        "type": "query",
-                        "variables": {
-                          "code": "{country_code}"
-                        }
-                      }
-                    },
-                    "group": "graphql_data",
                     "host": [
-                      "https://countries.trevorblades.com"
+                      "http://krakend_ee:8080"
                     ],
-                    "target": "data.country",
-                    "url_pattern": "/"
+                    "url_pattern": "/__kyc/aggregate-toon/{lei}"
                   }
                 ],
-                "endpoint": "/__mcp/country-info/{country_code}",
-                "extra_config": {
-                  "modifier/jmespath": {
-                    "@comment": "Simplified merge - take first element from REST array and combine with GraphQL",
-                    "expr": "{country: rest_data.countries[0].name.common, native_name: graphql_data.native, capital: rest_data.countries[0].capital[0], population: rest_data.countries[0].population, area_km2: rest_data.countries[0].area, currency: graphql_data.currency, languages: graphql_data.languages[*].name, flag_emoji: graphql_data.emoji, borders: rest_data.countries[0].borders}"
+                "endpoint": "/__mcp/kyc-dossier/{lei}"
+              }
+            },
+            {
+              "description": "Same aggregation as get_kyc_dossier but emits verbose JSON. Provided for comparison purposes - illustrates the token cost of serving raw aggregated data to an LLM vs. a TOON-formatted dossier.",
+              "input_schema": {
+                "properties": {
+                  "lei": {
+                    "description": "ISO 17442 Legal Entity Identifier (20 alphanumeric chars)",
+                    "pattern": "^[A-Z0-9]{20}$",
+                    "type": "string"
                   }
-                }
+                },
+                "required": [
+                  "lei"
+                ],
+                "type": "object"
+              },
+              "name": "get_kyc_dossier_legacy",
+              "output_schema": {
+                "properties": {
+                  "entity": {
+                    "type": "object"
+                  },
+                  "ownership": {
+                    "type": "object"
+                  },
+                  "sanctions": {
+                    "type": "object"
+                  }
+                },
+                "type": "object"
+              },
+              "return_error_msg": true,
+              "title": "Get KYC Dossier (verbose JSON)",
+              "type": "text",
+              "workflow": {
+                "backend": [
+                  {
+                    "@comment": "Single backend pointing to the internal aggregator. Passes JSON through unchanged (no Lua transform).",
+                    "encoding": "json",
+                    "host": [
+                      "http://krakend_ee:8080"
+                    ],
+                    "url_pattern": "/__kyc/aggregate/{lei}"
+                  }
+                ],
+                "endpoint": "/__mcp/kyc-dossier-legacy/{lei}"
               }
             }
           ],
