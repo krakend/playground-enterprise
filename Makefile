@@ -1,13 +1,13 @@
 .PHONY: start start-with-ai-gateway stop restart logs compile-flexible-config check-ai-credentials elastic audit check
 
 start:
-	docker compose build web && docker compose up -d
+	docker compose build interactive-demo && docker compose up -d
 	@echo ""
 	@echo "  Playground is up!"
 	@echo ""
-	@echo "    API Gateway:       http://localhost:8080"
-	@echo "    Documented demos:  http://localhost:8080/demo/"
-	@echo "    Interactive SPA:   http://localhost:8080/spa/"
+	@echo "    API Gateway:                http://localhost:8080"
+	@echo "    Playground Index & Docs:    http://localhost:8080/demo/"
+	@echo "    Interactive demos:          http://localhost:8080/interactive-demo/"
 	@echo ""
 	@echo "  AI Gateway endpoints (/llm-*, /prompt-guardrail-*) won't work without"
 	@echo "  provider credentials and the prompt-guard container."
@@ -15,14 +15,15 @@ start:
 	@echo ""
 
 start-with-ai-gateway: check-ai-credentials compile-flexible-config
-	docker compose --profile ai-gateway build prompt-guard web
+	docker compose --profile ai-gateway build prompt-guard interactive-demo
 	docker compose --profile ai-gateway up -d
 	@echo ""
 	@echo "  Playground is up with AI Gateway enabled!"
 	@echo ""
-	@echo "    API Gateway:       http://localhost:8080"
-	@echo "    Documented demos:  http://localhost:8080/demo/"
-	@echo "    Interactive SPA:   http://localhost:8080/spa/"
+	@echo "    API Gateway:                http://localhost:8080"
+	@echo "    Playground Index & Docs:    http://localhost:8080/demo/"
+	@echo "    Interactive demos:          http://localhost:8080/interactive-demo/"
+	@echo "    AI Gateway slides:          http://localhost:8080/slides/ai-gateway/"
 	@echo ""
 
 check-ai-credentials:

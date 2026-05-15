@@ -1,0 +1,949 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>KrakenD AI Gateway — Demo Video Slides</title>
+    <meta name="viewport" content="width=1920">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Source+Code+Pro:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        :root {
+            --bg: #0b0c10;
+            --bg-2: #13151d;
+            --neutral-200: #363944;
+            --neutral-300: #a2a9be;
+            --neutral-500: #717da3;
+            --neutral-800: #030418;
+            --brand-blue: #2585ff;
+            --brand-blue-500: #4f79fd;
+            --brand-blue-700: #003bf5;
+            --brand-teal: #5de3ff;
+            --brand-yellow: #ffbe2f;
+            --brand-red: #ff4545;
+            --brand-green: #31ee8b;
+            --brand-purple: #4e00f1;
+            /* brand text gradient: lavender → blue (96deg) */
+            --gradient-lavender: linear-gradient(96deg, #ab83ff 0%, #4177fd 75%);
+            --lavender: #ab83ff;
+            --gradient-blue: #4177fd;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        html, body {
+            background: var(--bg);
+            color: #fff;
+            font-family: 'Inter', Helvetica, Arial, sans-serif;
+            font-weight: 400;
+            overflow: hidden;
+            height: 100vh;
+            width: 100vw;
+        }
+
+        .stage {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            background: var(--bg);
+            overflow: hidden;
+        }
+
+        /* Constellation pattern (brand) — offset to upper-right, like the landing */
+        .stage::before {
+            content: '';
+            position: absolute;
+            top: -10vh;
+            right: -6vw;
+            width: min(72vw, 1400px);
+            height: min(72vw, 1400px);
+            background-image: url('assets/header-bg-pattern.png');
+            background-repeat: no-repeat;
+            background-size: contain;
+            background-position: center;
+            opacity: 0.55;
+            pointer-events: none;
+            z-index: 0;
+            mix-blend-mode: screen;
+        }
+        /* Subtle vignette to anchor content focus */
+        .stage::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(ellipse at 30% 60%, rgba(11, 12, 16, 0) 0%, rgba(11, 12, 16, 0.65) 80%);
+            pointer-events: none;
+            z-index: 1;
+        }
+        .slide { z-index: 2; }
+
+        .slide {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: clamp(48px, 8vh, 120px) clamp(48px, 8vw, 160px);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 250ms ease-in-out;
+        }
+        .slide.active { opacity: 1; pointer-events: auto; }
+
+        /* Logo top-left on every slide */
+        .logo {
+            position: absolute;
+            top: clamp(24px, 4vh, 60px);
+            left: clamp(32px, 4vw, 80px);
+            height: clamp(20px, 2.4vh, 32px);
+            opacity: 0.7;
+            z-index: 4;
+        }
+        .logo img { height: 100%; }
+
+        /* ─── Typography utilities (fluid) ─── */
+        .eyebrow {
+            font-family: 'Source Code Pro', monospace;
+            font-size: clamp(12px, 1.1vw, 20px);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+            background-image: var(--gradient-lavender);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: clamp(16px, 2.5vh, 32px);
+        }
+        h1 {
+            font-size: clamp(48px, 6vw, 120px);
+            font-weight: 800;
+            line-height: 1.05;
+            letter-spacing: -0.02em;
+            text-align: center;
+            max-width: min(92vw, 1800px);
+        }
+        h2 {
+            font-size: clamp(36px, 4.5vw, 88px);
+            font-weight: 700;
+            line-height: 1.1;
+            letter-spacing: -0.02em;
+            text-align: center;
+            max-width: min(85vw, 1500px);
+        }
+        h3 {
+            font-size: clamp(28px, 3vw, 56px);
+            font-weight: 600;
+            line-height: 1.2;
+            color: var(--neutral-300);
+        }
+        p.lead {
+            font-size: clamp(18px, 2vw, 36px);
+            line-height: 1.4;
+            color: var(--neutral-300);
+            text-align: center;
+            max-width: min(80vw, 1300px);
+            margin-top: clamp(20px, 3vh, 40px);
+        }
+        .accent {
+            background-image: linear-gradient(96deg, #ab83ff 0%, #4177fd 75%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            padding-bottom: 6px;
+            display: inline-block;
+        }
+        .mono { font-family: 'Source Code Pro', monospace; }
+
+        /* ─── Title intro ─── */
+        .slide-title-intro {
+            /* Tighten horizontal padding so the long headline can breathe */
+            padding-left: clamp(24px, 3vw, 64px);
+            padding-right: clamp(24px, 3vw, 64px);
+        }
+        .slide-title-intro h1 {
+            font-size: clamp(32px, 4vw, 80px);
+            max-width: min(96vw, 1900px);
+            line-height: 1.1;
+        }
+        .slide-title-intro h1 .nowrap { white-space: nowrap; }
+        .slide-title-intro .url {
+            position: absolute;
+            bottom: clamp(80px, 10vh, 130px);
+            font-family: 'Source Code Pro', monospace;
+            font-size: clamp(12px, 1vw, 20px);
+            color: var(--neutral-500);
+        }
+
+        /* ─── Pain cards ─── */
+        .pain-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: clamp(24px, 4vh, 56px);
+        }
+        .pain-icon {
+            width: clamp(120px, 14vmin, 240px);
+            height: clamp(120px, 14vmin, 240px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: clamp(20px, 2.5vmin, 40px);
+            background: rgba(255, 69, 69, 0.08);
+            border: 2px solid rgba(255, 69, 69, 0.3);
+        }
+        .pain-icon i { font-size: clamp(56px, 7vmin, 112px); color: var(--brand-red); }
+        .pain-card h2 { font-size: clamp(48px, 5.5vw, 108px); }
+        .pain-card p { font-size: clamp(20px, 2.2vw, 44px); color: var(--neutral-300); text-align: center; }
+
+        .pain-shadow-keys .pain-icon { background: rgba(255, 190, 47, 0.08); border-color: rgba(255, 190, 47, 0.3); }
+        .pain-shadow-keys .pain-icon i { color: var(--brand-yellow); }
+
+        .pain-runaway .pain-icon { background: rgba(49, 238, 139, 0.08); border-color: rgba(49, 238, 139, 0.3); }
+        .pain-runaway .pain-icon i { color: var(--brand-green); }
+
+        .pain-injection .pain-icon { background: rgba(255, 69, 69, 0.08); border-color: rgba(255, 69, 69, 0.3); }
+        .pain-injection .pain-icon i { color: var(--brand-red); }
+
+        .pain-agents .pain-icon { background: rgba(93, 227, 255, 0.08); border-color: rgba(93, 227, 255, 0.3); }
+        .pain-agents .pain-icon i { color: var(--brand-teal); }
+
+        /* ─── Case title cards ─── */
+        .case-title { display: flex; flex-direction: column; align-items: flex-start; padding-left: clamp(64px, 10vw, 220px); }
+        .case-title .case-num {
+            font-family: 'Source Code Pro', monospace;
+            font-size: clamp(18px, 1.7vw, 32px);
+            background-image: var(--gradient-lavender);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: 0.2em;
+            margin-bottom: clamp(16px, 2.5vh, 36px);
+            font-weight: 600;
+        }
+        .case-title h2 { text-align: left; font-size: clamp(48px, 5.5vw, 112px); max-width: min(85vw, 1500px); }
+        .case-title p.lead { text-align: left; margin-left: 0; max-width: min(80vw, 1300px); }
+
+        /* ─── Stinger cards ─── */
+        .stinger { display: flex; flex-direction: column; align-items: center; gap: clamp(24px, 3.5vh, 48px); }
+        .stinger .punchline {
+            font-size: clamp(32px, 4vw, 80px);
+            font-weight: 700;
+            text-align: center;
+            line-height: 1.2;
+            max-width: min(85vw, 1600px);
+        }
+        .stinger ul {
+            display: flex;
+            gap: clamp(12px, 1.5vw, 28px);
+            list-style: none;
+            flex-wrap: wrap;
+            justify-content: center;
+            max-width: min(85vw, 1600px);
+        }
+        .stinger ul li {
+            font-family: 'Source Code Pro', monospace;
+            font-size: clamp(14px, 1.5vw, 28px);
+            color: var(--lavender);
+            padding: clamp(10px, 1.2vh, 22px) clamp(18px, 2vw, 40px);
+            border: 1px solid rgba(171, 131, 255, 0.3);
+            border-radius: 12px;
+            background: rgba(171, 131, 255, 0.06);
+        }
+        .stinger .quote {
+            font-size: clamp(16px, 1.7vw, 32px);
+            color: var(--neutral-300);
+            font-style: italic;
+            margin-top: clamp(16px, 2vh, 28px);
+            max-width: min(80vw, 1400px);
+            text-align: center;
+        }
+
+        /* ─── MCP diagram slide ─── */
+        .mcp-diagram { display: flex; flex-direction: column; align-items: center; gap: clamp(28px, 4vh, 64px); }
+        .mcp-diagram h2 { font-size: clamp(32px, 4vw, 72px); }
+        .diagram-flow {
+            display: flex;
+            align-items: center;
+            gap: clamp(12px, 1.5vw, 32px);
+            margin-top: clamp(16px, 2.5vh, 40px);
+        }
+        .diagram-node {
+            padding: clamp(20px, 2.5vh, 40px) clamp(28px, 2.5vw, 56px);
+            border: 1px solid rgba(171, 131, 255, 0.4);
+            border-radius: 16px;
+            background: rgba(171, 131, 255, 0.04);
+            font-size: clamp(16px, 1.5vw, 28px);
+            font-weight: 600;
+            color: #fff;
+            text-align: center;
+            min-width: clamp(140px, 12vw, 240px);
+        }
+        .diagram-node.gateway {
+            border: 1px solid transparent;
+            background:
+                linear-gradient(#13151d, #13151d) padding-box,
+                var(--gradient-lavender) border-box;
+            font-size: clamp(18px, 1.7vw, 32px);
+            padding: clamp(28px, 3vh, 48px) clamp(32px, 3vw, 64px);
+            box-shadow: 0 0 60px rgba(171, 131, 255, 0.2);
+        }
+        .diagram-node-stack { display: flex; flex-direction: column; gap: clamp(8px, 1vh, 20px); }
+        .diagram-node-stack .diagram-node { min-width: clamp(160px, 14vw, 260px); font-size: clamp(14px, 1.2vw, 24px); padding: clamp(14px, 1.6vh, 24px) clamp(20px, 1.8vw, 36px); }
+        .arrow {
+            width: clamp(40px, 5vw, 100px);
+            height: 3px;
+            background: var(--gradient-lavender);
+            position: relative;
+        }
+        .arrow::after {
+            content: '';
+            position: absolute;
+            right: -2px;
+            top: 50%;
+            transform: translateY(-50%);
+            border: 10px solid transparent;
+            border-left-color: #4177fd;
+        }
+        .mcp-diagram .caption {
+            font-family: 'Source Code Pro', monospace;
+            font-size: clamp(13px, 1.2vw, 24px);
+            color: var(--neutral-300);
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            margin-top: clamp(16px, 3vh, 48px);
+        }
+
+        /* ─── MCP differentiator ─── */
+        .mcp-diff { display: flex; flex-direction: column; align-items: center; gap: clamp(28px, 4vh, 60px); }
+        .mcp-diff h2 { font-size: clamp(40px, 5vw, 96px); }
+        .mcp-diff .subtle {
+            font-size: clamp(16px, 1.7vw, 32px);
+            color: var(--neutral-500);
+            text-align: center;
+            max-width: min(80vw, 1200px);
+        }
+        .mcp-diff .features {
+            display: flex;
+            gap: clamp(20px, 2.5vw, 48px);
+            margin-top: clamp(8px, 2vh, 28px);
+            width: 100%;
+            max-width: min(90vw, 1400px);
+            justify-content: center;
+        }
+        .mcp-diff .feature {
+            flex: 1;
+            max-width: 420px;
+            padding: clamp(24px, 3vh, 48px);
+            border: 1px solid var(--neutral-200);
+            border-radius: 24px;
+            background: rgba(255, 255, 255, 0.02);
+            display: flex;
+            flex-direction: column;
+            gap: clamp(8px, 1.2vh, 20px);
+        }
+        .mcp-diff .feature i {
+            font-size: clamp(32px, 3.5vw, 60px);
+            color: var(--lavender);
+            margin-bottom: 8px;
+        }
+        .mcp-diff .feature h4 {
+            font-size: clamp(22px, 2.2vw, 40px);
+            font-weight: 700;
+            color: #fff;
+        }
+        .mcp-diff .feature p {
+            font-size: clamp(14px, 1.2vw, 24px);
+            color: var(--neutral-300);
+            line-height: 1.5;
+        }
+        .mcp-diff .feature.highlight i {
+            background-image: var(--gradient-lavender);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .mcp-diff .feature.highlight {
+            border: 1px solid transparent;
+            background:
+                linear-gradient(#13151d, #13151d) padding-box,
+                var(--gradient-lavender) border-box;
+        }
+        .mcp-diff .footer-claim {
+            font-size: clamp(18px, 1.8vw, 36px);
+            color: var(--neutral-300);
+            font-family: 'Source Code Pro', monospace;
+            margin-top: clamp(12px, 2vh, 28px);
+        }
+
+        /* ─── Outro recap ─── */
+        .outro h2 { font-size: clamp(40px, 5vw, 96px); margin-bottom: clamp(28px, 4vh, 64px); }
+        .outro .formula {
+            font-size: clamp(24px, 2.8vw, 56px);
+            font-weight: 600;
+            color: var(--neutral-300);
+            margin-bottom: clamp(36px, 6vh, 88px);
+            text-align: center;
+        }
+        .outro .formula .accent { font-weight: 700; }
+        .outro .recap-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: clamp(16px, 2vw, 40px);
+            max-width: min(90vw, 1600px);
+            width: 100%;
+            margin-bottom: clamp(28px, 5vh, 64px);
+        }
+        .outro .recap-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: clamp(10px, 1.2vh, 20px);
+            padding: clamp(14px, 1.8vh, 28px);
+            border: 1px solid var(--neutral-200);
+            border-radius: 16px;
+        }
+        .outro .recap-item i {
+            font-size: clamp(24px, 2.6vw, 44px);
+            background-image: var(--gradient-lavender);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .outro .recap-item span {
+            font-size: clamp(12px, 1vw, 20px);
+            color: var(--neutral-300);
+            text-align: center;
+            line-height: 1.3;
+        }
+        .outro .urls {
+            display: flex;
+            gap: clamp(28px, 4vw, 80px);
+            font-family: 'Source Code Pro', monospace;
+            font-size: clamp(14px, 1.3vw, 26px);
+            color: var(--neutral-300);
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .outro .urls span { color: var(--lavender); }
+
+        /* ─── Iframe demo slides ─── */
+        .iframe-slide {
+            padding: 0;
+            background: var(--bg);
+        }
+        .iframe-slide .demo-label {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 56px;
+            padding: 0 32px;
+            display: flex;
+            align-items: center;
+            font-family: 'Source Code Pro', monospace;
+            font-size: 13px;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            background: rgba(11, 12, 16, 0.92);
+            backdrop-filter: blur(8px);
+            border-bottom: 1px solid var(--neutral-200);
+            color: var(--neutral-300);
+            font-weight: 600;
+            z-index: 3;
+        }
+        .iframe-slide .demo-label::before {
+            content: '';
+            display: inline-block;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--brand-red);
+            margin-right: 12px;
+            animation: pulse 1.6s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(255, 69, 69, 0.6); }
+            50% { opacity: 0.4; box-shadow: 0 0 0 6px rgba(255, 69, 69, 0); }
+        }
+        .iframe-slide iframe {
+            position: absolute;
+            top: 56px;
+            left: 0;
+            width: 100%;
+            height: calc(100% - 116px); /* 56 top label + 60 toolbar */
+            border: 0;
+            display: block;
+            background: #fff;
+        }
+
+        /* ─── Persistent toolbar (always visible) ─── */
+        .toolbar {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background: rgba(11, 12, 16, 0.92);
+            backdrop-filter: blur(8px);
+            border-top: 1px solid var(--neutral-200);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 32px;
+            z-index: 50;
+            font-family: 'Source Code Pro', monospace;
+        }
+        .toolbar button {
+            background: transparent;
+            border: 1px solid var(--neutral-200);
+            color: #fff;
+            font-family: inherit;
+            font-size: 14px;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 150ms;
+        }
+        .toolbar button:hover {
+            border-color: var(--lavender);
+            background: rgba(171, 131, 255, 0.08);
+        }
+        .toolbar .toolbar-counter {
+            color: var(--neutral-300);
+            font-size: 14px;
+            letter-spacing: 0.1em;
+        }
+        .toolbar .toolbar-context {
+            background-image: var(--gradient-lavender);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 600;
+            font-size: 14px;
+            margin-left: 12px;
+        }
+        .toolbar .group { display: flex; align-items: center; gap: 12px; }
+
+        /* ─── Hint bar ─── */
+        .hint {
+            position: fixed;
+            top: 8px;
+            right: 8px;
+            font-family: 'Source Code Pro', monospace;
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.25);
+            z-index: 100;
+        }
+        body.recording .hint { display: none; }
+    </style>
+</head>
+<body>
+    <div class="hint">← → to navigate · r to toggle recording mode</div>
+
+    <div class="stage">
+
+        <!-- ═══════════ INTRO ═══════════ -->
+
+        <!-- Title intro -->
+        <section class="slide slide-title-intro active" data-slide="1" data-context="Intro">
+            <div class="logo"><img src="assets/logo-krakend.svg" alt="KrakenD"></div>
+            <div class="eyebrow">KrakenD · AI Gateway</div>
+            <h1><span class="nowrap">The biggest workload of your decade</span><br><span class="accent">deserves the gateway you trust.</span></h1>
+            <p class="lead">Five production problems your AI traffic creates.<br>Solved by the gateway you already run.</p>
+            <div class="url">github.com/krakend/playground-enterprise</div>
+        </section>
+
+        <!-- 02 — Pain card: Shadow keys -->
+        <section class="slide pain-card pain-shadow-keys" data-slide="2">
+            <div class="logo"><img src="assets/logo-krakend.svg" alt="KrakenD"></div>
+            <div class="pain-icon"><i class="fa-solid fa-key"></i></div>
+            <h2>Shadow keys</h2>
+            <p>LLM keys scattered across every service.</p>
+        </section>
+
+        <!-- 03 — Pain card: Runaway cost -->
+        <section class="slide pain-card pain-runaway" data-slide="3">
+            <div class="logo"><img src="assets/logo-krakend.svg" alt="KrakenD"></div>
+            <div class="pain-icon"><i class="fa-solid fa-money-bill-trend-up"></i></div>
+            <h2>Runaway cost</h2>
+            <p>You'll discover your bill at the end of the month.</p>
+        </section>
+
+        <!-- 04 — Pain card: Prompt injection -->
+        <section class="slide pain-card pain-injection" data-slide="4">
+            <div class="logo"><img src="assets/logo-krakend.svg" alt="KrakenD"></div>
+            <div class="pain-icon"><i class="fa-solid fa-bomb"></i></div>
+            <h2>Prompt injection</h2>
+            <p>Your model trusts anyone who can type.</p>
+        </section>
+
+        <!-- 05 — Pain card: Ungoverned agents -->
+        <section class="slide pain-card pain-agents" data-slide="5">
+            <div class="logo"><img src="assets/logo-krakend.svg" alt="KrakenD"></div>
+            <div class="pain-icon"><i class="fa-solid fa-robot"></i></div>
+            <h2>Ungoverned agents</h2>
+            <p>Agents calling your APIs. No auth. No limits. No logs.</p>
+        </section>
+
+        <!-- 06 — Intro closing / tagline -->
+        <section class="slide" data-slide="6">
+            <div class="logo"><img src="assets/logo-krakend.svg" alt="KrakenD"></div>
+            <div class="eyebrow">KrakenD AI Gateway</div>
+            <h1>New models. <br><span class="accent">Same proven control.</span></h1>
+            <p class="lead">No new infrastructure. No new governance. One config.</p>
+        </section>
+
+        <!-- ═══════════ CASE 01 — Guardrails ═══════════ -->
+
+        <!-- 07 — Title card -->
+        <section class="slide case-title" data-slide="7" data-context="01 — Guardrails">
+            <div class="logo"><img src="assets/logo-krakend.svg" alt="KrakenD"></div>
+            <div class="case-num">01 / 05</div>
+            <h2>Prompt Guardrails</h2>
+            <p class="lead">Block what shouldn't reach your model.</p>
+        </section>
+
+        <!-- 08 — Demo: Intelligent Guardrail -->
+        <section class="slide iframe-slide" data-slide="8" data-context="01 — Intelligent Guardrail · Live" data-iframe="http://localhost:8080/interactive-demo/#ai-gateway/guardrail-intelligent">
+            <div class="demo-label">01 — Intelligent Guardrail · Live demo</div>
+            <iframe data-src="http://localhost:8080/interactive-demo/#ai-gateway/guardrail-intelligent" src="about:blank"></iframe>
+        </section>
+
+        <!-- 09 — Demo: Deterministic Guardrail -->
+        <section class="slide iframe-slide" data-slide="9" data-context="01 — Deterministic Guardrail · Live" data-iframe="http://localhost:8080/interactive-demo/#ai-gateway/guardrail-deterministic">
+            <div class="demo-label">01 — Deterministic Guardrail · Live demo</div>
+            <iframe data-src="http://localhost:8080/interactive-demo/#ai-gateway/guardrail-deterministic" src="about:blank"></iframe>
+        </section>
+
+        <!-- 10 — Stinger -->
+        <section class="slide stinger" data-slide="10" data-context="01 — Guardrails">
+            <div class="logo"><img src="assets/logo-krakend.svg" alt="KrakenD"></div>
+            <div class="eyebrow">01 — Guardrails</div>
+            <p class="punchline">Local classifier.<br>Zero token cost.<br><span class="accent">Prompts never leave the perimeter.</span></p>
+            <ul>
+                <li>Two layers of defense</li>
+                <li>Regex + AI classifier</li>
+                <li>Both config-only</li>
+            </ul>
+            <p class="quote">"Enforce content policies without touching application code."</p>
+        </section>
+
+        <!-- ═══════════ CASE 02 — Token Quota ═══════════ -->
+
+        <!-- Title card 02 — Quota -->
+        <section class="slide case-title" data-slide="11" data-context="02 — Token Quota">
+            <div class="logo"><img src="assets/logo-krakend.svg" alt="KrakenD"></div>
+            <div class="case-num">02 / 05</div>
+            <h2>Token Quota</h2>
+            <p class="lead">Stop runaway costs before your invoice.</p>
+        </section>
+
+        <!-- Demo: Token Quota -->
+        <section class="slide iframe-slide" data-slide="12" data-context="02 — Token Quota · Live" data-iframe="http://localhost:8080/interactive-demo/#ai-gateway/llm-quota">
+            <div class="demo-label">02 — Token Quota · Live demo</div>
+            <iframe data-src="http://localhost:8080/interactive-demo/#ai-gateway/llm-quota" src="about:blank"></iframe>
+        </section>
+
+        <!-- Stinger 02 -->
+        <section class="slide stinger" data-slide="13" data-context="02 — Token Quota">
+            <div class="logo"><img src="assets/logo-krakend.svg" alt="KrakenD"></div>
+            <div class="eyebrow">02 — Token Quota</div>
+            <p class="punchline">Per-user budgets.<br>Hard limits by role.<br><span class="accent">Stops cost at the gateway.</span></p>
+            <ul>
+                <li>Redis-backed</li>
+                <li>JWT-scoped</li>
+                <li>Real provider token count</li>
+            </ul>
+            <p class="quote">"Prevent runaway costs before they appear on your invoice."</p>
+        </section>
+
+        <!-- ═══════════ CASE 03 — Role-based routing ═══════════ -->
+
+        <!-- Title card 03 — Role-Based Routing -->
+        <section class="slide case-title" data-slide="14" data-context="03 — Role-Based Routing">
+            <div class="logo"><img src="assets/logo-krakend.svg" alt="KrakenD"></div>
+            <div class="case-num">03 / 05</div>
+            <h2>Role-Based Routing</h2>
+            <p class="lead">Same endpoint. Different model per user.</p>
+        </section>
+
+        <!-- Demo: Role-Based Routing -->
+        <section class="slide iframe-slide" data-slide="15" data-context="03 — Role-Based Routing · Live" data-iframe="http://localhost:8080/interactive-demo/#ai-gateway/llm-conditional">
+            <div class="demo-label">03 — Role-Based Routing · Live demo</div>
+            <iframe data-src="http://localhost:8080/interactive-demo/#ai-gateway/llm-conditional" src="about:blank"></iframe>
+        </section>
+
+        <!-- Stinger 03 -->
+        <section class="slide stinger" data-slide="16" data-context="03 — Role-Based Routing">
+            <div class="logo"><img src="assets/logo-krakend.svg" alt="KrakenD"></div>
+            <div class="eyebrow">03 — Role-Based Routing</div>
+            <p class="punchline">Model A/B by JWT claims.<br>One endpoint.<br><span class="accent">Zero application code.</span></p>
+            <ul>
+                <li>Moderator → OpenAI</li>
+                <li>Reader → Gemini</li>
+                <li>Same client, same response shape</li>
+            </ul>
+            <p class="quote">"Route by user tier — the auth you already trust."</p>
+        </section>
+
+        <!-- ═══════════ CASE 04 — Conditional Routing ═══════════ -->
+
+        <!-- Title card 04 — Conditional Routing -->
+        <section class="slide case-title" data-slide="17" data-context="04 — Conditional Routing">
+            <div class="logo"><img src="assets/logo-krakend.svg" alt="KrakenD"></div>
+            <div class="case-num">04 / 05</div>
+            <h2>Conditional Routing</h2>
+            <p class="lead">Any signal in the request decides the model.</p>
+        </section>
+
+        <!-- Demo: Conditional Routing -->
+        <section class="slide iframe-slide" data-slide="18" data-context="04 — Conditional Routing · Live" data-iframe="http://localhost:8080/interactive-demo/#ai-gateway/llm-routing">
+            <div class="demo-label">04 — Conditional Routing · Live demo</div>
+            <iframe data-src="http://localhost:8080/interactive-demo/#ai-gateway/llm-routing" src="about:blank"></iframe>
+        </section>
+
+        <!-- Stinger 04 -->
+        <section class="slide stinger" data-slide="19" data-context="04 — Conditional Routing">
+            <div class="logo"><img src="assets/logo-krakend.svg" alt="KrakenD"></div>
+            <div class="eyebrow">04 — Conditional Routing</div>
+            <p class="punchline">Route on <span class="accent">any</span> request attribute.<br>Provider-agnostic.</p>
+            <ul>
+                <li>Header</li>
+                <li>Query string</li>
+                <li>JWT claim</li>
+                <li>CEL policy</li>
+                <li>Safe default</li>
+            </ul>
+            <p class="quote">"Switch LLMs by config. One block. No code."</p>
+        </section>
+
+        <!-- ═══════════ CASE 05 — MCP ═══════════ -->
+
+        <!-- Title card 05 — MCP -->
+        <section class="slide case-title" data-slide="20" data-context="05 — MCP Server">
+            <div class="logo"><img src="assets/logo-krakend.svg" alt="KrakenD"></div>
+            <div class="case-num">05 / 05</div>
+            <h2>MCP Server</h2>
+            <p class="lead">When agents call <em>your</em> APIs.</p>
+        </section>
+
+        <!-- MCP base diagram -->
+        <section class="slide mcp-diagram" data-slide="21" data-context="05 — MCP Server">
+            <div class="logo"><img src="assets/logo-krakend.svg" alt="KrakenD"></div>
+            <div class="eyebrow">05 — MCP Server</div>
+            <h2>AI is not replacing APIs. <span class="accent">It's using them.</span></h2>
+            <div class="diagram-flow">
+                <div class="diagram-node">AI Agent<br><span class="mono" style="font-size:16px;color:var(--neutral-500)">Claude Code · Cursor · etc.</span></div>
+                <div class="arrow"></div>
+                <div class="diagram-node gateway">KrakenD<br>MCP Server</div>
+                <div class="arrow"></div>
+                <div class="diagram-node-stack">
+                    <div class="diagram-node">REST API</div>
+                    <div class="diagram-node">GraphQL</div>
+                    <div class="diagram-node">SOAP</div>
+                </div>
+            </div>
+            <div class="caption">Same auth · Same rate limits · Same observability</div>
+        </section>
+
+        <!-- MCP differentiator -->
+        <section class="slide mcp-diff" data-slide="22" data-context="05 — MCP Server">
+            <div class="logo"><img src="assets/logo-krakend.svg" alt="KrakenD"></div>
+            <div class="eyebrow">05 — MCP Server</div>
+            <h2>More than wrapping. <span class="accent">Composing.</span></h2>
+            <p class="subtle">Other MCP servers expose one API as one tool. KrakenD does more.</p>
+            <div class="features">
+                <div class="feature">
+                    <i class="fa-solid fa-puzzle-piece"></i>
+                    <h4>Compose</h4>
+                    <p>Three APIs, one tool. REST entity registry · GraphQL ownership · even legacy SOAP sanctions — behind a single agent call.</p>
+                </div>
+                <div class="feature">
+                    <i class="fa-solid fa-scissors"></i>
+                    <h4>Filter</h4>
+                    <p>Strip fields the agent doesn't need. Cleaner context. Better decisions. No leaks of internal data.</p>
+                </div>
+                <div class="feature highlight">
+                    <i class="fa-solid fa-rotate"></i>
+                    <h4>Convert</h4>
+                    <p>JSON → TOON, side-by-side proof. <strong>Up to 60% fewer tokens</strong> per call. The agent picks the efficient format on its own.</p>
+                </div>
+            </div>
+            <p class="footer-claim">All in the same config block. No code.</p>
+        </section>
+
+        <!-- Demo: MCP Chat App (Claude Haiku 4.5 + KrakenD MCP) -->
+        <section class="slide iframe-slide" data-slide="22b" data-context="05 — MCP Chat · Live" data-iframe="http://localhost:8080/interactive-demo/#mcp-chat">
+            <div class="demo-label">05 — MCP Chat · Claude Haiku 4.5 talking to KrakenD MCP</div>
+            <iframe data-src="http://localhost:8080/interactive-demo/#mcp-chat" src="about:blank"></iframe>
+        </section>
+
+        <!-- Stinger MCP -->
+        <section class="slide stinger" data-slide="23" data-context="05 — MCP Server">
+            <div class="logo"><img src="assets/logo-krakend.svg" alt="KrakenD"></div>
+            <div class="eyebrow">05 — MCP Server</div>
+            <p class="punchline">MCP Built In.<br><span class="accent">Not Bolted On.</span></p>
+            <ul>
+                <li>Same auth</li>
+                <li>Same rate limits</li>
+                <li>Same observability</li>
+                <li>For agents too</li>
+            </ul>
+            <p class="quote">"No backend changes. <span class="accent">Every agent call audited.</span>"</p>
+        </section>
+
+        <!-- ═══════════ OUTRO ═══════════ -->
+
+        <!-- Outro recap + CTA -->
+        <section class="slide outro" data-slide="24" data-context="Recap">
+            <div class="logo"><img src="assets/logo-krakend.svg" alt="KrakenD"></div>
+            <h2>Two directions of AI traffic.<br><span class="accent">One gateway.</span></h2>
+            <div class="formula">API Gateway <span class="accent">+</span> AI Gateway <span class="accent">+</span> Agent Gateway <span class="accent">=</span> <strong>KrakenD</strong></div>
+            <div class="recap-grid">
+                <div class="recap-item">
+                    <i class="fa-solid fa-shield-halved"></i>
+                    <span>Guardrails</span>
+                </div>
+                <div class="recap-item">
+                    <i class="fa-solid fa-gauge"></i>
+                    <span>Token Quota</span>
+                </div>
+                <div class="recap-item">
+                    <i class="fa-solid fa-user-tag"></i>
+                    <span>Role-Based<br>Routing</span>
+                </div>
+                <div class="recap-item">
+                    <i class="fa-solid fa-route"></i>
+                    <span>Conditional<br>Routing</span>
+                </div>
+                <div class="recap-item">
+                    <i class="fa-solid fa-robot"></i>
+                    <span>MCP<br>Server</span>
+                </div>
+            </div>
+            <div class="urls">
+                <div><span>▸</span> krakend.io/ai-gateway</div>
+                <div><span>▸</span> github.com/krakend/playground-enterprise</div>
+            </div>
+        </section>
+
+        <!-- Persistent toolbar -->
+        <div class="toolbar">
+            <div class="group">
+                <button id="tb-prev" title="Previous (←)"><i class="fa-solid fa-chevron-left"></i> Prev</button>
+                <button id="tb-next" title="Next (→ or Space)">Next <i class="fa-solid fa-chevron-right"></i></button>
+                <span class="toolbar-counter" id="tb-counter">01 / 24</span>
+                <span class="toolbar-context" id="tb-context">Intro</span>
+            </div>
+            <div class="group">
+                <button id="tb-reload" title="Reload iframe (if SPA wasn't up)" style="display:none;"><i class="fa-solid fa-rotate-right"></i> Reload</button>
+                <button id="tb-open" title="Open current demo in new tab" style="display:none;"><i class="fa-solid fa-up-right-from-square"></i> Open</button>
+                <button id="tb-fullscreen" title="Fullscreen (F)"><i class="fa-solid fa-expand"></i></button>
+                <button id="tb-recording" title="Recording mode (R) — hides hints"><i class="fa-solid fa-circle-dot"></i></button>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        const slides = document.querySelectorAll('.slide');
+        const counter = document.getElementById('tb-counter');
+        const context = document.getElementById('tb-context');
+        const openBtn = document.getElementById('tb-open');
+        const reloadBtn = document.getElementById('tb-reload');
+        let current = 0;
+        const pad = (n) => String(n).padStart(2, '0');
+
+        // Robust iframe (re)load. Resets via about:blank to recover from
+        // chrome-error://chromewebdata/ when the SPA wasn't running on first load.
+        function loadIframe(iframe) {
+            if (!iframe || !iframe.dataset.src) return;
+            iframe.src = 'about:blank';
+            // Force reflow then set the real src after a tick — Chrome treats this as a fresh navigation.
+            requestAnimationFrame(() => {
+                setTimeout(() => { iframe.src = iframe.dataset.src; }, 30);
+            });
+        }
+
+        // Detect whether an iframe has loaded successfully (best-effort, cross-origin friendly).
+        // We assume "loaded" if the iframe fires `load` after being pointed at data-src.
+        const iframeLoaded = new WeakSet();
+        document.querySelectorAll('iframe').forEach(f => {
+            f.addEventListener('load', () => {
+                if (f.src && f.src !== 'about:blank') iframeLoaded.add(f);
+            });
+        });
+
+        function show(i) {
+            slides[current].classList.remove('active');
+            current = Math.max(0, Math.min(slides.length - 1, i));
+            const slide = slides[current];
+            slide.classList.add('active');
+            counter.textContent = `${pad(current + 1)} / ${pad(slides.length)}`;
+            context.textContent = slide.dataset.context || '';
+
+            const iframe = slide.querySelector('iframe');
+            if (iframe) {
+                // Load on first visit, or if we never saw a successful load
+                if (iframe.src === 'about:blank' || !iframeLoaded.has(iframe)) {
+                    loadIframe(iframe);
+                }
+            }
+
+            // Toolbar buttons visibility per slide type
+            const iframeUrl = slide.dataset.iframe;
+            if (iframeUrl) {
+                openBtn.style.display = 'inline-flex';
+                openBtn.onclick = () => window.open(iframeUrl, '_blank');
+                reloadBtn.style.display = 'inline-flex';
+                reloadBtn.onclick = () => loadIframe(iframe);
+            } else {
+                openBtn.style.display = 'none';
+                reloadBtn.style.display = 'none';
+            }
+        }
+
+        // Initial state
+        show(0);
+
+        // Toolbar bindings
+        document.getElementById('tb-prev').addEventListener('click', () => show(current - 1));
+        document.getElementById('tb-next').addEventListener('click', () => show(current + 1));
+        document.getElementById('tb-fullscreen').addEventListener('click', () => {
+            if (!document.fullscreenElement) document.documentElement.requestFullscreen();
+            else document.exitFullscreen();
+        });
+        document.getElementById('tb-recording').addEventListener('click', () => {
+            document.body.classList.toggle('recording');
+        });
+
+        // Keyboard: arrow keys when focus is on body (not in iframe).
+        // Shift+arrow always works as escape-hatch even when focus is in iframe.
+        document.addEventListener('keydown', (e) => {
+            // Shift+arrow = always-available navigation
+            if (e.shiftKey && (e.key === 'ArrowRight' || e.key === 'ArrowLeft')) {
+                e.preventDefault();
+                show(current + (e.key === 'ArrowRight' ? 1 : -1));
+                return;
+            }
+            // Normal navigation only when focus is not inside an iframe
+            if (e.target.tagName === 'IFRAME') return;
+            if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') { show(current + 1); e.preventDefault(); }
+            else if (e.key === 'ArrowLeft' || e.key === 'PageUp') show(current - 1);
+            else if (e.key === 'Home') show(0);
+            else if (e.key === 'End') show(slides.length - 1);
+            else if (e.key === 'r' || e.key === 'R') document.body.classList.toggle('recording');
+            else if (e.key === 'f' || e.key === 'F') {
+                if (!document.fullscreenElement) document.documentElement.requestFullscreen();
+                else document.exitFullscreen();
+            }
+        });
+    </script>
+</body>
+</html>

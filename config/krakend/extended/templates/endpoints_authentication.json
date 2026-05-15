@@ -4,7 +4,7 @@
         "backend": [
             {
                 "host": [
-                    "http://fake_api"
+                    "http://mocked_apis:8091"
                 ],
                 "url_pattern": "/hotels/1.json"
             }
@@ -25,29 +25,59 @@
         }
     },
     {
-        "@comment": "Feature: Demo SPA fronted by the gateway",
-        "endpoint": "/spa/*",
+        "@comment": "Utility: Interactive demos SPA fronted by the gateway. The /interactive-demo backend serves the playground SPA (AI Gateway, Agentic Gateway/MCP, Auth Demo, WebSocket Chat) and its own backend endpoints under the same path.",
+        "endpoint": "/interactive-demo/*",
         "output_encoding": "no-op",
         "backend": [
             {
                 "url_pattern": "/",
                 "host": [
-                    "http://web:3000/"
+                    "http://interactive-demo:3000/"
                 ],
                 "encoding": "no-op"
             }
         ],
         "extra_config": {
             "documentation/postman": {
-                "name": "Demo SPA (AI Gateway, Auth Demo, WebSocket Chat)",
-                "description": "Interactive web interface proxied through KrakenD. Hosts three demo sections: AI Gateway, Auth Demo (Keycloak JWT, API keys, Basic auth), and WebSocket Chat.",
+                "name": "Interactive demos SPA",
+                "description": "Single-page app proxied through KrakenD that hosts the four playground demos (AI Gateway, Agentic Gateway/MCP, Auth Demo, WebSocket Chat) plus its backend endpoints (POST /api/chat with SSE streaming, GET /api/health, WS /ws/{room}).",
                 "folder": "/Demo UI"
             },
             "documentation/openapi": {
-                "summary": "Interactive demo SPA proxied by the gateway",
-                "description": "KrakenD fronts the demo-app SPA so clients can reach it through the gateway. The SPA covers AI Gateway, Auth Demo, and WebSocket Chat sections.",
+                "summary": "Interactive demos SPA proxied by the gateway",
+                "description": "Serves the four-tab playground SPA and its backend endpoints under /interactive-demo.",
                 "tags": [
                     "Demo UI"
+                ]
+            }
+        }
+    },
+    {
+        "@comment": "Utility: Interactive demos POST proxy. Used by the Agentic Gateway (MCP) chat (POST /api/chat returns an SSE stream that may run for tens of seconds while Claude is calling MCP tools), so the timeout is bumped well above the 3s service default.",
+        "endpoint": "/interactive-demo/*",
+        "method": "POST",
+        "timeout": "120s",
+        "output_encoding": "no-op",
+        "backend": [
+            {
+                "url_pattern": "/",
+                "host": [
+                    "http://interactive-demo:3000/"
+                ],
+                "encoding": "no-op"
+            }
+        ],
+        "extra_config": {
+            "documentation/postman": {
+                "name": "Interactive demos backend (POST)",
+                "description": "POST proxy for the interactive-demo backend. Currently powers the Agentic Gateway (MCP) chat at POST /api/chat (SSE streaming, Anthropic Claude + KrakenD MCP tools).",
+                "folder": "/Demo UI"
+            },
+            "documentation/openapi": {
+                "summary": "Interactive demos POST proxy",
+                "description": "Proxies POST requests to the interactive-demo backend. Hosts the Agentic Gateway (MCP) chat SSE endpoint at /api/chat.",
+                "tags": [
+                    "/AI & MCP Server"
                 ]
             }
         }
@@ -58,7 +88,7 @@
         "backend": [
             {
                 "host": [
-                    "http://fake_api"
+                    "http://mocked_apis:8091"
                 ],
                 "url_pattern": "/user/1.json"
             }
@@ -135,7 +165,7 @@
         "backend": [
             {
                 "host": [
-                    "http://fake_api"
+                    "http://mocked_apis:8091"
                 ],
                 "url_pattern": "/user/1.json"
             }
@@ -176,7 +206,7 @@
         "backend": [
             {
                 "host": [
-                    "http://fake_api"
+                    "http://mocked_apis:8091"
                 ],
                 "url_pattern": "/token.json"
             }
@@ -243,7 +273,7 @@
         "backend": [
             {
                 "host": [
-                    "http://fake_api"
+                    "http://mocked_apis:8091"
                 ],
                 "url_pattern": "/"
             }

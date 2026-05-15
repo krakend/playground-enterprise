@@ -55,13 +55,14 @@ KrakenD can export telemetry to several services; this demonstration has a few e
     make elastic
 
 ### Web client
-An interactive demo SPA at `images/demo-app/` with three sections:
+An interactive demos SPA at `images/interactive-demo/` with four sections:
 
 - **AI Gateway** — Test 5 AI use cases: LLM routing, role-based routing, token quotas, and prompt guardrails (deterministic + AI-based)
+- **Agentic Gateway (MCP)** — Chat against a KrakenD-hosted MCP server (Claude Haiku 4.5 + KYC counterparty risk dossier scenario)
 - **Auth Demo** — Test authentication patterns: JWT (Keycloak), API keys, Basic Auth, and GDPR cookie policies
-- **WebSocket Chat** — Real-time bidirectional chat through KrakenD's WebSocket proxy
+- **WebSocket Chat** — Two side-by-side clients in the same room, proxied through KrakenD's WebSocket layer
 
-Visit [http://localhost:3000](http://localhost:3000)
+Visit [http://localhost:8080/interactive-demo/](http://localhost:8080/interactive-demo/) (proxied via the gateway) or [http://localhost:3000](http://localhost:3000) (direct to the container).
 
 ### AI Gateway services (opt-in)
 The AI Gateway use cases need extra pieces that are **not started by default** so the regular `make start` stays fast:
@@ -173,7 +174,7 @@ Fire up your browser, curl, postman, httpie, or anything else you like to intera
 - Jaeger (tracing): [http://localhost:16686](http://localhost:16686)
 - Kibana (logs): [http://localhost:5601](http://localhost:5601)
 - Grafana (metrics): [http://localhost:4000](http://localhost:4000) (krakend/krakend)
-- Demo SPA via gateway: [http://localhost:8080/spa/](http://localhost:8080/spa/) (AI Gateway, Auth Demo, WebSocket Chat)
+- Interactive demos SPA via gateway: [http://localhost:8080/interactive-demo/](http://localhost:8080/interactive-demo/) (AI Gateway, Agentic Gateway/MCP, Auth Demo, WebSocket Chat)
 - JWT revoker: [http://localhost:9000](http://localhost:9000)
 - Keycloak (IdP): [http://localhost:8085](http://localhost:8085)
 

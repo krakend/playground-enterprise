@@ -3,7 +3,6 @@
   "name": "KrakenD Enterprise API Gateway",
   "port": 8080,
   "host": ["http://localhost:8080"],
-  "fake_api": "http://fake_api",
   "conf_dir": "/etc/krakend",
   "grpc_catalog": "/etc/krakend/grpc_catalog",
   "debug_endpoint": true,

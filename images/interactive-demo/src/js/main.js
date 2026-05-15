@@ -1,16 +1,18 @@
-import '../scss/styles.scss'
-import Keycloak from 'keycloak-js'
-import { marked } from 'marked'
+// Globals provided by <script> tags in index.html (no bundler):
+//   window.Keycloak    ← keycloak-js@26 UMD bundle
+//   window.marked      ← marked@15 UMD bundle
+//   window.initMcpChat ← exposed by ./mcp-chat.js
+const { Keycloak, marked, initMcpChat } = window;
 
 const API_URL = document.location.protocol + '//' + document.location.hostname + ':8080'
 
 const USE_CASES = {
     'llm-routing': {
-        title: 'LLM Routing by Header',
+        title: 'Conditional Routing',
         endpoint: '/llm-routing',
         method: 'POST',
         requiresAuth: false,
-        description: 'Route requests to different LLM providers using the <code>X-Model</code> header. Omit the header to use the default (Anthropic). The <strong>Direct-to-LLM</strong> panel shows what you would have to build yourself without KrakenD.',
+        description: 'Route requests to different LLM providers based on any signal in the request — here, the <code>X-Model</code> header. Omit the header to fall back to a safe default (Anthropic). The same engine routes on query strings, JWT claims, or CEL expressions. The <strong>Direct-to-LLM</strong> panel shows what you would have to build yourself without KrakenD.',
         features: ['ai/llm', 'backend/conditional', 'header strategy', 'fallback'],
         fields: [
             { id: 'model', type: 'select', label: 'Model Provider', options: [
@@ -221,7 +223,7 @@ const USE_CASES = {
 }
 
 let keycloak = null
-let currentUseCase = 'llm-routing'
+let currentUseCase = 'guardrail-intelligent'
 let currentAuthCase = 'public-private'
 let currentPage = 'ai-gateway'
 
@@ -260,6 +262,7 @@ window.addEventListener('DOMContentLoaded', async () => {
     renderUseCasePanel(currentUseCase)
     setupAuthDemo()
     setupWebSocketChat()
+    if (currentPage === 'mcp-chat') initMcpChat()
 })
 
 /* ======================== AUTH ======================== */
@@ -309,6 +312,7 @@ function setupNavigation() {
             document.getElementById(`page-${tab.dataset.page}`).classList.add('active')
             currentPage = tab.dataset.page
             saveState()
+            if (currentPage === 'mcp-chat') initMcpChat()
         })
     })
 }
@@ -818,13 +822,40 @@ const AUTH_CASES = {
     },
 }
 
+/* Auth case → static doc page in /demo/use-cases/. Cards link out to these
+   like the AI Gateway cards do. The fake-api-auth page covers the API-key
+   demo end-to-end; basic-auth + GDPR don't yet have dedicated doc pages, so
+   we point them at the closest existing one. */
+const AUTH_DEMO_PATHS = {
+    'public-private': '/demo/use-cases/private-moderate/',
+    'api-key':        '/demo/use-cases/fake-api-auth/',
+    'basic-auth':     '/demo/use-cases/private-custom/',
+    'gdpr-policy':    '/demo/use-cases/track-user/',
+}
+
 function setupAuthDemo() {
     // Restore active card
     document.querySelectorAll('[data-auth-usecase]').forEach(c => c.classList.remove('active'))
     const activeCard = document.querySelector(`[data-auth-usecase="${currentAuthCase}"]`)
     if (activeCard) activeCard.classList.add('active')
 
+    const demoBase = `${location.protocol}//${location.hostname}:8080`
+
     document.querySelectorAll('[data-auth-usecase]').forEach(card => {
+        const ac = card.dataset.authUsecase
+        const demoPath = AUTH_DEMO_PATHS[ac]
+        if (demoPath && !card.querySelector('.usecase-link')) {
+            const link = document.createElement('a')
+            link.className = 'usecase-link'
+            link.href = `${demoBase}${demoPath}`
+            link.target = '_blank'
+            link.rel = 'noopener noreferrer'
+            link.innerHTML = `<span>View config example</span><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M4.25 5.5a.75.75 0 0 0-.75.75v8.5c0 .414.336.75.75.75h8.5a.75.75 0 0 0 .75-.75v-4a.75.75 0 0 1 1.5 0v4A2.25 2.25 0 0 1 12.75 17h-8.5A2.25 2.25 0 0 1 2 14.75v-8.5A2.25 2.25 0 0 1 4.25 4h5a.75.75 0 0 1 0 1.5h-5Z" clip-rule="evenodd"/><path fill-rule="evenodd" d="M6.194 12.753a.75.75 0 0 0 1.06.053L16.5 4.44v2.81a.75.75 0 0 0 1.5 0v-4.5a.75.75 0 0 0-.75-.75h-4.5a.75.75 0 0 0 0 1.5h2.553l-9.056 8.194a.75.75 0 0 0-.053 1.06Z" clip-rule="evenodd"/></svg>`
+            link.setAttribute('aria-label', 'View config example (opens in new tab)')
+            link.addEventListener('click', e => e.stopPropagation())
+            card.appendChild(link)
+        }
+
         card.addEventListener('click', () => {
             document.querySelectorAll('[data-auth-usecase]').forEach(c => c.classList.remove('active'))
             card.classList.add('active')
@@ -1003,87 +1034,104 @@ async function executeAuthRequest(btnConfig) {
     Prism.highlightAll()
 }
 
-/* ======================== WEBSOCKET CHAT ======================== */
+/* ======================== WEBSOCKET CHAT ========================
+   Two independent clients side-by-side, wired to the same gateway endpoint
+   so the user can simulate two people chatting in the same room and see
+   messages relay through KrakenD live. Each .ws-client-panel carries its
+   own ws connection + DOM via data-role children. */
 
-let ws = null
-const wsUsername = 'Guest' + Math.floor(Math.random() * 1000)
+const WS_USERNAME_BY_SIDE = {
+    a: 'Alice-' + Math.floor(Math.random() * 1000),
+    b: 'Bob-'   + Math.floor(Math.random() * 1000),
+}
 
 function setupWebSocketChat() {
-    const connectBtn = document.getElementById('__ws-connect')
-    const sendBtn = document.getElementById('__ws-send')
-    const input = document.getElementById('__ws-input')
+    document.querySelectorAll('#page-websocket-chat .ws-client-panel').forEach(panel => {
+        const side = panel.dataset.wsSide
+        const username = WS_USERNAME_BY_SIDE[side] || `Guest-${side}`
+        const ctx = collectWsRefs(panel, username)
 
-    connectBtn?.addEventListener('click', connectWebSocket)
-    sendBtn?.addEventListener('click', sendWsMessage)
-    input?.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' && input.value.trim()) sendWsMessage()
+        ctx.connectBtn.addEventListener('click', () => connectWsClient(ctx))
+        ctx.sendBtn.addEventListener('click', () => sendWsMessage(ctx))
+        ctx.input.addEventListener('keydown', e => {
+            if (e.key === 'Enter' && ctx.input.value.trim()) sendWsMessage(ctx)
+        })
     })
 }
 
-function connectWebSocket() {
-    if (ws) {
-        ws.close()
-        ws = null
+function collectWsRefs(panel, username) {
+    return {
+        panel,
+        username,
+        ws: null,
+        roomInput: panel.querySelector('[data-role="room"]'),
+        connectBtn: panel.querySelector('[data-role="connect"]'),
+        sendBtn: panel.querySelector('[data-role="send"]'),
+        input: panel.querySelector('[data-role="input"]'),
+        messagesEl: panel.querySelector('[data-role="messages"]'),
+        statusEl: panel.querySelector('[data-role="status"]'),
+    }
+}
+
+function connectWsClient(ctx) {
+    if (ctx.ws) {
+        ctx.ws.close()
+        ctx.ws = null
     }
 
-    const room = document.getElementById('__ws-room').value.trim() || 'playground'
-    const messagesEl = document.getElementById('__ws-messages')
-    const statusEl = document.getElementById('__ws-status')
-    const input = document.getElementById('__ws-input')
-    const sendBtn = document.getElementById('__ws-send')
-    const connectBtn = document.getElementById('__ws-connect')
-
-    messagesEl.innerHTML = ''
-    appendWsMessage('System', `Connecting to room "${room}"...`, 'var(--accent-amber)')
+    const room = ctx.roomInput.value.trim() || 'playground'
+    ctx.messagesEl.innerHTML = ''
+    appendWsMessage(ctx, 'System', `Connecting to room "${room}"…`, 'var(--accent-amber)')
 
     const wsUrl = `ws://${location.hostname}:8080/chat/ws/${encodeURIComponent(room)}`
-    ws = new WebSocket(wsUrl)
+    const ws = new WebSocket(wsUrl)
+    ctx.ws = ws
 
     ws.onopen = () => {
-        statusEl.innerHTML = '<span class="dot"></span>Connected'
-        statusEl.className = 'status-pill status-success'
-        input.disabled = false
-        sendBtn.disabled = false
-        connectBtn.innerHTML = 'Reconnect'
-        appendWsMessage('System', `Connected as ${wsUsername}`, 'var(--accent-green)')
-        input.focus()
+        setWsStatus(ctx, 'success', 'Connected')
+        ctx.input.disabled = false
+        ctx.sendBtn.disabled = false
+        ctx.connectBtn.textContent = 'Reconnect'
+        appendWsMessage(ctx, 'System', `Connected as ${ctx.username}`, 'var(--accent-green)')
+        ctx.input.focus()
     }
 
     ws.onclose = () => {
-        statusEl.innerHTML = '<span class="dot"></span>Disconnected'
-        statusEl.className = 'status-pill status-warning'
-        input.disabled = true
-        sendBtn.disabled = true
-        appendWsMessage('System', 'Disconnected', 'var(--accent-amber)')
+        setWsStatus(ctx, 'warning', 'Disconnected')
+        ctx.input.disabled = true
+        ctx.sendBtn.disabled = true
+        appendWsMessage(ctx, 'System', 'Disconnected', 'var(--accent-amber)')
     }
 
     ws.onerror = () => {
-        statusEl.innerHTML = '<span class="dot"></span>Error'
-        statusEl.className = 'status-pill status-error'
-        appendWsMessage('System', 'Connection error', 'var(--accent-red)')
+        setWsStatus(ctx, 'error', 'Error')
+        appendWsMessage(ctx, 'System', 'Connection error', 'var(--accent-red)')
     }
 
-    ws.onmessage = (msg) => {
+    ws.onmessage = msg => {
         const match = msg.data.match(/^<([^>]+)>\s(.*)/)
         if (match) {
-            const isSelf = match[1] === wsUsername
-            appendWsMessage(match[1], match[2], isSelf ? 'var(--accent-cyan)' : 'var(--accent-blue)')
+            const isSelf = match[1] === ctx.username
+            appendWsMessage(ctx, match[1], match[2], isSelf ? 'var(--accent-violet)' : 'var(--accent-blue)')
         } else {
-            appendWsMessage(null, msg.data, 'var(--text-secondary)')
+            appendWsMessage(ctx, null, msg.data, 'var(--text-secondary)')
         }
     }
 }
 
-function sendWsMessage() {
-    const input = document.getElementById('__ws-input')
-    if (!ws || ws.readyState !== WebSocket.OPEN || !input.value.trim()) return
-    ws.send(`<${wsUsername}> ${input.value}`)
-    input.value = ''
-    input.focus()
+function sendWsMessage(ctx) {
+    if (!ctx.ws || ctx.ws.readyState !== WebSocket.OPEN || !ctx.input.value.trim()) return
+    ctx.ws.send(`<${ctx.username}> ${ctx.input.value}`)
+    ctx.input.value = ''
+    ctx.input.focus()
 }
 
-function appendWsMessage(sender, text, color) {
-    const messagesEl = document.getElementById('__ws-messages')
+function setWsStatus(ctx, kind, label) {
+    ctx.statusEl.innerHTML = `<span class="dot"></span>${label}`
+    ctx.statusEl.className = `status-pill status-${kind}`
+}
+
+function appendWsMessage(ctx, sender, text, color) {
     const time = new Date().toLocaleTimeString()
     const line = document.createElement('div')
     line.style.marginBottom = '0.2rem'
@@ -1095,8 +1143,8 @@ function appendWsMessage(sender, text, color) {
         line.innerHTML = `${timeSpan} <span style="color: ${color};">${escapeHtml(text)}</span>`
     }
 
-    messagesEl.appendChild(line)
-    messagesEl.scrollTop = messagesEl.scrollHeight
+    ctx.messagesEl.appendChild(line)
+    ctx.messagesEl.scrollTop = ctx.messagesEl.scrollHeight
 }
 
 function escapeHtml(str) {

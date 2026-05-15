@@ -14,7 +14,7 @@ services:
     command: ["run", "-d", "-c", "krakend.json"]
     depends_on:
       - jaeger
-      - chat
+      - interactive-demo
       - redis
     stop_grace_period: 2s
   grafana:
@@ -85,19 +85,27 @@ services:
     ports:
       - "15672:15672"
       - "5672:5672"
-  fake_api:
-    image: busybox:latest
-    init: true
-    volumes:
-      - ./data:/var/www
-    ports:
-      - "8000:80"
-    command: ["httpd", "-f", "-h", "/var/www/"]
-  web:
+  mocked_apis:
     build:
-      context: images/demo-app
+      context: images/mocked_apis
+    volumes:
+      - ./data:/data:ro
+  interactive-demo:
+    build:
+      context: images/interactive-demo
     ports:
       - "3000:3000"
+    env_file:
+      - ./config/krakend/.env
+      - path: ./config/krakend/.env.local
+        required: false
+    environment:
+      MCP_URL: "http://krakend_ee:8080/mcp"
+      MODEL: "claude-haiku-4-5"
+    # Edit-in-place mount: HTML/CSS/JS changes show up on a browser refresh
+    # without rebuilding the image.
+    volumes:
+      - ./images/interactive-demo/src:/home/app/src:ro
   revoker:
     image: krakend/krakend-ee:2.13
     ports:
@@ -118,11 +126,6 @@ services:
     image: krakend/grpc_trains_fake:latest
     ports:
       - "4243:4243"
-  chat:
-    build:
-      context: images/websocket/chat
-    ports:
-      - "4245:8888"
   keycloak:
     image: quay.io/keycloak/keycloak:26.0
     ports:

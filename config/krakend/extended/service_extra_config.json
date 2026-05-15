@@ -57,81 +57,85 @@
   "ai/mcp": {
     "servers": [
       {
-        "name": "country-data-aggregator",
-        "title": "Country Information Aggregator",
+        "name": "kyc-dossier-aggregator",
+        "title": "KYC Counterparty Risk Dossier",
         "version": "1.0.0",
         "stateless": true,
-        "instructions": "Provides unified country data by aggregating REST and GraphQL APIs. Use this to retrieve comprehensive information about countries including geography, demographics, and cultural data.",
+        "instructions": "Provides KYC (Know-Your-Customer) counterparty risk dossiers by aggregating entity identification (REST), ownership chain (GraphQL), and sanctions screening (SOAP) for a given Legal Entity Identifier (LEI). Two tools are available: get_kyc_dossier returns a compact TOON-formatted dossier optimized for LLM consumption, while get_kyc_dossier_legacy returns verbose JSON for comparison purposes.",
         "tools": [
           {
-            "name": "get_country_info",
-            "title": "Get Country Information",
-            "description": "Retrieves comprehensive country data by aggregating multiple public APIs (REST + GraphQL). Returns unified information including capital, population, area, languages, currency, flag, and bordering countries.",
+            "name": "get_kyc_dossier",
+            "title": "Get KYC Dossier (LLM-optimized)",
+            "description": "Aggregates entity identification (REST), ownership chain (GraphQL), and sanctions screening (SOAP) into a compact TOON-formatted dossier optimized for LLM consumption. Use this for AI-driven counterparty risk assessment.",
             "type": "text",
             "input_schema": {
               "type": "object",
+              "required": ["lei"],
               "properties": {
-                "country_code": {
+                "lei": {
                   "type": "string",
-                  "description": "Two-letter ISO 3166-1 alpha-2 country code (e.g., ES for Spain, FR for France, US for United States)",
-                  "pattern": "^[A-Z]{2}$"
+                  "pattern": "^[A-Z0-9]{20}$",
+                  "description": "ISO 17442 Legal Entity Identifier (20 alphanumeric chars)"
                 }
-              },
-              "required": ["country_code"]
+              }
             },
             "output_schema": {
               "type": "object",
               "properties": {
-                "country": {"type": ["string", "null"]},
-                "native_name": {"type": ["string", "null"]},
-                "capital": {"type": ["string", "null"]},
-                "population": {"type": ["number", "null"]},
-                "area_km2": {"type": ["number", "null"]},
-                "currency": {"type": ["string", "null"]},
-                "languages": {"type": ["array", "null"], "items": {"type": "string"}},
-                "flag_emoji": {"type": ["string", "null"]},
-                "borders": {"type": ["array", "null"], "items": {"type": "string"}}
+                "content": {
+                  "type": "string",
+                  "description": "TOON-formatted KYC dossier text — compact representation optimized for LLM token efficiency"
+                }
               }
             },
             "return_error_msg": true,
             "workflow": {
-              "endpoint": "/__mcp/country-info/{country_code}",
+              "endpoint": "/__mcp/kyc-dossier/{lei}",
               "backend": [
                 {
-                  "@comment": "REST Countries API - provides geography, population, borders, flags",
-                  "host": ["https://restcountries.com"],
-                  "url_pattern": "/v3.1/alpha/{country_code}",
-                  "encoding": "safejson",
-                  "is_collection": true,
-                  "group": "rest_data",
-                  "mapping": {
-                    "collection": "countries"
-                  }
-                },
-                {
-                  "@comment": "GraphQL Countries API - provides currency, native name, emoji, languages",
-                  "host": ["https://countries.trevorblades.com"],
-                  "url_pattern": "/",
-                  "encoding": "json",
-                  "target": "data.country",
-                  "group": "graphql_data",
-                  "extra_config": {
-                    "backend/graphql": {
-                      "type": "query",
-                      "query": "query GetCountry($code: ID!) { country(code: $code) { name native capital currency emoji languages { code name } } }",
-                      "variables": {
-                        "code": "{country_code}"
-                      }
-                    }
-                  }
+                  "@comment": "Calls the public TOON-formatted aggregator. The Lua transform that rewrites the merged JSON into a single TOON `content` field lives on /__kyc/aggregate-toon (multi-backend endpoint), since modifier/lua-proxy does not execute inside MCP tool workflows.",
+                  "host": ["http://krakend_ee:8080"],
+                  "url_pattern": "/__kyc/aggregate-toon/{lei}",
+                  "encoding": "json"
                 }
-              ],
-              "extra_config": {
-                "modifier/jmespath": {
-                  "@comment": "Simplified merge - take first element from REST array and combine with GraphQL",
-                  "expr": "{country: rest_data.countries[0].name.common, native_name: graphql_data.native, capital: rest_data.countries[0].capital[0], population: rest_data.countries[0].population, area_km2: rest_data.countries[0].area, currency: graphql_data.currency, languages: graphql_data.languages[*].name, flag_emoji: graphql_data.emoji, borders: rest_data.countries[0].borders}"
+              ]
+            }
+          },
+          {
+            "name": "get_kyc_dossier_legacy",
+            "title": "Get KYC Dossier (verbose JSON)",
+            "description": "Same aggregation as get_kyc_dossier but emits verbose JSON. Provided for comparison purposes - illustrates the token cost of serving raw aggregated data to an LLM vs. a TOON-formatted dossier.",
+            "type": "text",
+            "input_schema": {
+              "type": "object",
+              "required": ["lei"],
+              "properties": {
+                "lei": {
+                  "type": "string",
+                  "pattern": "^[A-Z0-9]{20}$",
+                  "description": "ISO 17442 Legal Entity Identifier (20 alphanumeric chars)"
                 }
               }
+            },
+            "output_schema": {
+              "type": "object",
+              "properties": {
+                "entity":    { "type": "object" },
+                "ownership": { "type": "object" },
+                "sanctions": { "type": "object" }
+              }
+            },
+            "return_error_msg": true,
+            "workflow": {
+              "endpoint": "/__mcp/kyc-dossier-legacy/{lei}",
+              "backend": [
+                {
+                  "@comment": "Single backend pointing to the internal aggregator. Passes JSON through unchanged (no Lua transform).",
+                  "host": ["http://krakend_ee:8080"],
+                  "url_pattern": "/__kyc/aggregate/{lei}",
+                  "encoding": "json"
+                }
+              ]
             }
           }
         ]

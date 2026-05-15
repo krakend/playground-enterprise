@@ -1,5 +1,5 @@
 {
-        "@comment": "EE only feature: Web Server - Static content",
+        "@comment": "Utility: Static doc site (Web Server feature, EE only)",
         "endpoint": "/demo/*",
         "output_encoding": "no-op",
         "backend": [
@@ -26,6 +26,40 @@
             "documentation/openapi": {
                 "summary": "Static file server for demo website",
                 "description": "Serves static HTML, CSS, JavaScript, and image files from the demo directory for the playground demo website",
+                "tags": [
+                    "Utilities"
+                ]
+            }
+        }
+    },
+    {
+        "@comment": "Utility: Static slide decks (sales / talks). Lives outside ./demo/ so the demo-site builder doesn't overwrite them on regeneration.",
+        "endpoint": "/slides/*",
+        "output_encoding": "no-op",
+        "backend": [
+            {
+                "url_pattern": "/",
+                "extra_config": {
+                    "backend/static-filesystem": {
+                        "directory_listing": false,
+                        "path": "./slides/"
+                    }
+                },
+                "host": [
+                    "http://localhost:8080"
+                ],
+                "encoding": "no-op"
+            }
+        ],
+        "extra_config": {
+            "documentation/postman": {
+                "name": "Serve Slide Decks",
+                "description": "Serves static slide decks (HTML + assets) from config/krakend/slides/. Each subfolder is a separate deck.",
+                "folder": "/Utilities"
+            },
+            "documentation/openapi": {
+                "summary": "Static slide deck server",
+                "description": "Serves HTML/CSS/JS slide decks from config/krakend/slides/. Kept outside the /demo/ tree so the demo-site builder never overwrites them.",
                 "tags": [
                     "Utilities"
                 ]
@@ -158,7 +192,7 @@
             {
                 "group": "hotels",
                 "host": [
-                    "http://fake_api"
+                    "http://mocked_apis:8091"
                 ],
                 "url_pattern": "/hotels/1.json"
             },
@@ -283,40 +317,12 @@
         }
     },
     {
-        "@comment": "EE only feature: WebSockets (chat example web interface)",
-        "endpoint": "/chat",
-        "output_encoding": "no-op",
-        "backend": [
-            {
-                "url_pattern": "/",
-                "host": [
-                    "http://{{.hosts.chat}}"
-                ],
-                "encoding": "no-op"
-            }
-        ],
-        "extra_config": {
-            "documentation/postman": {
-                "name": "WebSocket Chat Web Interface",
-                "description": "Web interface for testing WebSocket chat functionality",
-                "folder": "/Real-time Communication"
-            },
-            "documentation/openapi": {
-                "summary": "WebSocket chat web interface",
-                "description": "Web-based user interface for testing and interacting with WebSocket chat functionality in the browser",
-                "tags": [
-                    "Real-time Communication"
-                ]
-            }
-        }
-    },
-    {
         "@comment": "EE only feature: Wildcard to our fake API, open",
         "endpoint": "/fake-api/*",
         "backend": [
             {
                 "host": [
-                    "http://fake_api"
+                    "http://mocked_apis:8091"
                 ],
                 "url_pattern": "/"
             }
@@ -345,7 +351,7 @@
         "backend": [
             {
                 "host": [
-                    "http://fake_api"
+                    "http://mocked_apis:8091"
                 ],
                 "url_pattern": "/"
             }
@@ -427,6 +433,106 @@
         }
     },
     {
+        "@comment": "Internal aggregation endpoint feeding the KYC LEGACY tool (verbose JSON output of the REST entity + GraphQL ownership + SOAP sanctions merge).",
+        "endpoint": "/__kyc/aggregate/{lei}",
+        "method": "GET",
+        "timeout": "15s",
+        "backend": [
+            {
+                "@comment": "REST entity registry - static JSON served by mocked_apis",
+                "host": ["http://mocked_apis:8091"],
+                "url_pattern": "/kyc/entity/{lei}.json",
+                "encoding": "safejson",
+                "group": "entity"
+            },
+            {
+                "@comment": "GraphQL ownership API on mocked_apis",
+                "host": ["http://mocked_apis:8091"],
+                "url_pattern": "/graphql",
+                "encoding": "json",
+                "target": "data.ownership",
+                "group": "ownership",
+                "extra_config": {
+                    "backend/graphql": {
+                        "type": "query",
+                        "query": "query GetOwnership($lei: ID!) { ownership(lei: $lei) { chain { level name lei jurisdiction percentage } ubos { name control_percentage country } } }",
+                        "variables": {
+                            "lei": "{lei}"
+                        }
+                    }
+                }
+            },
+            {
+                "@comment": "SOAP sanctions screening on mocked_apis",
+                "host": ["http://mocked_apis:8091"],
+                "url_pattern": "/soap/sanctions",
+                "method": "POST",
+                "encoding": "xml",
+                "target": "Envelope.Body.ScreenResponse",
+                "group": "sanctions",
+                "extra_config": {
+                    "backend/soap": {
+                        "path": "./extended/templates/soap_request_sanctions.tmpl.xml"
+                    }
+                }
+            }
+        ]
+    },
+    {
+        "@comment": "Internal TOON-formatted aggregator feeding the KYC TOON MCP tool. Same 3 backends as /__kyc/aggregate, plus a Lua post-merge transform that rewrites the response into a single `content` field carrying compact TOON text (LLM-optimized).",
+        "endpoint": "/__kyc/aggregate-toon/{lei}",
+        "method": "GET",
+        "timeout": "15s",
+        "extra_config": {
+            "modifier/lua-proxy": {
+                "sources": ["/etc/krakend/lua/to_toon.lua"],
+                "post": "to_toon_response()",
+                "allow_open_libs": false,
+                "live": true
+            }
+        },
+        "backend": [
+            {
+                "@comment": "REST entity registry",
+                "host": ["http://mocked_apis:8091"],
+                "url_pattern": "/kyc/entity/{lei}.json",
+                "encoding": "safejson",
+                "group": "entity"
+            },
+            {
+                "@comment": "GraphQL ownership API",
+                "host": ["http://mocked_apis:8091"],
+                "url_pattern": "/graphql",
+                "encoding": "json",
+                "target": "data.ownership",
+                "group": "ownership",
+                "extra_config": {
+                    "backend/graphql": {
+                        "type": "query",
+                        "query": "query GetOwnership($lei: ID!) { ownership(lei: $lei) { chain { level name lei jurisdiction percentage } ubos { name control_percentage country } } }",
+                        "variables": {
+                            "lei": "{lei}"
+                        }
+                    }
+                }
+            },
+            {
+                "@comment": "SOAP sanctions screening",
+                "host": ["http://mocked_apis:8091"],
+                "url_pattern": "/soap/sanctions",
+                "method": "POST",
+                "encoding": "xml",
+                "target": "Envelope.Body.ScreenResponse",
+                "group": "sanctions",
+                "extra_config": {
+                    "backend/soap": {
+                        "path": "./extended/templates/soap_request_sanctions.tmpl.xml"
+                    }
+                }
+            }
+        ]
+    },
+    {
         "@comment": "EE only feature: MCP Server - Entrypoint for Model Context Protocol",
         "endpoint": "/mcp",
         "method": "POST",
@@ -442,15 +548,15 @@
         "extra_config": {
             "documentation/postman": {
                 "name": "MCP Server Entrypoint (AI Gateway)",
-                "description": "Model Context Protocol server endpoint that exposes country data aggregation tools for AI/LLM integration",
+                "description": "Model Context Protocol server endpoint that exposes KYC counterparty risk dossier tools for AI/LLM integration",
                 "folder": "/AI Integration"
             },
             "ai/mcp": {
-                "server_name": "country-data-aggregator"
+                "server_name": "kyc-dossier-aggregator"
             },
             "documentation/openapi": {
-                "summary": "MCP Server entrypoint for country data tools",
-                "description": "Model Context Protocol (MCP) server exposing country information aggregation tools. Accepts MCP protocol requests and routes them to appropriate handlers that aggregate REST and GraphQL APIs.",
+                "summary": "MCP Server entrypoint for KYC dossier tools",
+                "description": "Model Context Protocol (MCP) server exposing KYC counterparty risk dossier aggregation tools. Accepts MCP protocol requests and routes them to handlers that aggregate REST entity data, GraphQL ownership chains, and SOAP sanctions screening.",
                 "tags": [
                     "AI Integration"
                 ]

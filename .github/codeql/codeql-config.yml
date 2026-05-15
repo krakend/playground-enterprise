@@ -11,5 +11,4 @@ name: "KrakenD Playground CodeQL config"
 #   https://learn.microsoft.com/en-us/answers/questions/1413395/codeql-bugs-js-insecure-randomness-and-js-incomple
 paths-ignore:
   - "config/krakend/demo/_next/**"
-  - "images/demo-app/dist/**"
-  - "images/demo-app/node_modules/**"
+  - "images/interactive-demo/node_modules/**"

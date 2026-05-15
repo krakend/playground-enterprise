@@ -1,0 +1,843 @@
+@charset "UTF-8";
+/* MCP Chat — all rules scoped under #page-mcp-chat so the chat's design
+   tokens (CSS custom properties, fonts, dark surfaces) only cascade into
+   the chat tab and never leak to the rest of the SPA. */
+@keyframes mcp-chat-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes mcp-chat-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes mcp-chat-blink {
+  to {
+    visibility: hidden;
+  }
+}
+#page-mcp-chat {
+  /* Brand tokens scoped to the chat */
+  --bg: #0b0c10;
+  --bg-2: #13151d;
+  --bg-3: #1a1d2a;
+  --neutral-200: #363944;
+  --neutral-300: #a2a9be;
+  --neutral-500: #717da3;
+  --lavender: #ab83ff;
+  --gradient-blue: #4177fd;
+  --gradient-lavender: linear-gradient(96deg, #ab83ff 0%, #4177fd 75%);
+  --brand-green: #31ee8b;
+  --brand-red: #ff4545;
+  --brand-yellow: #ffbe2f;
+  /* Layout only when the SPA marks this page active. Without this scope the
+     ID selector would beat the SPA's `.page { display: none }` rule and the
+     chat would render under every other page. */
+  /* Reset chat descendants — scoped, so the rest of the SPA is unaffected. */
+  /* Two-column layout: chat + persistent info panel */
+  /* Info panel (right side) */
+  /* Flow diagram */
+  /* Phase grouping labels (Request / Response) */
+  /* Numbered steps */
+  /* Suggestion badges (severity tags) */
+  /* Messages */
+  /* Markdown rendering inside assistant bubbles */
+  /* Tool indicator card embedded inline with assistant messages */
+  /* Cursor while streaming */
+  /* Composer footer */
+}
+#page-mcp-chat.active {
+  /* Viewport minus chrome (header ~84px after the eyebrow stack +
+     footer ~110px). +2px safety margin so we never overflow into a
+     scroll. Tweak if header content height changes again. */
+  height: calc(100vh - 196px);
+  display: grid;
+  grid-template-rows: 1fr auto;
+  overflow: hidden;
+  background: var(--bg);
+  color: #fff;
+  font-family: "Inter", Helvetica, Arial, sans-serif;
+}
+#page-mcp-chat *, #page-mcp-chat *::before, #page-mcp-chat *::after {
+  box-sizing: border-box;
+}
+#page-mcp-chat .accent {
+  background-image: var(--gradient-lavender);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-weight: 600;
+}
+#page-mcp-chat .status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--neutral-500);
+}
+#page-mcp-chat .status-dot.ok {
+  background: var(--brand-green);
+  box-shadow: 0 0 8px rgba(49, 238, 139, 0.5);
+}
+#page-mcp-chat .status-dot.err {
+  background: var(--brand-red);
+}
+#page-mcp-chat .main-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 580px;
+  gap: 0;
+  overflow: hidden;
+  min-height: 0;
+}
+@media (max-width: 1280px) {
+  #page-mcp-chat .main-layout {
+    grid-template-columns: minmax(0, 1fr) 360px;
+  }
+}
+@media (max-width: 1000px) {
+  #page-mcp-chat .main-layout {
+    grid-template-columns: 1fr;
+  }
+}
+#page-mcp-chat .conversation {
+  overflow-y: auto;
+  padding: 32px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  min-height: 0;
+}
+#page-mcp-chat .info-panel {
+  border-left: 1px solid var(--neutral-200);
+  background: linear-gradient(180deg, rgba(171, 131, 255, 0.03) 0%, transparent 100%);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+@media (max-width: 1000px) {
+  #page-mcp-chat .info-panel {
+    border-left: 0;
+    border-top: 1px solid var(--neutral-200);
+    max-height: 50vh;
+  }
+}
+#page-mcp-chat .info-panel-header {
+  display: flex;
+  align-items: stretch;
+  border-bottom: 1px solid var(--neutral-200);
+}
+#page-mcp-chat .info-toggle {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 18px;
+  background: transparent;
+  border: 0;
+  color: #fff;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  cursor: pointer;
+  text-align: left;
+}
+#page-mcp-chat .info-config-link {
+  /* Keep the SPA's existing .usecase-link visual but adapt to the chat's
+     own dark surface. Aligned to the right of the Behind-the-scenes toggle. */
+  position: static;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 18px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--lavender);
+  text-decoration: none;
+  border-left: 1px solid var(--neutral-200);
+  white-space: nowrap;
+  transition: color 150ms, background 150ms;
+}
+#page-mcp-chat .info-config-link:hover {
+  color: #fff;
+  background: rgba(171, 131, 255, 0.06);
+}
+#page-mcp-chat .info-config-link svg {
+  width: 12px;
+  height: 12px;
+  opacity: 0.8;
+}
+#page-mcp-chat .info-toggle i.fa-circle-info {
+  color: var(--lavender);
+  font-size: 14px;
+}
+#page-mcp-chat .info-toggle .chev {
+  margin-left: auto;
+  transition: transform 200ms;
+  font-size: 11px;
+  color: var(--neutral-500);
+}
+#page-mcp-chat .info-panel.collapsed .info-toggle .chev {
+  transform: rotate(-90deg);
+}
+#page-mcp-chat .info-panel.collapsed .info-body {
+  display: none;
+}
+#page-mcp-chat .info-body {
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+#page-mcp-chat .info-content-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  align-items: start;
+}
+#page-mcp-chat .info-content-grid > * {
+  min-width: 0;
+}
+#page-mcp-chat .info-content-grid .info-steps {
+  padding-top: 114px;
+}
+@media (max-width: 1280px) {
+  #page-mcp-chat .info-content-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  #page-mcp-chat .info-content-grid .info-steps {
+    padding-top: 0;
+  }
+}
+#page-mcp-chat .info-lede {
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: var(--neutral-300);
+}
+#page-mcp-chat .info-lede strong {
+  color: #fff;
+  font-weight: 600;
+}
+#page-mcp-chat .flow {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  padding: 4px 0;
+}
+#page-mcp-chat .flow-node {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  border: 1px solid var(--neutral-200);
+  border-radius: 10px;
+  padding: 10px 12px;
+  background: var(--bg-2);
+  font-size: 13px;
+  line-height: 1.35;
+}
+#page-mcp-chat .flow-node i {
+  color: var(--lavender);
+  font-size: 14px;
+  flex-shrink: 0;
+  width: 16px;
+  text-align: center;
+}
+#page-mcp-chat .flow-node .flow-label {
+  flex: 1;
+}
+#page-mcp-chat .flow-node .flow-label small {
+  display: block;
+  font-size: 11px;
+  color: var(--neutral-500);
+  margin-top: 2px;
+}
+#page-mcp-chat .flow-node .flow-label small code {
+  font-family: "Source Code Pro", monospace;
+  font-size: 10.5px;
+  color: var(--lavender);
+  background: rgba(171, 131, 255, 0.08);
+  padding: 1px 5px;
+  border-radius: 3px;
+}
+#page-mcp-chat .flow-node.brand {
+  border-color: rgba(171, 131, 255, 0.45);
+  background: rgba(171, 131, 255, 0.06);
+}
+#page-mcp-chat .flow-node.brand i {
+  color: var(--lavender);
+}
+#page-mcp-chat .flow-node.small {
+  flex-direction: column;
+  align-items: stretch;
+  padding: 8px 6px;
+  gap: 4px;
+  font-size: 11px;
+  text-align: center;
+}
+#page-mcp-chat .flow-node.small .flow-label {
+  font-size: 11px;
+  line-height: 1.25;
+}
+#page-mcp-chat .flow-node .proto-label {
+  font-family: "Source Code Pro", monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  padding: 2px 0;
+  border-radius: 3px;
+  color: #fff;
+}
+#page-mcp-chat .flow-node.proto-rest {
+  border-color: rgba(49, 238, 139, 0.4);
+}
+#page-mcp-chat .flow-node.proto-rest .proto-label {
+  background: rgba(49, 238, 139, 0.18);
+  color: var(--brand-green);
+}
+#page-mcp-chat .flow-node.proto-gql {
+  border-color: rgba(255, 190, 47, 0.4);
+}
+#page-mcp-chat .flow-node.proto-gql .proto-label {
+  background: rgba(255, 190, 47, 0.18);
+  color: var(--brand-yellow);
+}
+#page-mcp-chat .flow-node.proto-soap {
+  border-color: rgba(255, 69, 69, 0.4);
+}
+#page-mcp-chat .flow-node.proto-soap .proto-label {
+  background: rgba(255, 69, 69, 0.18);
+  color: var(--brand-red);
+}
+#page-mcp-chat .flow-arrow {
+  width: 2px;
+  height: 18px;
+  background: linear-gradient(180deg, rgba(171, 131, 255, 0.6), rgba(171, 131, 255, 0.15));
+  margin: 0;
+}
+#page-mcp-chat .flow-arrow.merge {
+  height: 22px;
+}
+#page-mcp-chat .flow-fanout {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 6px;
+  width: 100%;
+  margin-top: 12px;
+  position: relative;
+}
+#page-mcp-chat .flow-fanout::before {
+  content: "";
+  position: absolute;
+  top: -12px;
+  left: 16.66%;
+  right: 16.66%;
+  height: 1px;
+  border-top: 1px dashed rgba(171, 131, 255, 0.35);
+}
+#page-mcp-chat .flow-fanout::after {
+  content: "";
+  position: absolute;
+  top: -12px;
+  left: 50%;
+  width: 1px;
+  height: 12px;
+  background: rgba(171, 131, 255, 0.35);
+  transform: translateX(-0.5px);
+}
+#page-mcp-chat .flow-phase {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+}
+#page-mcp-chat .flow-phase::before {
+  content: attr(data-phase);
+  align-self: flex-start;
+  font-size: 10px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--lavender);
+  opacity: 0.7;
+  margin: 12px 0 -2px 2px;
+}
+#page-mcp-chat .info-steps {
+  counter-reset: step;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+#page-mcp-chat .info-steps li {
+  counter-increment: step;
+  position: relative;
+  padding: 0 0 0 28px;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--neutral-300);
+}
+#page-mcp-chat .info-steps li::before {
+  content: counter(step);
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--gradient-lavender);
+  color: #fff;
+  font-weight: 700;
+  font-size: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+#page-mcp-chat .info-steps li strong {
+  color: #fff;
+  font-weight: 600;
+}
+#page-mcp-chat .info-steps li code {
+  font-family: "Source Code Pro", monospace;
+  font-size: 11.5px;
+  background: rgba(171, 131, 255, 0.1);
+  color: var(--lavender);
+  padding: 1px 5px;
+  border-radius: 3px;
+}
+#page-mcp-chat .info-steps li em {
+  color: var(--lavender);
+  font-style: normal;
+  font-weight: 600;
+}
+#page-mcp-chat .suggestions button .badge {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 1px 7px;
+  font-size: 10.5px;
+  letter-spacing: 0.02em;
+  font-weight: 600;
+  border-radius: 999px;
+  text-transform: uppercase;
+}
+#page-mcp-chat .suggestions button .badge.red {
+  background: rgba(255, 69, 69, 0.15);
+  color: var(--brand-red);
+}
+#page-mcp-chat .suggestions button .badge.yellow {
+  background: rgba(255, 190, 47, 0.15);
+  color: var(--brand-yellow);
+}
+#page-mcp-chat .suggestions button .badge.green {
+  background: rgba(49, 238, 139, 0.15);
+  color: var(--brand-green);
+}
+#page-mcp-chat .suggestions button .badge.lavender {
+  background: rgba(171, 131, 255, 0.15);
+  color: var(--lavender);
+}
+#page-mcp-chat .welcome {
+  margin: auto 0;
+  text-align: center;
+  padding: 32px 16px;
+}
+#page-mcp-chat .welcome h2 {
+  font-size: clamp(28px, 4vw, 44px);
+  font-weight: 800;
+  line-height: 1.15;
+  margin-bottom: 16px;
+}
+#page-mcp-chat .welcome p {
+  font-size: 16px;
+  color: var(--neutral-300);
+  max-width: 860px;
+  margin: 0 auto 28px;
+  line-height: 1.6;
+}
+#page-mcp-chat .welcome p strong {
+  color: #fff;
+  font-weight: 600;
+}
+#page-mcp-chat .welcome > .welcome-disclaimer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: fit-content;
+  margin: 32px auto 0;
+  padding: 8px 14px;
+  border: 1px dashed var(--neutral-200);
+  border-radius: 999px;
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--neutral-500);
+  background: rgba(255, 255, 255, 0.015);
+}
+#page-mcp-chat .welcome > .welcome-disclaimer i {
+  color: var(--neutral-500);
+  font-size: 11px;
+}
+#page-mcp-chat .welcome > .welcome-disclaimer strong {
+  color: var(--neutral-300);
+  font-weight: 600;
+}
+#page-mcp-chat .suggestions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+#page-mcp-chat .suggestions button {
+  background: transparent;
+  color: var(--neutral-300);
+  border: 1px solid var(--neutral-200);
+  border-radius: 12px;
+  padding: 12px 18px;
+  font-family: inherit;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 150ms;
+}
+#page-mcp-chat .suggestions button:hover {
+  border-color: var(--lavender);
+  color: #fff;
+  background: rgba(171, 131, 255, 0.06);
+}
+#page-mcp-chat .msg {
+  display: flex;
+  gap: 14px;
+  max-width: 88%;
+  animation: mcp-chat-fade-in 250ms ease-out;
+}
+#page-mcp-chat .msg.user {
+  align-self: flex-end;
+  flex-direction: row-reverse;
+}
+#page-mcp-chat .msg.user .avatar {
+  background: var(--bg-3);
+  color: var(--neutral-300);
+  border: 1px solid var(--neutral-200);
+}
+#page-mcp-chat .msg.user .bubble {
+  background: linear-gradient(180deg, rgba(171, 131, 255, 0.16) 0%, rgba(65, 119, 253, 0.16) 100%);
+  border: 1px solid rgba(171, 131, 255, 0.25);
+  border-top-right-radius: 4px;
+}
+#page-mcp-chat .msg.assistant .avatar {
+  background: transparent;
+  border: 1px solid transparent;
+  background-image: linear-gradient(var(--bg), var(--bg)), var(--gradient-lavender);
+  background-origin: border-box;
+  background-clip: padding-box, border-box;
+  color: #fff;
+  position: relative;
+}
+#page-mcp-chat .msg.assistant .avatar::after {
+  content: "";
+  position: absolute;
+  inset: 4px;
+  border-radius: 50%;
+  background-image: var(--gradient-lavender);
+  opacity: 0.85;
+}
+#page-mcp-chat .msg.assistant .avatar i {
+  position: relative;
+  z-index: 1;
+  color: #fff;
+  font-size: 14px;
+}
+#page-mcp-chat .msg.assistant .bubble {
+  background: var(--bg-2);
+  border: 1px solid var(--neutral-200);
+  border-top-left-radius: 4px;
+}
+#page-mcp-chat .msg .avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: "Source Code Pro", monospace;
+}
+#page-mcp-chat .msg .bubble {
+  padding: 14px 18px;
+  border-radius: 16px;
+  line-height: 1.55;
+  font-size: 15px;
+}
+#page-mcp-chat .msg .bubble :where(p, ul, ol) {
+  margin-bottom: 8px;
+}
+#page-mcp-chat .msg .bubble :where(p, ul, ol):last-child {
+  margin-bottom: 0;
+}
+#page-mcp-chat .msg .bubble ul, #page-mcp-chat .msg .bubble ol {
+  padding-left: 22px;
+}
+#page-mcp-chat .msg .bubble code {
+  font-family: "Source Code Pro", monospace;
+  font-size: 13px;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+#page-mcp-chat .msg .bubble strong {
+  color: #fff;
+  font-weight: 600;
+}
+#page-mcp-chat .markdown-content :where(h1, h2, h3, h4) {
+  font-weight: 700;
+  margin: 14px 0 6px;
+  line-height: 1.3;
+}
+#page-mcp-chat .markdown-content h1 {
+  font-size: 22px;
+}
+#page-mcp-chat .markdown-content h2 {
+  font-size: 19px;
+}
+#page-mcp-chat .markdown-content h3 {
+  font-size: 16px;
+}
+#page-mcp-chat .markdown-content h4 {
+  font-size: 15px;
+  color: var(--neutral-300);
+}
+#page-mcp-chat .markdown-content :where(h1, h2, h3, h4):first-child {
+  margin-top: 0;
+}
+#page-mcp-chat .markdown-content p {
+  margin: 0 0 8px;
+}
+#page-mcp-chat .markdown-content p:last-child {
+  margin-bottom: 0;
+}
+#page-mcp-chat .markdown-content ul, #page-mcp-chat .markdown-content ol {
+  padding-left: 22px;
+  margin: 0 0 8px;
+}
+#page-mcp-chat .markdown-content li {
+  margin: 2px 0;
+}
+#page-mcp-chat .markdown-content li > p {
+  margin: 0;
+}
+#page-mcp-chat .markdown-content blockquote {
+  border-left: 3px solid var(--lavender);
+  padding: 2px 12px;
+  margin: 8px 0;
+  color: var(--neutral-300);
+  background: rgba(171, 131, 255, 0.06);
+  border-radius: 4px;
+}
+#page-mcp-chat .markdown-content pre {
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid var(--neutral-200);
+  border-radius: 8px;
+  padding: 10px 12px;
+  overflow-x: auto;
+  margin: 8px 0;
+  font-size: 12.5px;
+  line-height: 1.5;
+}
+#page-mcp-chat .markdown-content pre code {
+  background: transparent;
+  padding: 0;
+  border-radius: 0;
+}
+#page-mcp-chat .markdown-content table {
+  border-collapse: collapse;
+  margin: 8px 0;
+  width: 100%;
+  font-size: 13.5px;
+}
+#page-mcp-chat .markdown-content table th, #page-mcp-chat .markdown-content table td {
+  border: 1px solid var(--neutral-200);
+  padding: 6px 10px;
+  text-align: left;
+  vertical-align: top;
+}
+#page-mcp-chat .markdown-content table th {
+  background: rgba(171, 131, 255, 0.08);
+  font-weight: 600;
+  color: #fff;
+}
+#page-mcp-chat .markdown-content a {
+  color: var(--lavender);
+  text-decoration: underline;
+}
+#page-mcp-chat .markdown-content hr {
+  border: 0;
+  border-top: 1px solid var(--neutral-200);
+  margin: 12px 0;
+}
+#page-mcp-chat .tool-card {
+  margin: 8px 0;
+  border: 1px solid var(--neutral-200);
+  border-radius: 12px;
+  padding: 12px 14px;
+  background: rgba(171, 131, 255, 0.03);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+}
+#page-mcp-chat .tool-card .tool-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: "Source Code Pro", monospace;
+  color: var(--lavender);
+}
+#page-mcp-chat .tool-card .tool-head i {
+  font-size: 12px;
+}
+#page-mcp-chat .tool-card.pending .tool-head .spinner {
+  width: 12px;
+  height: 12px;
+  border: 2px solid rgba(171, 131, 255, 0.3);
+  border-top-color: var(--lavender);
+  border-radius: 50%;
+  animation: mcp-chat-spin 600ms linear infinite;
+}
+#page-mcp-chat .tool-card.ok .tool-head i {
+  color: var(--brand-green);
+}
+#page-mcp-chat .tool-card.err .tool-head i {
+  color: var(--brand-red);
+}
+#page-mcp-chat .tool-card .tool-route {
+  color: var(--neutral-300);
+  font-family: "Source Code Pro", monospace;
+  font-size: 11px;
+}
+#page-mcp-chat .tool-card .tool-route code {
+  color: var(--lavender);
+}
+#page-mcp-chat .tool-card .tool-size {
+  margin-left: auto;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(171, 131, 255, 0.12);
+  border: 1px solid rgba(171, 131, 255, 0.25);
+  color: var(--lavender);
+  font-family: "Source Code Pro", monospace;
+  font-size: 11px;
+  letter-spacing: 0.02em;
+}
+#page-mcp-chat .tool-card .tool-args {
+  font-family: "Source Code Pro", monospace;
+  font-size: 11px;
+  color: var(--neutral-500);
+  background: rgba(0, 0, 0, 0.3);
+  padding: 6px 8px;
+  border-radius: 6px;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+#page-mcp-chat .tool-card .tool-output {
+  word-break: normal;
+  overflow-wrap: anywhere;
+  line-height: 1.5;
+  max-height: 360px;
+  overflow-y: auto;
+  color: var(--neutral-300);
+}
+#page-mcp-chat .cursor {
+  display: inline-block;
+  width: 8px;
+  height: 16px;
+  background: var(--lavender);
+  margin-left: 2px;
+  vertical-align: middle;
+  animation: mcp-chat-blink 1s steps(2, start) infinite;
+}
+#page-mcp-chat .composer-footer {
+  padding: 16px 24px 18px;
+  border-top: 1px solid var(--neutral-200);
+}
+#page-mcp-chat .composer {
+  display: flex;
+  gap: 10px;
+  background: var(--bg-2);
+  border: 1px solid var(--neutral-200);
+  border-radius: 14px;
+  padding: 10px 10px 10px 16px;
+  align-items: flex-end;
+  transition: border-color 150ms;
+}
+#page-mcp-chat .composer:focus-within {
+  border-color: var(--lavender);
+}
+#page-mcp-chat .composer textarea {
+  flex: 1;
+  background: transparent;
+  border: 0;
+  outline: 0;
+  color: #fff;
+  font-family: inherit;
+  font-size: 15px;
+  line-height: 1.5;
+  resize: none;
+  max-height: 200px;
+  padding: 6px 0;
+}
+#page-mcp-chat .composer textarea::placeholder {
+  color: var(--neutral-500);
+}
+#page-mcp-chat .composer button {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  border: 0;
+  background-image: var(--gradient-lavender);
+  color: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 150ms;
+}
+#page-mcp-chat .composer button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+#page-mcp-chat .composer button i {
+  font-size: 14px;
+}
+#page-mcp-chat .footer-hint {
+  display: flex;
+  gap: 12px;
+  margin-top: 10px;
+  font-size: 11px;
+  color: var(--neutral-500);
+  font-family: "Source Code Pro", monospace;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+#page-mcp-chat .footer-hint code {
+  color: var(--lavender);
+  background: none;
+  padding: 0;
+}
+#page-mcp-chat .footer-hint .dot {
+  opacity: 0.5;
+}

@@ -2,7 +2,6 @@
   "conf_dir": "./",
   "name": "Local KrakenD EE",
   "host": ["http://localhost:7979"],
-  "fake_api": "http://fake_api",
   "port": 7979,
   "grpc_catalog": "../../images/grpc/defs",
   "endpoints": {
@@ -12,7 +11,7 @@
                 {
                     "url_pattern": "/ws/{room}",
                     "disable_host_sanitize": true,
-                    "host": ["ws://localhost:4245"]
+                    "host": ["ws://localhost:3000"]
                 }
             ]
         }
@@ -23,7 +22,7 @@
                 {
                     "url_pattern": "/",
                     "encoding": "no-op",
-                    "host": ["http://localhost:4245"]
+                    "host": ["http://localhost:3000"]
                 }
             ]
         }

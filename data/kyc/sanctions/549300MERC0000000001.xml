@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+  <soap:Body>
+    <ScreenResponse>
+      <total_hits>1</total_hits>
+      <matches>
+        <match>
+          <list>EU CFSP</list>
+          <score>0.78</score>
+          <matched_field>ubo.Mikhail Bondarenko</matched_field>
+          <evidence>UBO match on EU sanctions list (deep chain)</evidence>
+          <date_listed>2024-01-10</date_listed>
+        </match>
+      </matches>
+    </ScreenResponse>
+  </soap:Body>
+</soap:Envelope>

@@ -1,0 +1,9 @@
+{
+  "chain": [
+    {"level": 1, "name": "Mercator BVI Ltd",  "lei": "529900MERCBVI000001", "jurisdiction": "VG", "percentage": 100},
+    {"level": 2, "name": "Mercator KY Trust", "lei": "529900MERCKYT000001", "jurisdiction": "KY", "percentage": 100}
+  ],
+  "ubos": [
+    {"name": "Mikhail Bondarenko", "control_percentage": 100.0, "country": "BY"}
+  ]
+}

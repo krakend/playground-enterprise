@@ -4,7 +4,7 @@
         "backend": [
             {
                 "host": [
-                    "http://fake_api"
+                    "http://mocked_apis:8091"
                 ],
                 "url_pattern": "/shop/campaigns.json",
                 "allow": [
@@ -13,7 +13,7 @@
             },
             {
                 "host": [
-                    "http://fake_api"
+                    "http://mocked_apis:8091"
                 ],
                 "url_pattern": "/shop/products.json",
                 "allow": [

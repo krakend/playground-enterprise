@@ -1,0 +1,9 @@
+{
+  "chain": [
+    {"level": 1, "name": "Volga Holdings Cyprus Ltd", "lei": "549300VOLGA0CYP00001", "jurisdiction": "CY", "percentage": 100}
+  ],
+  "ubos": [
+    {"name": "Ivan Petrov", "control_percentage": 65.0, "country": "RU"},
+    {"name": "Anna Volkova", "control_percentage": 35.0, "country": "RU"}
+  ]
+}
