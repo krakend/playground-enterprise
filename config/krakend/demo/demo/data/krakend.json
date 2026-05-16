@@ -1283,37 +1283,6 @@
       }
     },
     {
-      "@comment": "EE only feature: MCP Server - Entrypoint for Model Context Protocol",
-      "endpoint": "/mcp",
-      "method": "POST",
-      "timeout": "15s",
-      "backend": [
-        {
-          "host": [
-            "http://ignore"
-          ],
-          "url_pattern": "/ignore"
-        }
-      ],
-      "extra_config": {
-        "ai/mcp": {
-          "server_name": "kyc-dossier-aggregator"
-        },
-        "documentation/openapi": {
-          "description": "Model Context Protocol (MCP) server exposing KYC counterparty risk dossier aggregation tools. Accepts MCP protocol requests and routes them to handlers that aggregate REST entity data, GraphQL ownership chains, and SOAP sanctions screening.",
-          "summary": "MCP Server entrypoint for KYC dossier tools",
-          "tags": [
-            "AI Integration"
-          ]
-        },
-        "documentation/postman": {
-          "description": "Model Context Protocol server endpoint that exposes KYC counterparty risk dossier tools for AI/LLM integration",
-          "folder": "/AI Integration",
-          "name": "MCP Server Entrypoint (AI Gateway)"
-        }
-      }
-    },
-    {
       "@comment": "AI Integration: LLM Routing",
       "endpoint": "/llm-routing",
       "method": "POST",
@@ -1332,7 +1301,7 @@
             "ai/llm": {
               "gemini": {
                 "v1beta": {
-                  "credentials": "<env_local_empty_credential>",
+                  "credentials": "<REDACTED_GEMINI_API_KEY>",
                   "variables": {
                     "candidate_count": 1
                   }
@@ -1359,7 +1328,7 @@
             "ai/llm": {
               "openai": {
                 "v1": {
-                  "credentials": "<env_local_empty_credential>",
+                  "credentials": "<REDACTED_OPENAI_API_KEY>",
                   "variables": {
                     "model": "gpt-4o-mini"
                   }
@@ -1386,7 +1355,7 @@
             "ai/llm": {
               "anthropic": {
                 "v1": {
-                  "credentials": "<env_local_empty_credential>",
+                  "credentials": "<REDACTED_ANTHROPIC_API_KEY>",
                   "variables": {
                     "model": "claude-haiku-4-5"
                   }
@@ -1437,7 +1406,7 @@
             "ai/llm": {
               "openai": {
                 "v1": {
-                  "credentials": "<env_local_empty_credential>",
+                  "credentials": "<REDACTED_OPENAI_API_KEY>",
                   "variables": {
                     "model": "gpt-4o-mini"
                   }
@@ -1463,7 +1432,7 @@
             "ai/llm": {
               "gemini": {
                 "v1beta": {
-                  "credentials": "<env_local_empty_credential>",
+                  "credentials": "<REDACTED_GEMINI_API_KEY>",
                   "variables": {
                     "candidate_count": 1
                   }
@@ -1534,7 +1503,7 @@
             "ai/llm": {
               "gemini": {
                 "v1beta": {
-                  "credentials": "<env_local_empty_credential>",
+                  "credentials": "<REDACTED_GEMINI_API_KEY>",
                   "variables": {
                     "candidate_count": 1
                   }
@@ -1619,7 +1588,7 @@
             "ai/llm": {
               "gemini": {
                 "v1beta": {
-                  "credentials": "<env_local_empty_credential>",
+                  "credentials": "<REDACTED_GEMINI_API_KEY>",
                   "variables": {
                     "candidate_count": 1
                   }
@@ -1702,7 +1671,7 @@
           "host": [
             "https://generativelanguage.googleapis.com"
           ],
-          "url_pattern": "/v1beta/models/gemini-2.5-flash:generateContent?key=<env_local_empty_credential>",
+          "url_pattern": "/v1beta/models/gemini-2.5-flash:generateContent?key=<REDACTED_GEMINI_API_KEY>",
           "method": "POST",
           "group": "llm",
           "extra_config": {
@@ -1751,6 +1720,37 @@
               "resp_data.label == 'BENIGN'"
             ]
           }
+        }
+      }
+    },
+    {
+      "@comment": "AI Integration: MCP Server - Entrypoint for Model Context Protocol",
+      "endpoint": "/mcp",
+      "method": "POST",
+      "timeout": "15s",
+      "backend": [
+        {
+          "host": [
+            "http://ignore"
+          ],
+          "url_pattern": "/ignore"
+        }
+      ],
+      "extra_config": {
+        "ai/mcp": {
+          "server_name": "kyc-dossier-aggregator"
+        },
+        "documentation/openapi": {
+          "description": "Model Context Protocol (MCP) server exposing KYC counterparty risk dossier aggregation tools. Accepts MCP protocol requests and routes them to handlers that aggregate REST entity data, GraphQL ownership chains, and SOAP sanctions screening.",
+          "summary": "MCP Server entrypoint for KYC dossier tools",
+          "tags": [
+            "AI Integration"
+          ]
+        },
+        "documentation/postman": {
+          "description": "Model Context Protocol server endpoint that exposes KYC counterparty risk dossier tools for AI/LLM integration",
+          "folder": "/AI Integration",
+          "name": "MCP Server Entrypoint (AI Gateway)"
         }
       }
     }

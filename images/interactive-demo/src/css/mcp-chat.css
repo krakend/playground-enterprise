@@ -53,10 +53,11 @@
   /* Composer footer */
 }
 #page-mcp-chat.active {
-  /* Viewport minus chrome (header ~84px after the eyebrow stack +
-     footer ~110px). +2px safety margin so we never overflow into a
-     scroll. Tweak if header content height changes again. */
-  height: calc(100vh - 196px);
+  /* Viewport minus the sticky header only (~84px). The chat composer
+     anchors at the bottom of the viewport so the active surface is
+     always visible; the page footer falls below the fold and is reached
+     by scrolling. */
+  height: calc(100vh - 84px);
   display: grid;
   grid-template-rows: 1fr auto;
   overflow: hidden;

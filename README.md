@@ -54,15 +54,18 @@ KrakenD can export telemetry to several services; this demonstration has a few e
 
     make elastic
 
-### Web client
-An interactive demos SPA at `images/interactive-demo/` with four sections:
+### Interactive demos SPA
+A self-contained Node + Express app at `images/interactive-demo/` that surfaces hands-on demos for the most representative use cases. Four tabs:
 
-- **AI Gateway** — Test 5 AI use cases: LLM routing, role-based routing, token quotas, and prompt guardrails (deterministic + AI-based)
-- **Agentic Gateway (MCP)** — Chat against a KrakenD-hosted MCP server (Claude Haiku 4.5 + KYC counterparty risk dossier scenario)
+- **AI Gateway** — Test 5 AI use cases: LLM routing by header, role-based routing, token quotas, and prompt guardrails (deterministic + AI-based)
+- **Agentic Gateway (MCP)** — Chat against a KrakenD-hosted MCP server (Claude Haiku 4.5 + KYC counterparty risk dossier scenario, fans out to REST + GraphQL + SOAP backends and reshapes the merged response to TOON-formatted text for the LLM)
 - **Auth Demo** — Test authentication patterns: JWT (Keycloak), API keys, Basic Auth, and GDPR cookie policies
 - **WebSocket Chat** — Two side-by-side clients in the same room, proxied through KrakenD's WebSocket layer
 
-Visit [http://localhost:8080/interactive-demo/](http://localhost:8080/interactive-demo/) (proxied via the gateway) or [http://localhost:3000](http://localhost:3000) (direct to the container).
+Open it at [http://localhost:8080/interactive-demo/](http://localhost:8080/interactive-demo/) (always go through the gateway — the auth flow does a redirect that relies on Keycloak's `iss` matching the public hostname).
+
+### Playground Index & Docs
+A static documentation site listing every endpoint + integration shipped with the playground, with a per-endpoint deep-dive page (config, Try it widget, links to the relevant KrakenD docs). Served by KrakenD's static-content server at [http://localhost:8080/demo/](http://localhost:8080/demo/).
 
 ### AI Gateway services (opt-in)
 The AI Gateway use cases need extra pieces that are **not started by default** so the regular `make start` stays fast:
@@ -92,7 +95,7 @@ curl -iH'Authorization: bearer 639ee23f-f4c5-40c4-855c-912bf01fae87'  http://loc
 ```
 
 ### WebSockets
-A WebSocket server runs on [ws://localhost:8888](ws://localhost:8888), but you can access it through KrakenD on the page [http://localhost:8080/chat](http://localhost:8080/chat)
+The interactive-demo container also hosts a tiny WebSocket broker. The gateway exposes `/chat/ws/{room}` and upgrades the connection to the broker; messages are echoed to every client connected to the same room. Use the dual-client UI in the **WebSocket Chat** tab of the [interactive demos](http://localhost:8080/interactive-demo/#websocket-chat) to test it end-to-end.
 
 ### gRPC services
 Two microservices with gRPC are available for testing too:
@@ -127,17 +130,24 @@ If you need to create new roles, users or configurations in the Keycloak instanc
 ## Start the service
 ### Running the playground
 
-To start the stack included in docker-compose
+To start the base stack (no AI Gateway):
 ```shell
     $ make start
 ```
 
-To follow the KrakenD logs after the complete stack is up & running (You also have Kibana)
+To start the full stack with AI Gateway enabled (LLM routing, quotas, guardrails, MCP). Requires provider credentials — see [Trying the AI Gateway use cases](#trying-the-ai-gateway-use-cases):
+```shell
+    $ make start-with-ai-gateway
+```
+
+Either target waits for Keycloak's health endpoint to report ready before the interactive demos SPA starts serving, so the first request to the SPA doesn't hit a redirect to a not-yet-booted IdP.
+
+To follow the KrakenD logs after the complete stack is up & running (you also have Kibana):
 ```shell
     $ make logs
 ```
 
-To shut down the complete stack, removing all the volumes
+To shut down the complete stack, removing all the volumes:
 ```shell
     $ make stop
 ```
@@ -164,19 +174,24 @@ The AI Gateway endpoints (`/llm-routing`, `/llm-conditional`, `/llm-quota`, `/pr
 
 If the credentials check fails or the keys are still the placeholder, the target aborts before touching Docker. If you want to run without the AI Gateway, just use `make start` as usual.
 
-Try them from the [demo SPA](http://localhost:3000) under *AI Gateway*.
+Try them from the [interactive demos SPA](http://localhost:8080/interactive-demo/) under *AI Gateway*.
 
 ## Play!
 Fire up your browser, curl, postman, httpie, or anything else you like to interact with any published services.
 
-- KrakenD API Gateway: [http://localhost:8080](http://localhost:8080)
-- Demo static website: [http://localhost:8080/demo/](http://localhost:8080/demo/)
+KrakenD is listening on `localhost:8080`. The two entry points to start poking around are:
+
+- Playground Index & Docs: [http://localhost:8080/demo/](http://localhost:8080/demo/)
+- Interactive demos SPA: [http://localhost:8080/interactive-demo/](http://localhost:8080/interactive-demo/) — AI Gateway, Agentic Gateway/MCP, Auth Demo, WebSocket Chat
+
+Supporting services exposed locally:
+
 - Jaeger (tracing): [http://localhost:16686](http://localhost:16686)
-- Kibana (logs): [http://localhost:5601](http://localhost:5601)
-- Grafana (metrics): [http://localhost:4000](http://localhost:4000) (krakend/krakend)
-- Interactive demos SPA via gateway: [http://localhost:8080/interactive-demo/](http://localhost:8080/interactive-demo/) (AI Gateway, Agentic Gateway/MCP, Auth Demo, WebSocket Chat)
-- JWT revoker: [http://localhost:9000](http://localhost:9000)
-- Keycloak (IdP): [http://localhost:8085](http://localhost:8085)
+- Kibana (logs): [http://localhost:5601](http://localhost:5601) (run `make elastic` once to import the dashboard)
+- Grafana (metrics): [http://localhost:4000](http://localhost:4000) (`krakend`/`krakend`)
+- Keycloak (IdP): [http://localhost:8085](http://localhost:8085) (`admin`/`admin`)
+- JWT revoker: [http://localhost:8081](http://localhost:8081)
+- RabbitMQ admin: [http://localhost:15672](http://localhost:15672) (`guest`/`guest`)
 
 When you change the `krakend.json`, the changes are applied automatically.
 
@@ -203,7 +218,7 @@ The following endpoints are worth noticing:
 | Rate Limiting / Throttling                              | [`/shop`](http://localhost:8080/shop)                                         | Demonstrates multi-level rate limiting: 2 requests/second at endpoint level, 1 req/s at the products backend level. Useful for controlling traffic and protecting backends.                                                                                                                                                          |
 | Request to gRPC backends                                | [`/travel`](http://localhost:8080/travel?lat=1.2&lon=3.4)                     | Aggregates flights and trains data from two different gRPC services.                                                                                                                                                                                                                                                                 |
 | gRPC POST with HTTP Body                                | `/travel_book_flight/{id_flight}/{main_passenger}`                            | Books a flight by sending complex data to a gRPC service via POST body. Complements the GET example in `/travel` showing how to handle POST requests with gRPC backends.                                                                                                                                                             |
-| Connection to WebSockets                                | [`/chat/ws/{room}`](ws://localhost:8080/chat/ws/foo)                          | Example WebSockets implementation to illustrate WS connectivity. The WS service will broadcast received messages to all connected users in the chat. Use the [Chat UI](http://localhost:8080/chat) to test how it works.                                                                                                             |
+| Connection to WebSockets                                | `/chat/ws/{room}`                                                             | Example WebSockets implementation to illustrate WS connectivity. The WS service will broadcast received messages to all connected users in the room. Use the [WebSocket Chat tab](http://localhost:8080/interactive-demo/#websocket-chat) of the interactive demos to test how it works (two side-by-side clients).                  |
 | Caching backend responses                               | [`/market/cached`](http://localhost:8080/market/cached)                       | Caching a backend response (based on cache headers provided by the backend)                                                                                                                                                                                                                                                          |
 | Concurrent requests                                     | [`/market/concurrent`](http://localhost:8080/market/concurrent)               | Using [concurrent requests](https://www.krakend.io/docs/endpoints/concurrent-requests/) to gather data from Coingecko API                                                                                                                                                                                                            |
 | Sequential calls                                        | [`/sequential`](http://localhost:8080/sequential)                             | Using [sequential proxy](https://www.krakend.io/docs/endpoints/sequential-proxy/) to build a pipe of sequential calls, using values from 1st call response into 2nd call request                                                                                                                                                     |
@@ -212,9 +227,9 @@ The following endpoints are worth noticing:
 | Wildcards                                               | [`/fake-api/*`](http://localhost:8080/fake-api/user/1.json)                   | Expose all sub-paths under a common location using a single endpoint definition                                                                                                                                                                                                                                                      |
 | Basic authentication                                    | [`/fake-api-auth/*`](http://localhost:8080/fake-api-auth/user/1.json)         | Expose information from internal service at fake API using wildcard and adding Basic Authentication                                                                                                                                                                                                                                  |
 | Geolocation / Geofencing                                | [`/fake-api-geofence/*`](http://localhost:8080/fake-api-geofence/user/1.json) | Expose information from internal service at fake API using wildcard and applying geofencing (only accessible ) <br>_Note: to use geofencing, you should download a [Maxmind GeoIP City database](https://dev.maxmind.com/geoip/geolite2-free-geolocation-data?lang=en) (commercial or free) and store it on `config/krakend/geoip/`_ |
-| JWT-based Authentication                                | [`/private/moderate`](http://localhost:8080/private/moderate)                       | Protects an endpoint validating JWT tokens issued by built-in Keycloak instance. You can access http://localhost:3000/ to test it.                                                                                                                                                                                                                       |
+| JWT-based Authentication                                | [`/private/moderate`](http://localhost:8080/private/moderate)                       | Protects an endpoint validating JWT tokens issued by the built-in Keycloak instance. Use the [Auth Demo tab](http://localhost:8080/interactive-demo/#auth-demo/public-private) of the interactive demos to test it end-to-end.                                                                                                                          |
 | API Keys based Authentication                           | [`/api-key`](http://localhost:8080/api-key)                                   | Protects and endpoint using an API-Key. You can use `curl -iG -H 'Authorization: Bearer 58427514-be32-0b52-b7c6-d01fada30497' 'http://localhost:8080/api-key'` to test it.                                                                                                                                                           |
-| Model Context Protocol (MCP) Server / AI Gateway        | `/mcp` (POST)                                                                  | **Enterprise-only** MCP server that exposes tools for aggregating country data from multiple APIs (REST + GraphQL). Designed for AI/LLM integration following the Model Context Protocol standard.                                                |
+| Model Context Protocol (MCP) Server / AI Gateway        | `/mcp` (POST)                                                                  | **Enterprise-only** MCP server exposing a `kyc-dossier-aggregator` with two tools (TOON-formatted + verbose JSON variants). Each tool fans out to three protocols — REST entity registry, GraphQL ownership chain, SOAP sanctions screening — and merges them at the gateway. Designed for AI/LLM integration following the Model Context Protocol standard.   |
 | LLM Routing by Header                                  | [`/llm-routing`](http://localhost:8080/llm-routing) (POST)                     | Route requests to Gemini, OpenAI, or Anthropic (fallback) based on `X-Model` header using conditional backends.                                                                                                                                 |
 | Role-Based LLM Routing                                 | [`/llm-conditional`](http://localhost:8080/llm-conditional) (POST)             | JWT role determines which LLM responds: moderators get OpenAI, readers get Gemini. Requires Keycloak authentication.                                                                                                                            |
 | Token Quota Management                                 | [`/llm-quota`](http://localhost:8080/llm-quota) (POST)                         | Per-user token budget enforcement via Redis. Moderators: 10k tokens/day, readers: 1k tokens/day.                                                                                                                                                |

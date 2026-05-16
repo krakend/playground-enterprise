@@ -346,3 +346,14 @@ server.listen(PORT, () => {
     console.log(`  MCP chat:   POST /api/chat  (model ${MODEL}, MCP ${MCP_URL})`);
     console.log(`  WS broker:  WS   /ws/:room`);
 });
+
+// Graceful shutdown so `docker compose stop/down` doesn't hang on the full
+// stop_grace_period waiting for SIGKILL. Close the HTTP server, then exit;
+// hard exit after 1.5s if a connection refuses to drain.
+function shutdown(signal) {
+    console.log(`[server] received ${signal}, shutting down`);
+    server.close(() => process.exit(0));
+    setTimeout(() => process.exit(0), 1500).unref();
+}
+process.on("SIGTERM", () => shutdown("SIGTERM"));
+process.on("SIGINT", () => shutdown("SIGINT"));

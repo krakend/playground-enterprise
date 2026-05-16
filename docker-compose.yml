@@ -106,6 +106,13 @@ services:
     # without rebuilding the image.
     volumes:
       - ./images/interactive-demo/src:/home/app/src:ro
+    # Wait for Keycloak to be fully ready before serving — the SPA's auth
+    # flow does a hard redirect to the IdP on first load and fails if
+    # Keycloak hasn't finished booting + importing the realm.
+    depends_on:
+      keycloak:
+        condition: service_healthy
+    stop_grace_period: 2s
   revoker:
     image: krakend/krakend-ee:2.13
     ports:
@@ -135,7 +142,16 @@ services:
     environment:
       - KEYCLOAK_ADMIN=admin
       - KEYCLOAK_ADMIN_PASSWORD=admin
-    command: ["start-dev", "--import-realm"]
+    # Enable the built-in health endpoints on the management port (9000) so
+    # other services can wait for Keycloak to be actually ready (realm
+    # imported, JWKS served) — not just for the process to be up.
+    command: ["start-dev", "--import-realm", "--health-enabled=true"]
+    healthcheck:
+      test: ["CMD-SHELL", "exec 3<>/dev/tcp/127.0.0.1/9000 && echo -e 'GET /health/ready HTTP/1.0\\r\\n\\r\\n' >&3 && grep -q '\"status\": \"UP\"' <&3"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+      start_period: 30s
     stop_grace_period: 2s
   redis:
     image: redis:7-alpine

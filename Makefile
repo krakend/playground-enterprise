@@ -3,9 +3,8 @@
 start:
 	docker compose build interactive-demo && docker compose up -d
 	@echo ""
-	@echo "  Playground is up!"
+	@echo "  Playground is up — KrakenD listening on localhost:8080"
 	@echo ""
-	@echo "    API Gateway:                http://localhost:8080"
 	@echo "    Playground Index & Docs:    http://localhost:8080/demo/"
 	@echo "    Interactive demos:          http://localhost:8080/interactive-demo/"
 	@echo ""
@@ -18,12 +17,10 @@ start-with-ai-gateway: check-ai-credentials compile-flexible-config
 	docker compose --profile ai-gateway build prompt-guard interactive-demo
 	docker compose --profile ai-gateway up -d
 	@echo ""
-	@echo "  Playground is up with AI Gateway enabled!"
+	@echo "  Playground is up with AI Gateway enabled — KrakenD listening on localhost:8080"
 	@echo ""
-	@echo "    API Gateway:                http://localhost:8080"
 	@echo "    Playground Index & Docs:    http://localhost:8080/demo/"
 	@echo "    Interactive demos:          http://localhost:8080/interactive-demo/"
-	@echo "    AI Gateway slides:          http://localhost:8080/slides/ai-gateway/"
 	@echo ""
 
 check-ai-credentials:

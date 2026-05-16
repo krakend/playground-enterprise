@@ -531,35 +531,4 @@
                 }
             }
         ]
-    },
-    {
-        "@comment": "EE only feature: MCP Server - Entrypoint for Model Context Protocol",
-        "endpoint": "/mcp",
-        "method": "POST",
-        "timeout": "15s",
-        "backend": [
-            {
-                "url_pattern": "/ignore",
-                "host": [
-                    "http://ignore"
-                ]
-            }
-        ],
-        "extra_config": {
-            "documentation/postman": {
-                "name": "MCP Server Entrypoint (AI Gateway)",
-                "description": "Model Context Protocol server endpoint that exposes KYC counterparty risk dossier tools for AI/LLM integration",
-                "folder": "/AI Integration"
-            },
-            "ai/mcp": {
-                "server_name": "kyc-dossier-aggregator"
-            },
-            "documentation/openapi": {
-                "summary": "MCP Server entrypoint for KYC dossier tools",
-                "description": "Model Context Protocol (MCP) server exposing KYC counterparty risk dossier aggregation tools. Accepts MCP protocol requests and routes them to handlers that aggregate REST entity data, GraphQL ownership chains, and SOAP sanctions screening.",
-                "tags": [
-                    "AI Integration"
-                ]
-            }
-        }
     }
