@@ -14,7 +14,7 @@ services:
     command: ["run", "-d", "-c", "krakend.json"]
     depends_on:
       - jaeger
-      - chat
+      - interactive-demo
       - redis
     stop_grace_period: 2s
   grafana:
@@ -85,19 +85,34 @@ services:
     ports:
       - "15672:15672"
       - "5672:5672"
-  fake_api:
-    image: busybox:latest
-    init: true
-    volumes:
-      - ./data:/var/www
-    ports:
-      - "8000:80"
-    command: ["httpd", "-f", "-h", "/var/www/"]
-  web:
+  mocked_apis:
     build:
-      context: images/demo-app
+      context: images/mocked_apis
+    volumes:
+      - ./data:/data:ro
+  interactive-demo:
+    build:
+      context: images/interactive-demo
     ports:
       - "3000:3000"
+    env_file:
+      - ./config/krakend/.env
+      - path: ./config/krakend/.env.local
+        required: false
+    environment:
+      MCP_URL: "http://krakend_ee:8080/mcp"
+      MODEL: "claude-haiku-4-5"
+    # Edit-in-place mount: HTML/CSS/JS changes show up on a browser refresh
+    # without rebuilding the image.
+    volumes:
+      - ./images/interactive-demo/src:/home/app/src:ro
+    # Wait for Keycloak to be fully ready before serving — the SPA's auth
+    # flow does a hard redirect to the IdP on first load and fails if
+    # Keycloak hasn't finished booting + importing the realm.
+    depends_on:
+      keycloak:
+        condition: service_healthy
+    stop_grace_period: 2s
   revoker:
     image: krakend/krakend-ee:2.13
     ports:
@@ -118,11 +133,6 @@ services:
     image: krakend/grpc_trains_fake:latest
     ports:
       - "4243:4243"
-  chat:
-    build:
-      context: images/websocket/chat
-    ports:
-      - "4245:8888"
   keycloak:
     image: quay.io/keycloak/keycloak:26.0
     ports:
@@ -132,7 +142,16 @@ services:
     environment:
       - KEYCLOAK_ADMIN=admin
       - KEYCLOAK_ADMIN_PASSWORD=admin
-    command: ["start-dev", "--import-realm"]
+    # Enable the built-in health endpoints on the management port (9000) so
+    # other services can wait for Keycloak to be actually ready (realm
+    # imported, JWKS served) — not just for the process to be up.
+    command: ["start-dev", "--import-realm", "--health-enabled=true"]
+    healthcheck:
+      test: ["CMD-SHELL", "exec 3<>/dev/tcp/127.0.0.1/9000 && echo -e 'GET /health/ready HTTP/1.0\\r\\n\\r\\n' >&3 && grep -q '\"status\": \"UP\"' <&3"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+      start_period: 30s
     stop_grace_period: 2s
   redis:
     image: redis:7-alpine

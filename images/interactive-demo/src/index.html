@@ -1,0 +1,1038 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>KrakenD Enterprise Playground</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Source+Code+Pro:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-json.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-bash.min.js"></script>
+
+    <!-- npm deps from CDN — no bundler needed. esm.sh re-exports npm packages
+         as browser-friendly ESM. We import here once and pin them on window
+         so the regular <script>s downstream can grab them as globals. -->
+    <script type="module">
+        import Keycloak from "https://esm.sh/keycloak-js@26";
+        import { marked }  from "https://esm.sh/marked@15";
+        window.Keycloak = Keycloak;
+        window.marked = marked;
+        window.dispatchEvent(new Event("vendors:ready"));
+    </script>
+
+    <link rel="stylesheet" href="./css/mcp-chat.css">
+    <script type="module" src="./js/mcp-chat.js"></script>
+    <script type="module" src="./js/main.js"></script>
+    <link rel=icon type=image/png href=https://www.krakend.io/favicon/favicon-96x96.png sizes=96x96>
+
+    <style>
+        :root {
+            /* Brand palette mirrored from the MCP chat / krakend.io / slides
+               so the whole SPA shares one visual system. */
+            --bg-primary: #0b0c10;       /* page background (was #0a0e17) */
+            --bg-secondary: #13151d;     /* header / sidebar (was #111827) */
+            --bg-card: #1a1d2a;          /* cards / panels  (was #1a1f2e) */
+            --bg-input: rgba(0, 0, 0, 0.3); /* inputs / code blocks */
+            --border: #363944;           /* default border  (was #1e293b) */
+            --border-active: #ab83ff;    /* hover/active border = lavender */
+            --text-primary: #ffffff;     /* primary text    (was #e2e8f0) */
+            --text-secondary: #a2a9be;   /* secondary text  (was #94a3b8) */
+            --text-muted: #717da3;       /* muted / hint    (was #64748b) */
+            --accent-blue: #4177fd;      /* gradient end-stop, info */
+            --accent-green: #31ee8b;     /* success / OK    (was #10b981) */
+            --accent-amber: #ffbe2f;     /* warning         (was #f59e0b) */
+            --accent-red: #ff4545;       /* error           (was #ef4444) */
+            --accent-violet: #ab83ff;    /* lavender / brand main */
+            --accent-cyan: #4177fd;      /* alias of blue (kept var for compat) */
+            --glow-blue: rgba(65, 119, 253, 0.15);
+            --glow-green: rgba(49, 238, 139, 0.15);
+            --glow-amber: rgba(255, 190, 47, 0.15);
+            --glow-red: rgba(255, 69, 69, 0.15);
+            --glow-violet: rgba(171, 131, 255, 0.15);
+            --gradient-lavender: linear-gradient(96deg, #ab83ff 0%, #4177fd 75%);
+            --font-display: 'Inter', Helvetica, Arial, sans-serif;
+            --font-mono: 'Source Code Pro', monospace;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        /* Bump root font-size from 16px (browser default) to 20px = 125% scale.
+           All rem-based sizes throughout the SPA scale up proportionally so the
+           UI is comfortable on a screen-share without manual zoom. */
+        html { font-size: 20px; }
+
+        body {
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-family: var(--font-display);
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Header */
+        .site-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 2rem;
+            border-bottom: 1px solid var(--border);
+            background: var(--bg-secondary);
+        }
+        .site-header a { text-decoration: none; color: inherit; }
+        .site-header img { height: 28px; display: block; }
+        .header-brand { display: flex; align-items: center; gap: 0.85rem; }
+        /* Logo + small uppercase tagline stacked vertically (krakend.io eyebrow pattern) */
+        .header-brand .brand-logo-block {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 3px;
+            line-height: 1;
+        }
+        .header-brand .brand-eyebrow {
+            font-family: var(--font-mono);
+            font-size: 0.55rem;
+            font-weight: 400;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            /* Align under the wordmark "KRAKEND" of the logo (skip the icon
+               on the left of the SVG). Tweak if logo aspect changes. */
+            padding-left: 35px;
+            line-height: 1;
+        }
+        .header-brand .brand-divider { color: var(--text-muted); opacity: 0.5; font-weight: 300; font-size: 1.1rem; }
+        .header-brand .brand-tag {
+            font-weight: 600;
+            font-size: 0.95rem;
+            letter-spacing: 0.01em;
+            background: var(--gradient-lavender);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .header-user { display: flex; align-items: center; gap: 1rem; font-size: 0.85rem; }
+        .header-user a { color: var(--accent-blue); cursor: pointer; font-weight: 500; }
+        .header-user a:hover { text-decoration: underline; }
+        .header-user .login-link {
+            background: var(--glow-blue);
+            padding: 0.4rem 0.9rem;
+            border-radius: 5px;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+        }
+        .user-badge {
+            display: inline-flex; align-items: center; gap: 0.4rem;
+            padding: 0.25rem 0.6rem; border-radius: 4px;
+            background: var(--glow-blue); color: var(--accent-blue);
+            font-size: 0.8rem; font-weight: 500;
+        }
+        .role-badge {
+            padding: 0.2rem 0.5rem; border-radius: 3px;
+            font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;
+        }
+        .role-moderator { background: var(--glow-green); color: var(--accent-green); }
+        .role-reader { background: var(--glow-amber); color: var(--accent-amber); }
+
+        /* Header-embedded nav tabs (sit right after the brand, push user
+           block to the far right via flex:1 + flex-start). */
+        .header-nav {
+            display: flex;
+            gap: 0.25rem;
+            margin: 0 1rem 0 1.5rem;
+            flex: 1;
+            justify-content: flex-start;
+            min-width: 0;
+            flex-wrap: wrap;
+        }
+        .nav-tab {
+            padding: 0.4rem 0.85rem;
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            cursor: pointer;
+            border-radius: 8px;
+            border: 1px solid transparent;
+            transition: all 0.15s;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            white-space: nowrap;
+        }
+        .nav-tab:hover {
+            color: var(--text-primary);
+            background: rgba(171, 131, 255, 0.06);
+        }
+        .nav-tab.active {
+            color: var(--text-primary);
+            background: rgba(171, 131, 255, 0.1);
+            border-color: rgba(171, 131, 255, 0.35);
+        }
+        .nav-tab svg { width: 14px; height: 14px; opacity: 0.85; }
+        .nav-tab.active svg { opacity: 1; }
+
+        /* Content area */
+        .content { max-width: none; padding: 0; }
+        /* Pages have zero padding by default. Pages that want a "framed" look
+           (cards inside a centered grid) opt in with .page-padded. Pages that
+           want to bleed to the edges (like the MCP chat) get the default. */
+        .page { display: none; }
+        .page.active { display: block; }
+        .page-padded { padding: 1.5rem 2rem; }
+
+        /* AI Use case selector */
+        .usecase-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 0.6rem;
+            margin-bottom: 1.25rem;
+        }
+        .usecase-card {
+            padding: 1rem 1.25rem;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: var(--bg-card);
+            cursor: pointer;
+            transition: all 0.25s;
+            position: relative;
+            overflow: hidden;
+        }
+        .usecase-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 2px;
+            background: var(--card-accent, var(--accent-blue));
+            opacity: 0;
+            transition: opacity 0.25s;
+        }
+        .usecase-card:hover, .usecase-card.active {
+            border-color: var(--card-accent, var(--accent-blue));
+            background: var(--bg-secondary);
+        }
+        .usecase-card:hover::before, .usecase-card.active::before { opacity: 1; }
+        .usecase-card .card-icon {
+            width: 32px; height: 32px;
+            border-radius: 6px;
+            display: flex; align-items: center; justify-content: center;
+            margin-bottom: 0.6rem;
+            font-size: 1rem;
+        }
+        .usecase-card h4 { font-size: 0.85rem; font-weight: 600; margin-bottom: 0.3rem; color: var(--text-primary); }
+        .usecase-card p { font-size: 0.72rem; color: var(--text-secondary); line-height: 1.4; }
+        .usecase-tag {
+            display: inline-block; margin-top: 0.5rem;
+            font-size: 0.65rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em;
+            padding: 0.15rem 0.4rem; border-radius: 3px;
+        }
+        .usecase-link {
+            position: absolute;
+            top: 0.7rem;
+            right: 0.8rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            font-family: var(--font-mono);
+            font-size: 0.65rem;
+            letter-spacing: 0.03em;
+            color: var(--text-muted);
+            text-decoration: none;
+            white-space: nowrap;
+            transition: color 0.2s;
+            z-index: 1;
+        }
+        .usecase-link svg { width: 11px; height: 11px; }
+        .usecase-link:hover {
+            color: var(--card-accent, var(--accent-blue));
+        }
+
+        /* Panel */
+        .panel {
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            background: var(--bg-card);
+            overflow: hidden;
+        }
+        .panel-header {
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid var(--border);
+            display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem;
+            flex-wrap: wrap;
+        }
+        .panel-header h3 { font-size: 0.95rem; font-weight: 600; color: var(--text-primary); }
+        .panel-body { padding: 1.5rem; }
+        .panel-footer {
+            padding: 1rem 1.5rem;
+            border-top: 1px solid var(--border);
+            display: flex; justify-content: space-between; align-items: center;
+        }
+
+        /* Form elements */
+        .form-group { margin-bottom: 1rem; }
+        .panel-description {
+            font-size: 0.85rem;
+            color: var(--text-primary);
+            line-height: 1.6;
+            margin-bottom: 1rem;
+        }
+        .panel-description code {
+            font-family: var(--font-mono);
+            background: var(--bg-input);
+            padding: 0.15rem 0.4rem;
+            border-radius: 3px;
+            font-size: 0.82rem;
+            color: var(--accent-cyan);
+        }
+        .panel-description strong { color: #fff; }
+        .form-label {
+            display: block;
+            font-size: 0.78rem;
+            font-weight: 500;
+            color: var(--text-primary);
+            margin-bottom: 0.4rem;
+        }
+        textarea.form-input, input.form-input, select.form-input {
+            width: 100%;
+            padding: 0.65rem 0.85rem;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            background: var(--bg-input);
+            color: var(--text-primary);
+            font-family: var(--font-display);
+            font-size: 0.85rem;
+            transition: border-color 0.2s;
+            resize: vertical;
+        }
+        textarea.form-input:focus, input.form-input:focus, select.form-input:focus {
+            outline: none;
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 0 3px var(--glow-blue);
+        }
+        select.form-input { cursor: pointer; appearance: auto; }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex; align-items: center; gap: 0.5rem;
+            padding: 0.6rem 1.2rem;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+            font-family: var(--font-display);
+        }
+        .btn svg { width: 16px; height: 16px; }
+        .btn-primary {
+            background: var(--accent-blue);
+            color: white;
+        }
+        .btn-primary:hover { background: #2563eb; }
+        .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn-secondary {
+            background: transparent;
+            color: var(--text-secondary);
+            border: 1px solid var(--border);
+        }
+        .btn-secondary:hover { border-color: var(--text-muted); color: var(--text-primary); }
+        .btn-login {
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-violet));
+            color: white;
+            padding: 0.7rem 1.5rem;
+        }
+        .btn-login:hover { opacity: 0.9; }
+
+        /* Response display */
+        .response-area { margin-top: 1.5rem; }
+        .response-tabs {
+            display: flex; gap: 0;
+            border-bottom: 1px solid var(--border);
+            flex-shrink: 0;
+        }
+        .response-tab {
+            padding: 0.5rem 1rem;
+            font-size: 0.78rem;
+            font-weight: 500;
+            color: var(--text-muted);
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            font-family: var(--font-mono);
+        }
+        .response-tab:hover { color: var(--text-secondary); }
+        .response-tab.active { color: var(--accent-green); border-bottom-color: var(--accent-green); }
+        .response-content {
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 0 0 6px 6px;
+            overflow: auto;
+            min-width: 0;
+        }
+        .response-content pre {
+            margin: 0;
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            line-height: 1.5;
+            white-space: pre-wrap;
+            word-break: break-all;
+            overflow-wrap: break-word;
+        }
+        .response-content code { font-family: var(--font-mono); }
+
+        /* AI response rendered */
+        .ai-rendered {
+            padding: 1.25rem;
+            background: var(--bg-input);
+            border-radius: 6px;
+            line-height: 1.7;
+            font-size: 0.9rem;
+        }
+        .ai-rendered p { margin-bottom: 0.8rem; }
+        .ai-rendered strong { color: var(--text-primary); }
+        .ai-rendered code {
+            font-family: var(--font-mono);
+            background: var(--bg-card);
+            padding: 0.15rem 0.4rem;
+            border-radius: 3px;
+            font-size: 0.82rem;
+        }
+
+        /* Status indicators */
+        .status-pill {
+            display: inline-flex; align-items: center; gap: 0.35rem;
+            padding: 0.25rem 0.6rem;
+            border-radius: 100px;
+            font-size: 0.72rem;
+            font-weight: 600;
+            font-family: var(--font-mono);
+        }
+        .status-pill .dot {
+            width: 6px; height: 6px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+        .status-success { background: var(--glow-green); color: var(--accent-green); }
+        .status-success .dot { background: var(--accent-green); }
+        .status-error { background: var(--glow-red); color: var(--accent-red); }
+        .status-error .dot { background: var(--accent-red); }
+        .status-warning { background: var(--glow-amber); color: var(--accent-amber); }
+        .status-warning .dot { background: var(--accent-amber); }
+        .status-info { background: var(--glow-blue); color: var(--accent-blue); }
+        .status-info .dot { background: var(--accent-blue); }
+
+        /* Loading spinner */
+        .spinner {
+            width: 16px; height: 16px;
+            border: 2px solid var(--border);
+            border-top-color: var(--accent-blue);
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Auth section */
+        .auth-prompt {
+            text-align: center;
+            padding: 3rem 2rem;
+        }
+        .auth-prompt h2 { font-size: 1.5rem; margin-bottom: 0.5rem; }
+        .auth-prompt p { color: var(--text-secondary); margin-bottom: 1.5rem; font-size: 0.9rem; }
+        .credentials-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 0.75rem;
+            max-width: 500px;
+            margin: 0 auto 1.5rem;
+            text-align: left;
+        }
+        .credential-item {
+            padding: 0.6rem 0.8rem;
+            border-radius: 6px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+        }
+        .credential-item .label { font-size: 0.7rem; color: var(--text-muted); margin-bottom: 0.2rem; }
+        .credential-item code { font-family: var(--font-mono); font-size: 0.8rem; color: var(--accent-cyan); }
+
+        /* Endpoint info */
+        .endpoint-badge {
+            font-family: var(--font-mono);
+            font-size: 0.78rem;
+            padding: 0.3rem 0.6rem;
+            border-radius: 4px;
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            color: var(--accent-cyan);
+        }
+        .method-badge {
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+            font-weight: 600;
+            padding: 0.2rem 0.4rem;
+            border-radius: 3px;
+            background: var(--glow-green);
+            color: var(--accent-green);
+        }
+
+        /* Feature tags */
+        .features-row {
+            display: flex; flex-wrap: wrap; gap: 0.4rem;
+            margin-top: 0.5rem;
+        }
+        .feature-tag {
+            font-size: 0.68rem;
+            padding: 0.2rem 0.45rem;
+            border-radius: 3px;
+            background: var(--bg-input);
+            color: var(--text-muted);
+            border: 1px solid var(--border);
+            font-family: var(--font-mono);
+        }
+
+        /* Request preview */
+        .req-preview { font-family: var(--font-mono); font-size: 0.8rem; }
+        .req-line {
+            display: flex; align-items: center; gap: 0.5rem;
+            padding: 0.6rem 0.8rem;
+            background: var(--bg-card);
+            border-bottom: 1px solid var(--border);
+            border-radius: 6px 6px 0 0;
+        }
+        .req-line .method {
+            font-weight: 700; color: var(--accent-green);
+            font-size: 0.75rem; letter-spacing: 0.03em;
+        }
+        .req-line .url { color: var(--text-primary); word-break: break-all; }
+        .req-headers {
+            padding: 0.5rem 0.8rem;
+            background: var(--bg-card);
+            border-bottom: 1px solid var(--border);
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+        .req-headers .header-name { color: var(--accent-cyan); }
+        .req-headers .header-value { color: var(--text-secondary); }
+        .req-body-label {
+            padding: 0.4rem 0.8rem;
+            background: var(--bg-card);
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            border-bottom: 1px solid var(--border);
+        }
+        .req-body-content {
+            padding: 0.6rem 0.8rem;
+            background: var(--bg-input);
+            border-radius: 0 0 6px 6px;
+        }
+        .req-body-content pre { margin: 0; white-space: pre-wrap; word-break: break-all; }
+        /* Let Prism code blocks inherit the surrounding surface — override theme bg globally */
+        pre[class*="language-"],
+        :not(pre) > code[class*="language-"] {
+            background: transparent;
+        }
+
+        /* Comparison groups (Direct-to-LLM vs KrakenD) */
+        .comparison-group { margin-bottom: 0.9rem; }
+        .comparison-group:last-child { margin-bottom: 0; }
+        .comparison-group-header {
+            display: flex; align-items: center; gap: 0.55rem;
+            padding: 0.45rem 0.75rem;
+            border-radius: 6px 6px 0 0;
+            font-family: var(--font-mono);
+            font-size: 0.68rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            border: 1px solid var(--border);
+            border-bottom: none;
+        }
+        .comparison-group-header::before {
+            content: '';
+            width: 6px; height: 6px;
+            border-radius: 50%;
+            background: currentColor;
+            box-shadow: 0 0 6px currentColor;
+        }
+        .comparison-group-header.direct {
+            background: linear-gradient(180deg, var(--glow-amber), rgba(245, 158, 11, 0.06));
+            color: var(--accent-amber);
+            border-color: rgba(245, 158, 11, 0.28);
+        }
+        .comparison-group-header.krakend {
+            background: linear-gradient(180deg, var(--glow-green), rgba(16, 185, 129, 0.06));
+            color: var(--accent-green);
+            border-color: rgba(16, 185, 129, 0.28);
+        }
+        .comparison-group-header .label-note {
+            margin-left: auto;
+            font-size: 0.7rem;
+            font-weight: 500;
+            text-transform: none;
+            letter-spacing: 0.01em;
+            color: var(--text-secondary);
+            font-family: var(--font-display);
+        }
+        .comparison-group .req-preview {
+            border: 1px solid var(--border);
+            border-radius: 0 0 6px 6px;
+            overflow: hidden;
+            border-left-width: 3px;
+        }
+        .comparison-group.direct .req-preview { border-left-color: rgba(245, 158, 11, 0.55); }
+        .comparison-group.krakend .req-preview { border-left-color: rgba(16, 185, 129, 0.55); }
+        .comparison-group .req-body-label { border-bottom: none; padding-bottom: 0.15rem; }
+
+        /* Utilities */
+        .hidden { display: none !important; }
+        .flex { display: flex; }
+        .gap-2 { gap: 0.5rem; }
+        .gap-4 { gap: 1rem; }
+        .items-center { align-items: center; }
+        .text-muted { color: var(--text-secondary); }
+        .text-sm { font-size: 0.85rem; }
+        .text-xs { font-size: 0.75rem; }
+        .mt-2 { margin-top: 0.5rem; }
+        .mt-4 { margin-top: 1rem; }
+        .mb-2 { margin-bottom: 0.5rem; }
+        .mb-4 { margin-bottom: 1rem; }
+
+        /* Smooth transitions */
+        .fade-in { animation: fadeIn 0.3s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: var(--bg-primary); }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+        /* Two-column layout for AI panel */
+        .ai-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            min-width: 0;
+            align-items: start;
+        }
+        .ai-layout > div { min-width: 0; overflow: hidden; }
+        .panel { min-width: 0; overflow: hidden; }
+        @media (max-width: 1100px) {
+            .usecase-grid { grid-template-columns: repeat(3, 1fr); }
+        }
+        @media (max-width: 900px) {
+            .ai-layout { grid-template-columns: 1fr; }
+            .usecase-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        /* ===== WebSocket dual-client demo ===== */
+        .ws-page-header { margin-bottom: 1.25rem; }
+        .ws-title-row {
+            display: flex;
+            align-items: baseline;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-bottom: 0.35rem;
+        }
+        .ws-page-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 0;
+        }
+        .ws-page-subtitle {
+            font-size: 0.78rem;
+            color: var(--text-secondary);
+            line-height: 1.5;
+            max-width: 60ch;
+        }
+        .ws-page-link { position: static; flex-shrink: 0; }
+
+        .ws-dual-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.25rem;
+            align-items: stretch;
+        }
+        @media (max-width: 1000px) {
+            .ws-dual-grid { grid-template-columns: 1fr; }
+        }
+        .ws-client-panel {
+            display: flex;
+            flex-direction: column;
+            min-height: 480px;
+        }
+        .ws-client-panel .panel-body { flex: 1; display: flex; flex-direction: column; }
+        .ws-room-row { margin-bottom: 0.75rem; }
+        .ws-room-controls { display: flex; gap: 0.5rem; }
+        .ws-room-controls .form-input { flex: 1; }
+        .ws-messages {
+            flex: 1;
+            min-height: 260px;
+            max-height: 420px;
+            overflow-y: auto;
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 0.75rem;
+            margin-bottom: 0.75rem;
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            line-height: 1.6;
+        }
+        .ws-empty { color: var(--text-muted); text-align: center; padding: 2rem 0; }
+        .ws-send-row { display: flex; gap: 0.5rem; }
+        .ws-send-row .form-input { flex: 1; }
+    </style>
+</head>
+<body>
+    <!-- Header (single bar: brand · nav-tabs · user) -->
+    <header class="site-header">
+        <a href="./" class="header-brand">
+            <div class="brand-logo-block">
+                <img src="https://www.krakend.io/images/logo-krakend.svg" alt="KrakenD">
+                <span class="brand-eyebrow">EE Playground</span>
+            </div>
+            <span class="brand-divider">|</span>
+            <span class="brand-tag">Interactive Demos</span>
+        </a>
+        <nav class="header-nav">
+            <div class="nav-tab active" data-page="ai-gateway">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M4.464 3.162A2 2 0 0 1 6.28 2h7.44a2 2 0 0 1 1.816 1.162l1.154 2.5c.09.196.14.408.14.622v1.394a3.5 3.5 0 0 1-1.138 2.587l-.354.328a3.5 3.5 0 0 1-4.14.42L10 10.068l-1.197.945a3.5 3.5 0 0 1-4.14-.42l-.354-.328A3.5 3.5 0 0 1 3.17 7.678V6.284c0-.214.05-.426.14-.622l1.154-2.5ZM3 12.135v3.515a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-3.515a4.984 4.984 0 0 1-1.835.903 5.5 5.5 0 0 1-3.024.15L10 12.638l-2.14.965a5.5 5.5 0 0 1-3.025-.15A4.984 4.984 0 0 1 3 12.135Z"/></svg>
+                AI Gateway
+            </div>
+            <div class="nav-tab" data-page="mcp-chat">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M11.566 4.657a.75.75 0 0 1 .968.434l1.85 4.628a.75.75 0 0 1-.434.968l-4.628 1.85a.75.75 0 0 1-.968-.434l-1.85-4.628a.75.75 0 0 1 .434-.968l4.628-1.85ZM5.5 12a.5.5 0 0 1 .5-.5h.5a.5.5 0 0 1 .5.5v.5a.5.5 0 0 1-.5.5H6a.5.5 0 0 1-.5-.5V12ZM3 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5ZM3 14a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-2ZM12 14a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2h-2a2 2 0 0 1-2-2v-2Z"/></svg>
+                Agentic Gateway (MCP)
+            </div>
+            <div class="nav-tab" data-page="auth-demo">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 1a4.5 4.5 0 0 0-4.5 4.5V9H5a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6a2 2 0 0 0-2-2h-.5V5.5A4.5 4.5 0 0 0 10 1Zm3 8V5.5a3 3 0 1 0-6 0V9h6Z" clip-rule="evenodd"/></svg>
+                Auth Demo
+            </div>
+            <div class="nav-tab" data-page="websocket-chat">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3.43 2.524A41.29 41.29 0 0 1 10 2c2.236 0 4.43.18 6.57.524 1.437.231 2.43 1.49 2.43 2.902v5.148c0 1.413-.993 2.67-2.43 2.902a41.102 41.102 0 0 1-3.55.414c-.28.02-.521.18-.643.413l-1.712 3.293a.75.75 0 0 1-1.33 0l-1.713-3.293a.783.783 0 0 0-.642-.413 41.108 41.108 0 0 1-3.55-.414C1.993 13.245 1 11.986 1 10.574V5.426c0-1.413.993-2.67 2.43-2.902Z" clip-rule="evenodd"/></svg>
+                Chat (WebSockets)
+            </div>
+        </nav>
+        <div class="header-user">
+            <span id="__user-not-logged" class="hidden">
+                <a id="__btn-login" class="login-link">Log in</a>
+            </span>
+            <span id="__user-logged" class="hidden">
+                <span class="user-badge">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" width="14" height="14"><path fill-rule="evenodd" d="M18 10a8 8 0 1 1-16 0 8 8 0 0 1 16 0Zm-5.5-2.5a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0ZM10 12a5.99 5.99 0 0 0-4.793 2.39A6.483 6.483 0 0 0 10 16.5a6.483 6.483 0 0 0 4.793-2.11A5.99 5.99 0 0 0 10 12Z" clip-rule="evenodd"/></svg>
+                    <span id="__user-name"></span>
+                </span>
+                <span id="__user-role-badge" class="role-badge"></span>
+                <a id="__btn-logout" style="color: var(--accent-red); cursor: pointer; font-size: 0.8rem;">Logout</a>
+            </span>
+        </div>
+    </header>
+
+    <!-- Content -->
+    <div class="content">
+
+        <!-- ==================== AI GATEWAY PAGE ==================== -->
+        <div id="page-ai-gateway" class="page page-padded active">
+
+            <!-- Use case selector (order matches video demo presentation) -->
+            <div class="usecase-grid" id="__usecase-grid">
+                <div class="usecase-card active" data-usecase="guardrail-intelligent" style="--card-accent: var(--accent-violet)">
+                    <div class="card-icon" style="background: var(--glow-violet); color: var(--accent-violet);">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" width="18" height="18"><path d="M10 2a.75.75 0 0 1 .75.75v1.5a.75.75 0 0 1-1.5 0v-1.5A.75.75 0 0 1 10 2Zm0 13a.75.75 0 0 1 .75.75v1.5a.75.75 0 0 1-1.5 0v-1.5A.75.75 0 0 1 10 15Zm-6.657-4.343a.75.75 0 0 1 0-1.06l1.06-1.061a.75.75 0 1 1 1.061 1.06l-1.06 1.061a.75.75 0 0 1-1.061 0Zm11.314-3.536a.75.75 0 0 1 0-1.06l1.06-1.061a.75.75 0 0 1 1.061 1.06l-1.06 1.06a.75.75 0 0 1-1.061 0ZM10 6.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7Z"/></svg>
+                    </div>
+                    <h4>AI Guardrail</h4>
+                    <p>Prompt Guard 2 22M blocks injections</p>
+                    <span class="usecase-tag" style="background: var(--glow-violet); color: var(--accent-violet);">Sequential proxy</span>
+                </div>
+
+                <div class="usecase-card" data-usecase="guardrail-deterministic" style="--card-accent: var(--accent-red)">
+                    <div class="card-icon" style="background: var(--glow-red); color: var(--accent-red);">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" width="18" height="18"><path fill-rule="evenodd" d="M10 1a4.5 4.5 0 0 0-4.5 4.5V9H5a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6a2 2 0 0 0-2-2h-.5V5.5A4.5 4.5 0 0 0 10 1Zm3 8V5.5a3 3 0 1 0-6 0V9h6Z" clip-rule="evenodd"/></svg>
+                    </div>
+                    <h4>Pattern Guardrail</h4>
+                    <p>Block credit cards, passwords via regex</p>
+                    <span class="usecase-tag" style="background: var(--glow-red); color: var(--accent-red);">No auth</span>
+                </div>
+
+                <div class="usecase-card" data-usecase="llm-quota" style="--card-accent: var(--accent-amber)">
+                    <div class="card-icon" style="background: var(--glow-amber); color: var(--accent-amber);">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" width="18" height="18"><path fill-rule="evenodd" d="M1 4a1 1 0 0 1 1-1h16a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V4Zm12 4a3 3 0 1 1-6 0 3 3 0 0 1 6 0ZM4 9a1 1 0 1 0 0-2 1 1 0 0 0 0 2Zm13-1a1 1 0 1 1-2 0 1 1 0 0 1 2 0ZM1.75 14.5a.75.75 0 0 0 0 1.5c4.417 0 8.693.603 12.749 1.73 1.111.309 2.251-.512 2.251-1.696v-.784a.75.75 0 0 0-1.5 0v.784a.272.272 0 0 1-.35.25A49.043 49.043 0 0 0 1.75 14.5Z" clip-rule="evenodd"/></svg>
+                    </div>
+                    <h4>Token Quotas</h4>
+                    <p>Per-user token budget enforcement via Redis</p>
+                    <span class="usecase-tag" style="background: var(--glow-amber); color: var(--accent-amber);">JWT required</span>
+                </div>
+
+                <div class="usecase-card" data-usecase="llm-conditional" style="--card-accent: var(--accent-green)">
+                    <div class="card-icon" style="background: var(--glow-green); color: var(--accent-green);">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" width="18" height="18"><path d="M10 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM3.465 14.493a1.23 1.23 0 0 0 .41 1.412A9.957 9.957 0 0 0 10 18c2.31 0 4.438-.784 6.131-2.1.43-.333.604-.903.408-1.41a7.002 7.002 0 0 0-13.074.003Z"/></svg>
+                    </div>
+                    <h4>Role-Based Routing</h4>
+                    <p>JWT role determines which LLM model responds</p>
+                    <span class="usecase-tag" style="background: var(--glow-green); color: var(--accent-green);">JWT required</span>
+                </div>
+
+                <div class="usecase-card" data-usecase="llm-routing" style="--card-accent: var(--accent-blue)">
+                    <div class="card-icon" style="background: var(--glow-blue); color: var(--accent-blue);">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" width="18" height="18"><path fill-rule="evenodd" d="M2 4.75A.75.75 0 0 1 2.75 4h14.5a.75.75 0 0 1 0 1.5H2.75A.75.75 0 0 1 2 4.75Zm0 10.5a.75.75 0 0 1 .75-.75h7.5a.75.75 0 0 1 0 1.5h-7.5a.75.75 0 0 1-.75-.75ZM2 10a.75.75 0 0 1 .75-.75h14.5a.75.75 0 0 1 0 1.5H2.75A.75.75 0 0 1 2 10Z" clip-rule="evenodd"/></svg>
+                    </div>
+                    <h4>Conditional Routing</h4>
+                    <p>Route to Gemini, OpenAI, or Anthropic via any signal</p>
+                    <span class="usecase-tag" style="background: var(--glow-blue); color: var(--accent-blue);">No auth</span>
+                </div>
+            </div>
+
+            <!-- Active use case panel -->
+            <div id="__ai-panel" class="fade-in">
+                <!-- Dynamically populated by JS -->
+            </div>
+        </div>
+
+        <!-- ==================== AUTH DEMO PAGE ==================== -->
+        <div id="page-auth-demo" class="page page-padded">
+            <div class="usecase-grid" id="__auth-usecase-grid" style="grid-template-columns: repeat(4, 1fr);">
+                <div class="usecase-card active" data-auth-usecase="public-private" style="--card-accent: var(--accent-green)">
+                    <div class="card-icon" style="background: var(--glow-green); color: var(--accent-green);">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" width="18" height="18"><path d="M12.232 4.232a2.5 2.5 0 0 1 3.536 3.536l-1.225 1.224a.75.75 0 0 0 1.061 1.06l1.224-1.224a4 4 0 0 0-5.656-5.656l-3 3a4 4 0 0 0 .225 5.865.75.75 0 0 0 .977-1.138 2.5 2.5 0 0 1-.142-3.667l3-3Z"/><path d="M11.603 7.963a.75.75 0 0 0-.977 1.138 2.5 2.5 0 0 1 .142 3.667l-3 3a2.5 2.5 0 0 1-3.536-3.536l1.225-1.224a.75.75 0 0 0-1.061-1.06l-1.224 1.224a4 4 0 1 0 5.656 5.656l3-3a4 4 0 0 0-.225-5.865Z"/></svg>
+                    </div>
+                    <h4>Public vs Private</h4>
+                    <p>Compare open and JWT-protected endpoints</p>
+                    <span class="usecase-tag" style="background: var(--glow-green); color: var(--accent-green);">JWT</span>
+                </div>
+                <div class="usecase-card" data-auth-usecase="api-key" style="--card-accent: var(--accent-amber)">
+                    <div class="card-icon" style="background: var(--glow-amber); color: var(--accent-amber);">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" width="18" height="18"><path fill-rule="evenodd" d="M8 7a5 5 0 1 1 3.61 4.804l-1.903 1.903A1 1 0 0 1 9 14H8v1a1 1 0 0 1-1 1H6v1a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1v-1.586a1 1 0 0 1 .293-.707l5.964-5.964A5.014 5.014 0 0 1 8 7Zm5-3a.75.75 0 0 0 0 1.5A1.5 1.5 0 0 1 14.5 7 .75.75 0 0 0 16 7a3 3 0 0 0-3-3Z" clip-rule="evenodd"/></svg>
+                    </div>
+                    <h4>API Key Auth</h4>
+                    <p>Authenticate with static API keys</p>
+                    <span class="usecase-tag" style="background: var(--glow-amber); color: var(--accent-amber);">Enterprise</span>
+                </div>
+                <div class="usecase-card" data-auth-usecase="basic-auth" style="--card-accent: var(--accent-blue)">
+                    <div class="card-icon" style="background: var(--glow-blue); color: var(--accent-blue);">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" width="18" height="18"><path fill-rule="evenodd" d="M10 1a4.5 4.5 0 0 0-4.5 4.5V9H5a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6a2 2 0 0 0-2-2h-.5V5.5A4.5 4.5 0 0 0 10 1Zm3 8V5.5a3 3 0 1 0-6 0V9h6Z" clip-rule="evenodd"/></svg>
+                    </div>
+                    <h4>Basic Auth</h4>
+                    <p>HTTP Basic authentication with wildcard proxy</p>
+                    <span class="usecase-tag" style="background: var(--glow-blue); color: var(--accent-blue);">Wildcard</span>
+                </div>
+                <div class="usecase-card" data-auth-usecase="gdpr-policy" style="--card-accent: var(--accent-violet)">
+                    <div class="card-icon" style="background: var(--glow-violet); color: var(--accent-violet);">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" width="18" height="18"><path fill-rule="evenodd" d="M10 1c-1.828 0-3.623.149-5.371.435a.75.75 0 0 0-.629.74v.659c0 4.589 2.472 8.833 6.466 11.109a.75.75 0 0 0 .737.003A13.065 13.065 0 0 0 17.75 2.834v-.659a.75.75 0 0 0-.63-.74A49.17 49.17 0 0 0 10 1Z" clip-rule="evenodd"/></svg>
+                    </div>
+                    <h4>GDPR Policy</h4>
+                    <p>Cookie-based security policy enforcement</p>
+                    <span class="usecase-tag" style="background: var(--glow-violet); color: var(--accent-violet);">CEL</span>
+                </div>
+            </div>
+            <div id="__auth-panel" class="fade-in"></div>
+        </div>
+
+        <!-- ==================== WEBSOCKET CHAT PAGE ==================== -->
+        <div id="page-websocket-chat" class="page page-padded">
+            <div class="ws-page-header">
+                <div class="ws-title-row">
+                    <h2 class="ws-page-title">WebSocket Chat — two clients, one room</h2>
+                    <a class="usecase-link ws-page-link"
+                       href="http://localhost:8080/demo/use-cases/chat-ws-room/"
+                       target="_blank"
+                       rel="noopener noreferrer"
+                       aria-label="View config example (opens in new tab)">
+                        <span>View config example</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M4.25 5.5a.75.75 0 0 0-.75.75v8.5c0 .414.336.75.75.75h8.5a.75.75 0 0 0 .75-.75v-4a.75.75 0 0 1 1.5 0v4A2.25 2.25 0 0 1 12.75 17h-8.5A2.25 2.25 0 0 1 2 14.75v-8.5A2.25 2.25 0 0 1 4.25 4h5a.75.75 0 0 1 0 1.5h-5Z" clip-rule="evenodd"/><path fill-rule="evenodd" d="M6.194 12.753a.75.75 0 0 0 1.06.053L16.5 4.44v2.81a.75.75 0 0 0 1.5 0v-4.5a.75.75 0 0 0-.75-.75h-4.5a.75.75 0 0 0 0 1.5h2.553l-9.056 8.194a.75.75 0 0 0-.053 1.06Z" clip-rule="evenodd"/></svg>
+                    </a>
+                </div>
+                <p class="ws-page-subtitle">Connect both panels to the same room and exchange messages live. Messages are proxied through KrakenD's WebSocket layer in both directions, exactly like real clients in production.</p>
+            </div>
+
+            <div class="ws-dual-grid">
+                <div class="panel ws-client-panel" data-ws-side="a">
+                    <div class="panel-header">
+                        <h3>Client A</h3>
+                        <span class="status-pill status-warning" data-role="status"><span class="dot"></span>Disconnected</span>
+                    </div>
+                    <div class="panel-body ws-client-body">
+                        <div class="form-group ws-room-row">
+                            <label class="form-label">Room</label>
+                            <div class="ws-room-controls">
+                                <input class="form-input" data-role="room" value="playground" placeholder="Room name">
+                                <button class="btn btn-primary" data-role="connect">Connect</button>
+                            </div>
+                        </div>
+                        <div class="ws-messages" data-role="messages">
+                            <div class="ws-empty">Click Connect to join the room.</div>
+                        </div>
+                        <div class="ws-send-row">
+                            <input class="form-input" data-role="input" placeholder="Type a message and press Enter…" disabled>
+                            <button class="btn btn-primary" data-role="send" disabled>Send</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel ws-client-panel" data-ws-side="b">
+                    <div class="panel-header">
+                        <h3>Client B</h3>
+                        <span class="status-pill status-warning" data-role="status"><span class="dot"></span>Disconnected</span>
+                    </div>
+                    <div class="panel-body ws-client-body">
+                        <div class="form-group ws-room-row">
+                            <label class="form-label">Room</label>
+                            <div class="ws-room-controls">
+                                <input class="form-input" data-role="room" value="playground" placeholder="Room name">
+                                <button class="btn btn-primary" data-role="connect">Connect</button>
+                            </div>
+                        </div>
+                        <div class="ws-messages" data-role="messages">
+                            <div class="ws-empty">Click Connect to join the room.</div>
+                        </div>
+                        <div class="ws-send-row">
+                            <input class="form-input" data-role="input" placeholder="Type a message and press Enter…" disabled>
+                            <button class="btn btn-primary" data-role="send" disabled>Send</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ────────── PAGE: AI Chat (MCP) ────────── -->
+        <div id="page-mcp-chat" class="page">
+            <div class="main-layout">
+                <main id="conversation" class="conversation">
+                    <div class="welcome">
+                        <h2><span class="accent">Run a KYC check</span> on a counterparty.</h2>
+                        <p>Ask the AI to assess any of the 3 demo entities below. Behind every answer, KrakenD is orchestrating three different protocols and reshaping the response for token efficiency &mdash; see the panel on the right.</p>
+                        <div class="suggestions" id="suggestions">
+                            <button data-prompt="Run a KYC check for LEI 549300VOLGA000000001 — should we onboard this counterparty?">Check Volga Energy <span class="badge red">sanctioned</span></button>
+                            <button data-prompt="Assess counterparty risk for LEI 549300MERC0000000001. Pay attention to the ownership chain.">Check Mercator Capital <span class="badge yellow">hidden UBO</span></button>
+                            <button data-prompt="Run a quick KYC check for LEI 549300CLEAN000000001.">Check Helvetica Industries <span class="badge green">clean</span></button>
+                            <button data-prompt="For LEI 549300VOLGA000000001, compare the TOON and the legacy JSON outputs. Call both tools and tell me which is more token-efficient and by how much.">Compare TOON vs Legacy JSON <span class="badge lavender">demo highlight</span></button>
+                        </div>
+                        <div class="welcome-disclaimer">
+                            <i class="fa-solid fa-circle-info"></i>
+                            All entities, LEIs, persons and sanctions matches are <strong>fictional</strong> &mdash; illustrative only.
+                        </div>
+                    </div>
+                </main>
+
+                <aside class="info-panel" aria-label="What KrakenD is doing behind the scenes">
+                    <div class="info-panel-header">
+                        <button class="info-toggle" id="info-toggle" aria-label="Toggle behind-the-scenes panel" aria-expanded="true">
+                            <i class="fa-solid fa-circle-info"></i>
+                            <span>Behind the scenes</span>
+                            <i class="fa-solid fa-chevron-down chev"></i>
+                        </button>
+                        <a class="usecase-link info-config-link"
+                           href="http://localhost:8080/demo/use-cases/mcp/"
+                           target="_blank"
+                           rel="noopener noreferrer"
+                           aria-label="View config example (opens in new tab)">
+                            <span>View config example</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M4.25 5.5a.75.75 0 0 0-.75.75v8.5c0 .414.336.75.75.75h8.5a.75.75 0 0 0 .75-.75v-4a.75.75 0 0 1 1.5 0v4A2.25 2.25 0 0 1 12.75 17h-8.5A2.25 2.25 0 0 1 2 14.75v-8.5A2.25 2.25 0 0 1 4.25 4h5a.75.75 0 0 1 0 1.5h-5Z" clip-rule="evenodd"/><path fill-rule="evenodd" d="M6.194 12.753a.75.75 0 0 0 1.06.053L16.5 4.44v2.81a.75.75 0 0 0 1.5 0v-4.5a.75.75 0 0 0-.75-.75h-4.5a.75.75 0 0 0 0 1.5h2.553l-9.056 8.194a.75.75 0 0 0-.053 1.06Z" clip-rule="evenodd"/></svg>
+                        </a>
+                    </div>
+                    <div class="info-body" id="info-body">
+                        <p class="info-lede">Every tool call routes through <strong>KrakenD MCP</strong>, which fans out to <strong>three different protocols</strong> and reshapes the merged response into LLM-optimized text. The LLM sees one clean tool &mdash; KrakenD hides the protocol soup.</p>
+
+                        <div class="info-content-grid">
+                            <div class="flow" aria-hidden="true">
+                                <div class="flow-node">
+                                    <i class="fa-regular fa-comment"></i>
+                                    <div class="flow-label">Your prompt</div>
+                                </div>
+                                <div class="flow-arrow"></div>
+
+                                <div class="flow-node">
+                                    <i class="fa-solid fa-sparkles"></i>
+                                    <div class="flow-label">Claude Haiku 4.5<small>picks an MCP tool</small></div>
+                                </div>
+
+                                <div class="flow-phase" data-phase="Request">
+                                    <div class="flow-arrow"></div>
+
+                                    <div class="flow-node brand">
+                                        <i class="fa-solid fa-plug-circle-bolt"></i>
+                                        <div class="flow-label">KrakenD MCP<small><code>POST /mcp</code></small></div>
+                                    </div>
+                                    <div class="flow-arrow"></div>
+
+                                    <div class="flow-node brand">
+                                        <i class="fa-solid fa-diagram-project"></i>
+                                        <div class="flow-label">Workflow endpoint<small>parallel fan-out</small></div>
+                                    </div>
+
+                                    <div class="flow-fanout">
+                                        <div class="flow-node small proto-rest">
+                                            <span class="proto-label">REST</span>
+                                            <div class="flow-label">Entity registry</div>
+                                        </div>
+                                        <div class="flow-node small proto-gql">
+                                            <span class="proto-label">GraphQL</span>
+                                            <div class="flow-label">Ownership chain</div>
+                                        </div>
+                                        <div class="flow-node small proto-soap">
+                                            <span class="proto-label">SOAP</span>
+                                            <div class="flow-label">Sanctions screening</div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="flow-phase" data-phase="Response">
+                                    <div class="flow-arrow merge"></div>
+
+                                    <div class="flow-node brand">
+                                        <i class="fa-solid fa-gears"></i>
+                                        <div class="flow-label">Format transformation<small>merged data &rarr; compact <strong>TOON</strong></small></div>
+                                    </div>
+                                </div>
+
+                                <div class="flow-arrow"></div>
+
+                                <div class="flow-node">
+                                    <i class="fa-solid fa-rotate-left"></i>
+                                    <div class="flow-label">Back to Claude<small>up to <strong>60% fewer tokens</strong> than JSON</small></div>
+                                </div>
+                            </div>
+
+                            <ol class="info-steps">
+                                <li><strong>One MCP entrypoint.</strong> The LLM only sees <code>POST /mcp</code> and a tidy tools list &mdash; protocol heterogeneity is invisible.</li>
+                                <li><strong>Three protocols, in parallel.</strong> KrakenD fans out to REST (entity), GraphQL (ownership) and SOAP (sanctions) concurrently, decoding XML and querying GraphQL natively.</li>
+                                <li><strong>Aggregation in one shot.</strong> Backend responses are merged into a single structured payload &mdash; no glue code.</li>
+                                <li><strong>Output reshaped for the consumer.</strong> KrakenD's response-transformation layer converts the merged JSON into compact <em>TOON</em> text &mdash; fewer tokens, identical information. A second tool serves verbose JSON for comparison.</li>
+                                <li><strong>Production guarantees come for free.</strong> Same KrakenD pipeline you already use for APIs: auth, rate limits, retries, caching, tracing, metrics.</li>
+                            </ol>
+                        </div>
+                    </div>
+                </aside>
+            </div>
+
+            <div class="composer-footer">
+                <form id="composer" class="composer" autocomplete="off">
+                    <textarea id="input" placeholder="Ask about a counterparty (LEI)…" rows="1"></textarea>
+                    <button type="submit" id="send" aria-label="Send"><i class="fa-solid fa-paper-plane"></i></button>
+                </form>
+                <div class="footer-hint">
+                    <span><i class="fa-solid fa-bolt"></i> Streaming via Anthropic SDK</span>
+                    <span class="dot">&middot;</span>
+                    <span><i class="fa-solid fa-plug"></i> Tools served by <code>POST /mcp</code></span>
+                    <span class="dot">&middot;</span>
+                    <span><i class="fa-solid fa-shield-halved"></i> Same auth, rate limits &amp; observability as your APIs</span>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <footer style="text-align: center; padding: 2rem; color: var(--text-muted); font-size: 0.8rem; border-top: 1px solid var(--border);">
+        <p>KrakenD Enterprise Playground &mdash;
+            <a href="https://www.krakend.io/" target="_blank" style="color: var(--accent-blue); text-decoration: none;">krakend.io</a> |
+            <a href="https://www.krakend.io/docs/enterprise/ai-gateway/" target="_blank" style="color: var(--accent-blue); text-decoration: none;">AI Gateway Docs</a>
+        </p>
+    </footer>
+</body>
+</html>

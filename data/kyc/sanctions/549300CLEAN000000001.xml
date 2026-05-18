@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+  <soap:Body>
+    <ScreenResponse>
+      <total_hits>0</total_hits>
+      <matches></matches>
+    </ScreenResponse>
+  </soap:Body>
+</soap:Envelope>

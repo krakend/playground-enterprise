@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+  <soap:Body>
+    <ScreenResponse>
+      <total_hits>2</total_hits>
+      <matches>
+        <match>
+          <list>OFAC SDN</list>
+          <score>0.95</score>
+          <matched_field>legal_name</matched_field>
+          <evidence>Direct match on sanctioned entity</evidence>
+          <date_listed>2022-04-06</date_listed>
+        </match>
+        <match>
+          <list>EU CFSP</list>
+          <score>0.91</score>
+          <matched_field>ubo.Ivan Petrov</matched_field>
+          <evidence>UBO match on EU sanctions list</evidence>
+          <date_listed>2022-03-15</date_listed>
+        </match>
+      </matches>
+    </ScreenResponse>
+  </soap:Body>
+</soap:Envelope>

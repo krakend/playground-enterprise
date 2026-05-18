@@ -1,0 +1,19 @@
+{
+  "name": "krakend-interactive-demo",
+  "private": true,
+  "version": "0.4.0",
+  "type": "module",
+  "description": "Merged container for the KrakenD playground: SPA (plain HTML/CSS/JS, no bundler) + MCP chat backend (POST /api/chat SSE) + WebSocket broker (WS /ws/:room).",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.39.0",
+    "express": "^4.21.0",
+    "ws": "^8.18.0"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

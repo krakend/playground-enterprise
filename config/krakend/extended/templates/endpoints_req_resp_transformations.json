@@ -100,7 +100,7 @@
         "backend": [
             {
                 "host": [
-                    "http://fake_api"
+                    "http://mocked_apis:8091"
                 ],
                 "url_pattern": "/user/1.json",
                 "allow": [
@@ -231,7 +231,7 @@
         "backend": [
             {
                 "host": [
-                    "http://fake_api"
+                    "http://mocked_apis:8091"
                 ],
                 "url_pattern": "/hotels/1.json",
                 "allow": [
@@ -240,7 +240,7 @@
             },
             {
                 "host": [
-                    "http://fake_api"
+                    "http://mocked_apis:8091"
                 ],
                 "url_pattern": "/destinations/{resp0_destination_id}.json"
             }
