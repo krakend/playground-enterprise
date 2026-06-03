@@ -852,7 +852,7 @@
           "host": [
             "https://swapi-graphql.netlify.app/"
           ],
-          "url_pattern": "/.netlify/functions/index",
+          "url_pattern": "/graphql",
           "target": "data.film",
           "extra_config": {
             "backend/graphql": {
