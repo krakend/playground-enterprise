@@ -2161,8 +2161,7 @@
           },
           {
             "disable_metrics": true,
-            "disable_traces": true,
-            "host": "jaeeger",
+            "host": "jaeger",
             "name": "debug_jaeger",
             "port": 4317,
             "use_http": false
@@ -2220,7 +2219,7 @@
       },
       "metric_reporting_period": 1,
       "service_name": "playground_enterprise_otel",
-      "trace_sample_rate": 0.5
+      "trace_sample_rate": 1
     },
     "telemetry/opentelemetry-security": {
       "otlp": [

@@ -15,7 +15,7 @@
     },
     "jaegergrpc": {
         "port": 4317,
-        "host": "jaeeger"
+        "host": "jaeger"
     },
     "datadog": {
         "disable_metrics": true,
