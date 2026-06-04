@@ -35,7 +35,7 @@ services:
     volumes:
       - "./config/telemetry-dashboards/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml"
   tempo:
-    image: grafana/tempo:latest
+    image: grafana/tempo:2.6.0
     domainname: tempo
     command: [ "-config.file=/etc/tempo.yaml" ]
     volumes:
@@ -134,7 +134,7 @@ services:
     ports:
       - "4243:4243"
   keycloak:
-    image: quay.io/keycloak/keycloak:26.0
+    image: quay.io/keycloak/keycloak:26.2
     ports:
       - "8085:8080"
     volumes:
