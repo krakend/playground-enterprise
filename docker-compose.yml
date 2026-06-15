@@ -1,8 +1,9 @@
 services:
   krakend_ee:
-    # The :watch image restarts the service automatically when the configuration files change.
-    # Do not use this image in production, it's meant to speed up your testing and development.
-    image: krakend/krakend-ee:2.13-watch
+    # Alpha image with the Alibaba ai/llm provider integration. Note: unlike the
+    # :watch image it does not auto-reload on config changes, so re-run
+    # `make compile-flexible-config` + restart this service after editing configs.
+    image: krakend/krakend-ee:2.13.5-sc1320-alibaba1
     volumes:
       - ./config/krakend:/etc/krakend
       - ./dumps:/tmp/krakend-http-logger

@@ -25,7 +25,7 @@ start-with-ai-gateway: check-ai-credentials compile-flexible-config
 
 check-ai-credentials:
 	@MISSING=""; \
-	for K in GEMINI_API_KEY OPENAI_API_KEY ANTHROPIC_API_KEY; do \
+	for K in ALIBABA_API_KEY GEMINI_API_KEY OPENAI_API_KEY ANTHROPIC_API_KEY; do \
 	    VAL=""; \
 	    if [ -f ./config/krakend/.env.local ]; then \
 	        VAL=$$(grep -E "^$$K=" ./config/krakend/.env.local | head -1 | cut -d= -f2-); \
@@ -67,7 +67,7 @@ compile-flexible-config:
         echo "      endpoints (/llm-*, /prompt-guardrail-*) will fail at runtime."; \
         echo "      To enable them:"; \
         echo "        cp config/krakend/.env config/krakend/.env.local"; \
-        echo "        # then edit .env.local with your GEMINI / OPENAI / ANTHROPIC keys"; \
+        echo "        # then edit .env.local with your ALIBABA / GEMINI / OPENAI / ANTHROPIC keys"; \
         echo ""; \
     fi
 	docker run \
@@ -76,14 +76,18 @@ compile-flexible-config:
         -v "$(PWD)/config/krakend/:/etc/krakend/" \
         -e "FC_DEBUG=true" \
         -e "FC_CONFIG=/etc/krakend/fc_config.json" \
-        krakend/krakend-ee \
+        krakend/krakend-ee:2.13.5-sc1320-alibaba1 \
         check -c extended/krakend.tmpl
 
 check:
+	# --lint is intentionally omitted: the alibaba alpha image ships an
+	# out-of-sync JSON schema that rejects supported EE features (custom_format,
+	# report_headers) and the new ai/llm alibaba provider. The -d -t binary
+	# parse below is the authoritative validation that the config can run.
 	docker run \
         -v "$(PWD)/config/krakend/:/etc/krakend/" \
-        krakend/krakend-ee \
-        check -d -t -c krakend.json --lint
+        krakend/krakend-ee:2.13.5-sc1320-alibaba1 \
+        check -d -t -c krakend.json
 
 audit:
 	docker run \

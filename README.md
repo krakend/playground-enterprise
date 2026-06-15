@@ -72,7 +72,7 @@ The AI Gateway use cases need extra pieces that are **not started by default** s
 
 - **Redis** — token quota tracking on port `6379` (always on, also used elsewhere).
 - **Prompt Guard** — non-gated community mirror of Meta's Prompt Guard 2 22M (ONNX) on port `8091`. Only built and started when the `ai-gateway` compose profile is active.
-- **Provider API keys** (Gemini / OpenAI / Anthropic), set in `config/krakend/.env.local` (git-ignored) or `config/krakend/.env`.
+- **Provider API keys** (Alibaba / Gemini / OpenAI / Anthropic), set in `config/krakend/.env.local` (git-ignored) or `config/krakend/.env`.
 
 See [Trying the AI Gateway use cases](#trying-the-ai-gateway-use-cases) for the one-command flow.
 
@@ -159,7 +159,7 @@ The AI Gateway endpoints (`/llm-routing`, `/llm-conditional`, `/llm-quota`, `/pr
 
     ```shell
     cp config/krakend/.env config/krakend/.env.local
-    # Edit .env.local and set GEMINI_API_KEY, OPENAI_API_KEY, ANTHROPIC_API_KEY
+    # Edit .env.local and set ALIBABA_API_KEY, GEMINI_API_KEY, OPENAI_API_KEY, ANTHROPIC_API_KEY
     ```
 
     Alternatively, you can edit `.env` directly — but keep in mind it's tracked in git, so don't commit real keys.
@@ -230,8 +230,8 @@ The following endpoints are worth noticing:
 | JWT-based Authentication                                | [`/private/moderate`](http://localhost:8080/private/moderate)                       | Protects an endpoint validating JWT tokens issued by the built-in Keycloak instance. Use the [Auth Demo tab](http://localhost:8080/interactive-demo/#auth-demo/public-private) of the interactive demos to test it end-to-end.                                                                                                                          |
 | API Keys based Authentication                           | [`/api-key`](http://localhost:8080/api-key)                                   | Protects and endpoint using an API-Key. You can use `curl -iG -H 'Authorization: Bearer 58427514-be32-0b52-b7c6-d01fada30497' 'http://localhost:8080/api-key'` to test it.                                                                                                                                                           |
 | Model Context Protocol (MCP) Server / AI Gateway        | `/mcp` (POST)                                                                  | **Enterprise-only** MCP server exposing a `kyc-dossier-aggregator` with two tools (TOON-formatted + verbose JSON variants). Each tool fans out to three protocols — REST entity registry, GraphQL ownership chain, SOAP sanctions screening — and merges them at the gateway. Designed for AI/LLM integration following the Model Context Protocol standard.   |
-| LLM Routing by Header                                  | [`/llm-routing`](http://localhost:8080/llm-routing) (POST)                     | Route requests to Gemini, OpenAI, or Anthropic (fallback) based on `X-Model` header using conditional backends.                                                                                                                                 |
-| Role-Based LLM Routing                                 | [`/llm-conditional`](http://localhost:8080/llm-conditional) (POST)             | JWT role determines which LLM responds: moderators get OpenAI, readers get Gemini. Requires Keycloak authentication.                                                                                                                            |
+| LLM Routing by Header                                  | [`/llm-routing`](http://localhost:8080/llm-routing) (POST)                     | Route requests to Gemini, OpenAI, or Anthropic via the `X-Model` header using conditional backends, or default to Alibaba Qwen when no header is set.                                                                                            |
+| Role-Based LLM Routing                                 | [`/llm-conditional`](http://localhost:8080/llm-conditional) (POST)             | JWT role determines which LLM responds: moderators get OpenAI, readers get Alibaba Qwen. Requires Keycloak authentication.                                                                                                                      |
 | Token Quota Management                                 | [`/llm-quota`](http://localhost:8080/llm-quota) (POST)                         | Per-user token budget enforcement via Redis. Moderators: 10k tokens/day, readers: 1k tokens/day.                                                                                                                                                |
 | Deterministic Prompt Guardrail                          | [`/prompt-guardrail-deterministic`](http://localhost:8080/prompt-guardrail-deterministic) (POST) | Blocks prompts containing credit card numbers, passwords, secrets, or API keys using JSON Schema regex validation.                                                                                                              |
 | Intelligent Prompt Guardrail                            | [`/prompt-guardrail-intelligent`](http://localhost:8080/prompt-guardrail-intelligent) (POST)     | AI-based prompt classification using Meta's Prompt Guard 2 22M via sequential proxy. Blocks injection/jailbreak attempts with HTTP 403.                                                                                         |

@@ -12,13 +12,14 @@ const USE_CASES = {
         endpoint: '/llm-routing',
         method: 'POST',
         requiresAuth: false,
-        description: 'Route requests to different LLM providers based on any signal in the request — here, the <code>X-Model</code> header. Omit the header to fall back to a safe default (Anthropic). The same engine routes on query strings, JWT claims, or CEL expressions. The <strong>Direct-to-LLM</strong> panel shows what you would have to build yourself without KrakenD.',
+        description: 'Route requests to different LLM providers based on any signal in the request — here, the <code>X-Model</code> header. Omit the header to fall back to a safe default (Alibaba Qwen). The same engine routes on query strings, JWT claims, or CEL expressions. The <strong>Direct-to-LLM</strong> panel shows what you would have to build yourself without KrakenD.',
         features: ['ai/llm', 'backend/conditional', 'header strategy', 'fallback'],
         fields: [
             { id: 'model', type: 'select', label: 'Model Provider', options: [
-                { value: '', label: 'Default (Anthropic)' },
+                { value: '', label: 'Default (Alibaba Qwen)' },
                 { value: 'gemini', label: 'Google Gemini' },
                 { value: 'openai', label: 'OpenAI' },
+                { value: 'anthropic', label: 'Anthropic Claude' },
             ]},
             { id: 'prompt', type: 'textarea', label: 'Prompt', placeholder: 'Ask anything...' },
         ],
@@ -29,11 +30,45 @@ const USE_CASES = {
         examples: [
             { label: 'Route to Gemini', prompt: 'In one sentence, what is an API gateway?', model: 'gemini' },
             { label: 'Route to OpenAI', prompt: 'Write a haiku about APIs', model: 'openai' },
-            { label: 'Default (Anthropic)', prompt: 'Name 3 benefits of API gateways in a short list', model: '' },
+            { label: 'Default (Alibaba Qwen)', prompt: 'Name 3 benefits of API gateways in a short list', model: '' },
         ],
         comparison: {
-            providerFromFields: (fields) => fields.model || 'anthropic',
+            providerFromFields: (fields) => fields.model || 'alibaba',
             providers: {
+                alibaba: {
+                    label: 'Alibaba Qwen',
+                    request: (prompt) => ({
+                        method: 'POST',
+                        url: 'https://ws-zra7olzqhn54h7m8.ap-southeast-1.maas.aliyuncs.com/compatible-mode/v1/responses',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': 'Bearer $ALIBABA_API_KEY',
+                        },
+                        body: {
+                            model: 'qwen3.5-flash',
+                            stream: false,
+                            input: prompt || '<your prompt>',
+                        },
+                    }),
+                    response: (text, totalTokens) => {
+                        const total = parseInt(totalTokens, 10) || 0
+                        const input = Math.max(8, Math.round(total * 0.3))
+                        const output = Math.max(1, total - input)
+                        return {
+                            id: 'resp_01AbCdEf123',
+                            object: 'response',
+                            model: 'qwen3.5-flash',
+                            output: [
+                                {
+                                    type: 'message',
+                                    role: 'assistant',
+                                    content: [{ type: 'output_text', text: text || '<model reply>' }],
+                                },
+                            ],
+                            usage: { input_tokens: input, output_tokens: output, total_tokens: total || (input + output) },
+                        }
+                    },
+                },
                 anthropic: {
                     label: 'Anthropic Claude',
                     request: (prompt) => ({
@@ -146,7 +181,7 @@ const USE_CASES = {
         endpoint: '/llm-conditional',
         method: 'POST',
         requiresAuth: true,
-        description: 'The authenticated user\'s JWT role determines which LLM responds. <strong>Moderators</strong> get OpenAI, <strong>readers</strong> get Gemini. Log in with different users to see the difference.',
+        description: 'The authenticated user\'s JWT role determines which LLM responds. <strong>Moderators</strong> get OpenAI, <strong>readers</strong> get Alibaba Qwen. Log in with different users to see the difference.',
         features: ['ai/llm', 'backend/conditional', 'auth/validator', 'propagate_claims'],
         fields: [
             { id: 'prompt', type: 'textarea', label: 'Prompt', placeholder: 'Ask anything — your role determines the AI model...' },
@@ -759,8 +794,8 @@ function renderResponse(uc, status, json, text, elapsed) {
 
     // Intelligent guardrail success (has label + llm)
     if (json.label && json.llm) {
-        const text = json.llm?.candidates?.[0]?.content?.parts?.[0]?.text || ''
-        const tokens = json.llm?.usageMetadata?.totalTokenCount || '-'
+        const text = json.llm?.ai_gateway_response?.[0]?.contents?.join('\n\n') || ''
+        const tokens = json.llm?.usage || '-'
         return `
             <div style="padding: 1.25rem;">
                 <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap;">
