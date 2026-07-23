@@ -119,19 +119,26 @@
         <h2><span class="num">02</span> Avoid duplication</h2>
         <p class="problem">Multiple teams call the same AI services independently and pay for the same tokens more than once.</p>
         <div class="land">"Central IT sets the guardrails; each team gets its own token budget. Finance sees the spend per team — in one place."</div>
-        <p class="problem">Token quota/budget is enforced per role in Redis (moderator 10k/day, reader 1k/day). Run this to spend against the moderator budget:</p>
+        <p class="problem">KrakenD enforces a per-user daily token budget in Redis (moderator 10k/day, reader 1k/day). Every LLM response carries a <code>usage</code> token count; the gateway tallies it against that user's budget. When the budget is spent, the next call is <b>blocked at the gateway with HTTP 429 — the LLM is never called, so it costs nothing</b>. Fire the same prompt twice as <code>reader</code> (1k budget) to see it flip from allowed to blocked:</p>
         <div class="codeblock">
           <button class="copybtn" data-copy>Copy</button>
           <pre><code class="language-bash">TOKEN=$(curl -s -X POST http://localhost:8085/realms/krakend/protocol/openid-connect/token \
   -d grant_type=password -d client_id=playground \
   -d client_secret=HA7yGHBNm5IBBSJYsSgtmJgnqdeeItrw \
-  -d username=moderator -d password=moderator \
+  -d username=reader -d password=reader \
   | python3 -c "import sys,json;print(json.load(sys.stdin)['access_token'])")
 
-curl -s -X POST http://localhost:8080/llm-quota \
+# 1st call: allowed. Note "usage":"NNNN" — the tokens billed to this user's budget.
+curl -s -w '\nHTTP %{http_code}\n' -X POST http://localhost:8080/llm-quota \
   -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json' \
-  -d '{"contents":"List 3 differences between REST and GraphQL"}'</code></pre>
+  -d '{"contents":"List 3 differences between REST and GraphQL"}'
+
+# 2nd call: budget exhausted. Gateway returns 429 and never calls the LLM.
+curl -s -w '\nHTTP %{http_code}\n' -X POST http://localhost:8080/llm-quota \
+  -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json' \
+  -d '{"contents":"What is 2+2?"}'</code></pre>
         </div>
+        <div class="out show" style="position:static">What to tell the client: the first call returns the answer with <code>"usage":"~1585"</code> — those tokens are counted against reader's 1,000/day budget in Redis. The second call exceeds it, so KrakenD returns <b>HTTP 429 Too Many Requests</b> before touching any provider. That is the duplication/runaway-cost cap: each team spends only its own budget, finance sees exactly who spends what, and no team can quietly rack up a bill. Budgets reset daily.</div>
         <div class="roadmap">
           <b>Semantic cache — roadmap (KrakenD 3.0):</b> the same or a semantically-equivalent
           prompt returns a cached answer with <b>zero tokens</b>. First call hits the LLM and
