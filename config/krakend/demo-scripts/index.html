@@ -73,7 +73,7 @@
   <div class="guide-wrap">
     <section class="hero">
       <h1>AI Gateway demo scripts</h1>
-      <p>Utilities for driving and observing AI traffic through KrakenD. Generate load, then jump straight to what the gateway sees. The interactive, click-through walkthroughs for each capability live in the demos SPA — linked below.</p>
+      <p>Utilities for driving and observing AI traffic through KrakenD: generate load, then watch what the gateway records — token usage, latency, status and traces, attached to the endpoint and identity.</p>
     </section>
 
     <div class="preflight" id="preflight">
@@ -90,8 +90,8 @@
 
     <main id="guide">
       <section class="gcard">
-        <h2><span class="num">01</span> Generate LLM traffic</h2>
-        <p class="purpose">Fire real calls across every wired provider so the dashboards and traces have something to show. Use the button for a quick one-click burst, or the script for sustained, configurable load in a terminal.</p>
+        <h2><i class="fa-solid fa-chart-line" style="color:var(--accent-violet)"></i> Generate &amp; observe LLM traffic</h2>
+        <p class="purpose">Fire real calls across every wired provider so the dashboards and traces have something to show. Use the button for a quick one-click burst, or the script for sustained, configurable load in a terminal — then open the surfaces below to watch token usage, latency, status and end-to-end traces.</p>
         <div class="actions">
           <button class="btn" data-action="traffic">Send a traffic burst (3 providers)</button>
         </div>
@@ -105,33 +105,11 @@
 DURATION=120 ./scripts/demo-llm-traffic.sh
 ROUNDS_BURST=3 DELAY=1 ./scripts/demo-llm-traffic.sh</code></pre>
         </div>
-        <div class="links-row">
-          <a href="http://localhost:4000/d/krl5rh5/krakend-ai-gateway" target="_blank">Watch tokens per provider (Grafana) →</a>
-          <a href="http://localhost:16686" target="_blank">Inspect a request trace (Jaeger) →</a>
-        </div>
-      </section>
-
-      <section class="gcard">
-        <h2><span class="num">02</span> Observability surfaces</h2>
-        <p class="purpose">Where to see what the gateway records — token usage, latency, status and end-to-end traces — attached to the endpoint and identity, regardless of which app made the call.</p>
         <ul class="linklist">
           <li><a href="http://localhost:4000/d/krl5rh5/krakend-ai-gateway" target="_blank">Grafana · AI Gateway</a><span>Token usage per provider and model (in / out / total).</span></li>
           <li><a href="http://localhost:4000/d/d7e631a4-afbc-4267-91e8-b9492bcd801b/krakend-opentelemetry-2b-prometheus" target="_blank">Grafana · OpenTelemetry + Prometheus</a><span>Throughput, latency percentiles, status codes per endpoint and backend.</span></li>
           <li><a href="http://localhost:16686" target="_blank">Jaeger</a><span>Per-request traces: latency, backend/model, response status. Service “KrakenD”.</span></li>
           <li><a href="http://localhost:9090" target="_blank">Prometheus</a><span>Raw metrics, e.g. <code>krakend_llm_tokens_total</code> by <code>provider</code> / <code>model</code>.</span></li>
-        </ul>
-      </section>
-
-      <section class="gcard">
-        <h2><span class="num">03</span> Interactive use cases</h2>
-        <p class="purpose">Click-through walkthroughs for each AI Gateway capability, with request/response panels and JWT login built in. These open in the demos SPA.</p>
-        <ul class="linklist">
-          <li><a href="http://localhost:8080/interactive-demo/#ai-gateway/llm-routing" target="_blank">LLM routing by header</a><span>One endpoint, provider chosen by the <code>X-Model</code> header.</span></li>
-          <li><a href="http://localhost:8080/interactive-demo/#ai-gateway/llm-conditional" target="_blank">Role-based routing</a><span>JWT role decides the model (moderator → OpenAI, reader → Gemini).</span></li>
-          <li><a href="http://localhost:8080/interactive-demo/#ai-gateway/llm-quota" target="_blank">Token quota / budget</a><span>Per-user daily token budget enforced in Redis; blocks with 429 when exceeded.</span></li>
-          <li><a href="http://localhost:8080/interactive-demo/#ai-gateway/guardrail-deterministic" target="_blank">Deterministic prompt guardrail</a><span>Blocks credit cards, secrets and API keys via JSON-schema patterns.</span></li>
-          <li><a href="http://localhost:8080/interactive-demo/#ai-gateway/guardrail-intelligent" target="_blank">Intelligent prompt guardrail</a><span>Prompt Guard 2 classifier blocks injection / jailbreak attempts.</span></li>
-          <li><a href="http://localhost:8080/interactive-demo/#mcp-chat/public-private" target="_blank">MCP tools chat</a><span>KrakenD-hosted MCP server exposing backend services as AI-callable tools.</span></li>
         </ul>
       </section>
     </main>
