@@ -45,7 +45,7 @@
       background: var(--glow-violet); border-radius: 0 8px 8px 0; font-style: italic; }
     .actions { display: flex; flex-wrap: wrap; gap: .6rem; margin: .8rem 0; }
     .btn { font-family: var(--font-display); font-weight: 600; font-size: .85rem;
-      color: #fff; border: none; border-radius: 8px; padding: .55rem 1rem; cursor: pointer;
+      color: var(--text-primary); border: none; border-radius: 8px; padding: .55rem 1rem; cursor: pointer;
       background: var(--gradient-lavender); }
     .btn:disabled { opacity: .5; cursor: progress; }
     .btn.secondary { background: transparent; border: 1px solid var(--border-active);
@@ -106,7 +106,7 @@
         <p class="problem">AI traffic is spread across Dynamics, Copilot and custom apps, each with its own logs — no single view of who calls what, how often, at what cost.</p>
         <div class="land">"KrakenD sits in front of all of them. One screen, one place to see everything — and nothing in the underlying apps had to change."</div>
         <div class="actions">
-          <button class="btn" data-action="visibility">Send live traffic (4 providers)</button>
+          <button class="btn" data-action="visibility">Send live traffic (3 providers)</button>
         </div>
         <div class="out" id="out-visibility"></div>
         <div class="links-row">
@@ -239,14 +239,14 @@ curl -s -X POST http://localhost:8080/llm-conditional \
     const ms = Math.round(performance.now() - t0);
     const txt = await res.text();
     let usage = "", answer = txt;
-    try { const j = JSON.parse(txt); usage = j.usage || ""; answer = (j.ai_gateway_response?.[0]?.contents?.[0]) || txt; } catch (e) {}
+    try { const j = JSON.parse(txt); usage = j.usage || ""; answer = (j.ai_gateway_response?.[0]?.contents || []).join("\n\n") || txt; } catch (e) {}
     return { status: res.status, ms, usage, answer };
   }
 
   const actions = {
     async visibility(out) {
-      const models = [["openai","OpenAI"],["gemini","Gemini"],["anthropic","Anthropic"],["","Alibaba→Anthropic fallback"]];
-      show(out, "Sending 4 calls across providers…");
+      const models = [["openai","OpenAI"],["gemini","Gemini"],["","Anthropic (fallback)"]];
+      show(out, "Sending 3 calls across providers…");
       const lines = [];
       for (const [m, label] of models) {
         const h = m ? { "X-Model": m } : {};
@@ -314,8 +314,13 @@ curl -s -X POST http://localhost:8080/llm-conditional \
   document.querySelectorAll("[data-copy]").forEach(btn => {
     btn.addEventListener("click", () => {
       const code = btn.parentElement.querySelector("code").textContent;
-      navigator.clipboard?.writeText(code).then(() => { btn.textContent = "Copied"; setTimeout(() => btn.textContent = "Copy", 1200); })
-        .catch(() => { const r = document.createRange(); r.selectNode(btn.parentElement.querySelector("code")); getSelection().removeAllRanges(); getSelection().addRange(r); });
+      const selectFallback = () => { const r = document.createRange(); r.selectNode(btn.parentElement.querySelector("code")); getSelection().removeAllRanges(); getSelection().addRange(r); };
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(code).then(() => { btn.textContent = "Copied"; setTimeout(() => btn.textContent = "Copy", 1200); })
+          .catch(selectFallback);
+      } else {
+        selectFallback();
+      }
     });
   });
 
