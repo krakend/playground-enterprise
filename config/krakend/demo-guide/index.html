@@ -1,3 +1,108 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><title>Demo Guide</title></head>
-<body><h1>demo-guide placeholder</h1></body></html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>KrakenD AI Gateway · Atlas Copco Demo Guide</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Source+Code+Pro:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-bash.min.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-json.min.js" defer></script>
+  <!-- Single source of styles: reuse the SPA's extracted stylesheet -->
+  <link rel="stylesheet" href="/interactive-demo/css/app.css">
+  <link rel="icon" type="image/png" href="https://www.krakend.io/favicon/favicon-96x96.png" sizes="96x96">
+  <style>
+    /* Page-specific layout only — palette/typography come from app.css */
+    .guide-wrap { max-width: 60rem; margin: 0 auto; padding: 1.5rem 1.25rem 4rem; }
+    .hero { padding: 2rem 0 1rem; }
+    .hero h1 { font-size: 1.6rem; font-weight: 800; }
+    .hero p { color: var(--text-secondary); margin-top: .5rem; }
+    .pillars { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: 1rem; }
+    .pillar-chip { font-family: var(--font-mono); font-size: .7rem; letter-spacing: .04em;
+      text-transform: uppercase; color: var(--text-secondary);
+      border: 1px solid var(--border); border-radius: 999px; padding: .3rem .7rem; }
+    .preflight { display: flex; flex-wrap: wrap; gap: .5rem; align-items: center;
+      margin: 1.25rem 0; padding: .75rem 1rem; background: var(--bg-card);
+      border: 1px solid var(--border); border-radius: 12px; }
+    .pill { display: inline-flex; align-items: center; gap: .4rem; font-size: .75rem;
+      padding: .25rem .6rem; border-radius: 999px; border: 1px solid var(--border); }
+    .pill i { font-size: .6rem; }
+    .pill.ok { color: var(--accent-green); border-color: var(--accent-green); }
+    .pill.down { color: var(--accent-red); border-color: var(--accent-red); }
+    .quick-links { margin-left: auto; display: flex; gap: 1rem; flex-wrap: wrap; }
+    .quick-links a { color: var(--accent-violet); text-decoration: none; font-size: .8rem; }
+    .quick-links a:hover { text-decoration: underline; }
+    .gcard { background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: 14px; padding: 1.4rem 1.5rem; margin: 1.1rem 0; }
+    .gcard h2 { font-size: 1.15rem; display: flex; align-items: center; gap: .6rem; }
+    .gcard .num { font-family: var(--font-mono); color: var(--accent-violet); }
+    .problem { color: var(--text-secondary); margin: .5rem 0 .9rem; }
+    .land { border-left: 3px solid var(--accent-violet); padding: .6rem .9rem; margin: .9rem 0;
+      background: var(--glow-violet); border-radius: 0 8px 8px 0; font-style: italic; }
+    .actions { display: flex; flex-wrap: wrap; gap: .6rem; margin: .8rem 0; }
+    .btn { font-family: var(--font-display); font-weight: 600; font-size: .85rem;
+      color: #fff; border: none; border-radius: 8px; padding: .55rem 1rem; cursor: pointer;
+      background: var(--gradient-lavender); }
+    .btn:disabled { opacity: .5; cursor: progress; }
+    .btn.secondary { background: transparent; border: 1px solid var(--border-active);
+      color: var(--accent-violet); }
+    .links-row { display: flex; gap: 1rem; flex-wrap: wrap; margin-top: .4rem; }
+    .links-row a { color: var(--accent-violet); text-decoration: none; font-size: .82rem; }
+    .out { display: none; margin-top: .8rem; background: var(--bg-input); border-radius: 8px;
+      border: 1px solid var(--border); padding: .8rem; font-family: var(--font-mono);
+      font-size: .78rem; white-space: pre-wrap; word-break: break-word; }
+    .out.show { display: block; }
+    .codeblock { position: relative; margin: .6rem 0; }
+    .codeblock pre { margin: 0; border-radius: 8px; max-height: 20rem; overflow: auto; }
+    .copybtn { position: absolute; top: .5rem; right: .5rem; font-size: .7rem;
+      background: var(--bg-secondary); color: var(--text-secondary);
+      border: 1px solid var(--border); border-radius: 6px; padding: .25rem .5rem; cursor: pointer; }
+    .roadmap { border: 1px dashed var(--accent-amber); border-radius: 10px;
+      padding: .8rem 1rem; margin: .8rem 0; color: var(--text-secondary); }
+    .roadmap b { color: var(--accent-amber); }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-brand">
+      <img src="https://www.krakend.io/images/krakend-enterprise-logo.svg" alt="KrakenD" onerror="this.style.display='none'">
+      <span class="brand-divider">/</span>
+      <span class="brand-tag">AI Gateway · Atlas Copco</span>
+    </div>
+    <div class="header-user"><span>Vacuum Technique — VTIS</span></div>
+  </header>
+
+  <div class="guide-wrap">
+    <section class="hero">
+      <h1>One control plane for every AI call</h1>
+      <p>Five things you asked for, in your order. Everything here maps to one of them.</p>
+      <div class="pillars">
+        <span class="pillar-chip">1 · Visibility</span>
+        <span class="pillar-chip">2 · Avoid duplication</span>
+        <span class="pillar-chip">3 · Scalability</span>
+        <span class="pillar-chip">4 · Reusability</span>
+        <span class="pillar-chip">5 · Orchestration via endpoints</span>
+      </div>
+    </section>
+
+    <div class="preflight" id="preflight">
+      <span class="pill" id="pill-gw"><i class="fa-solid fa-circle"></i> gateway</span>
+      <span class="pill" id="pill-graf"><i class="fa-solid fa-circle"></i> dashboard</span>
+      <span class="quick-links">
+        <a href="http://localhost:4000/d/krl5rh5/krakend-ai-gateway" target="_blank"><i class="fa-solid fa-chart-line"></i> Grafana</a>
+        <a href="http://localhost:16686" target="_blank"><i class="fa-solid fa-diagram-project"></i> Jaeger</a>
+        <a href="http://localhost:8080/interactive-demo/" target="_blank"><i class="fa-solid fa-flask"></i> Interactive demos</a>
+        <a href="https://www.krakend.io/docs/enterprise/ai-gateway/" target="_blank"><i class="fa-solid fa-book"></i> Docs</a>
+      </span>
+    </div>
+
+    <main id="guide"><!-- section cards appended in Task 4 --></main>
+  </div>
+
+  <!-- script added in Task 5 -->
+</body>
+</html>
