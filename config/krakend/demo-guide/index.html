@@ -100,7 +100,122 @@
       </span>
     </div>
 
-    <main id="guide"><!-- section cards appended in Task 4 --></main>
+    <main id="guide">
+      <section class="gcard">
+        <h2><span class="num">01</span> Visibility</h2>
+        <p class="problem">AI traffic is spread across Dynamics, Copilot and custom apps, each with its own logs — no single view of who calls what, how often, at what cost.</p>
+        <div class="land">"KrakenD sits in front of all of them. One screen, one place to see everything — and nothing in the underlying apps had to change."</div>
+        <div class="actions">
+          <button class="btn" data-action="visibility">Send live traffic (4 providers)</button>
+        </div>
+        <div class="out" id="out-visibility"></div>
+        <div class="links-row">
+          <a href="http://localhost:4000/d/krl5rh5/krakend-ai-gateway" target="_blank">Open AI Gateway dashboard →</a>
+          <a href="http://localhost:16686" target="_blank">Open a trace in Jaeger →</a>
+        </div>
+      </section>
+
+      <section class="gcard">
+        <h2><span class="num">02</span> Avoid duplication</h2>
+        <p class="problem">Multiple teams call the same AI services independently and pay for the same tokens more than once.</p>
+        <div class="land">"Central IT sets the guardrails; each team gets its own token budget. Finance sees the spend per team — in one place."</div>
+        <p class="problem">Token quota/budget is enforced per role in Redis (moderator 10k/day, reader 1k/day). Run this to spend against the moderator budget:</p>
+        <div class="codeblock">
+          <button class="copybtn" data-copy>Copy</button>
+          <pre><code class="language-bash">TOKEN=$(curl -s -X POST http://localhost:8085/realms/krakend/protocol/openid-connect/token \
+  -d grant_type=password -d client_id=playground \
+  -d client_secret=HA7yGHBNm5IBBSJYsSgtmJgnqdeeItrw \
+  -d username=moderator -d password=moderator \
+  | python3 -c "import sys,json;print(json.load(sys.stdin)['access_token'])")
+
+curl -s -X POST http://localhost:8080/llm-quota \
+  -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json' \
+  -d '{"contents":"List 3 differences between REST and GraphQL"}'</code></pre>
+        </div>
+        <div class="roadmap">
+          <b>Semantic cache — roadmap (KrakenD 3.0):</b> the same or a semantically-equivalent
+          prompt returns a cached answer with <b>zero tokens</b>. First call hits the LLM and
+          is stored; the second matches on meaning, not exact text, and never reaches the
+          provider. Shipping in KrakenD 3.0.
+        </div>
+      </section>
+
+      <section class="gcard">
+        <h2><span class="num">03</span> Scalability</h2>
+        <p class="problem">Spiky, unpredictable AI traffic across heterogeneous platforms, with unknown future load.</p>
+        <div class="land">"Scalability is a Kubernetes concern, not an AI Gateway concern. You add replicas; there is no shared state to synchronize, no master node."</div>
+        <p class="problem">Stateless binary + config. Redis is only for quota persistence, never in the routing path. Adding an instance is one line — same config, no sync:</p>
+        <div class="codeblock">
+          <button class="copybtn" data-copy>Copy</button>
+          <pre><code class="language-bash"># Illustration: each replica runs the identical config, no coordination.
+# In Kubernetes this is a replica count; in Compose, another service:
+#   krakend_ee_2:
+#     image: krakend/krakend-ee:2.13-watch
+#     volumes: [ "./config/krakend:/etc/krakend" ]
+# Same config in, gateway scales out.</code></pre>
+        </div>
+      </section>
+
+      <section class="gcard">
+        <h2><span class="num">04</span> Reusability</h2>
+        <p class="problem">AI endpoints built in one platform can't be consumed by another without duplication. Define once, consume anywhere through a standard interface.</p>
+        <div class="land">"You define the endpoint once. Any team, any platform calls the same URL. Switch providers next year and you change one config file, not every app."</div>
+        <div class="actions">
+          <button class="btn" data-action="reuse-openai">Same URL → OpenAI</button>
+          <button class="btn secondary" data-action="reuse-gemini">Same URL → Gemini</button>
+        </div>
+        <div class="out" id="out-reuse"></div>
+        <p class="problem">Claim-based routing: the JWT role picks the model — the consumer never knows. Moderator → OpenAI, reader → Gemini:</p>
+        <div class="codeblock">
+          <button class="copybtn" data-copy>Copy</button>
+          <pre><code class="language-bash">TOKEN=$(curl -s -X POST http://localhost:8085/realms/krakend/protocol/openid-connect/token \
+  -d grant_type=password -d client_id=playground \
+  -d client_secret=HA7yGHBNm5IBBSJYsSgtmJgnqdeeItrw \
+  -d username=reader -d password=reader \
+  | python3 -c "import sys,json;print(json.load(sys.stdin)['access_token'])")
+
+curl -s -X POST http://localhost:8080/llm-conditional \
+  -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json' \
+  -d '{"contents":"In one sentence, what is an API gateway?"}'</code></pre>
+        </div>
+      </section>
+
+      <section class="gcard">
+        <h2><span class="num">05</span> Orchestration via exposed endpoints</h2>
+        <p class="problem">You want existing services exposed as AI-callable tools through a standard interface — orchestration through endpoints, not platform-native flows.</p>
+        <div class="land">"Your Dynamics instance doesn't need an MCP plugin. KrakenD exposes your services as AI-callable tools. Any agent, any orchestrator calls the same interface."</div>
+        <div class="actions">
+          <button class="btn" data-action="mcp">List MCP tools</button>
+          <a class="btn secondary" href="http://localhost:8080/interactive-demo/#mcp" target="_blank" style="text-decoration:none;display:inline-block">Open MCP chat →</a>
+        </div>
+        <div class="out" id="out-mcp"></div>
+      </section>
+
+      <section class="gcard">
+        <h2><span class="num">06</span> <i class="fa-solid fa-shield-halved" style="color:var(--accent-violet)"></i> Security — AI defense</h2>
+        <p class="problem">Prompts can leak secrets or carry injection/jailbreak attempts. Guardrails run at the gateway, before anything reaches the model.</p>
+        <div class="land">"PII, secrets and prompt-injection are stopped at the edge — in line, with no change to the apps behind it."</div>
+        <div class="actions">
+          <button class="btn secondary" data-action="guard-det-ok">Deterministic: benign ✓</button>
+          <button class="btn" data-action="guard-det-block">Deterministic: leak a secret ✗</button>
+        </div>
+        <div class="out" id="out-guard-det"></div>
+        <div class="actions">
+          <button class="btn secondary" data-action="guard-ai-ok">Prompt-injection: benign ✓</button>
+          <button class="btn" data-action="guard-ai-block">Prompt-injection: attack ✗</button>
+        </div>
+        <div class="out" id="out-guard-ai"></div>
+      </section>
+
+      <section class="gcard" style="border-style:dashed">
+        <h2><i class="fa-solid fa-scale-balanced" style="color:var(--text-secondary)"></i> Governance, woven throughout</h2>
+        <ul class="problem" style="line-height:1.9">
+          <li><b>Credential isolation</b> — provider API keys are injected at the gateway; no app team ever sees them. Rotate in one place.</li>
+          <li><b>Decentralized policy</b> — each team's rate limits, quotas and routing live in config. Central IT sets guardrails; solution owners operate within them.</li>
+          <li><b>Audit trail</b> — every call logged, every token counted, per team. "How much are we spending on AI and who owns it" is already on the dashboard.</li>
+        </ul>
+      </section>
+    </main>
   </div>
 
   <!-- script added in Task 5 -->
