@@ -63,31 +63,14 @@
 <body>
   <header class="site-header">
     <div class="header-brand">
-      <img src="https://www.krakend.io/images/krakend-enterprise-logo.svg" alt="KrakenD" onerror="this.style.display='none'">
+      <img src="https://www.krakend.io/images/logo-krakend.svg" alt="KrakenD">
       <span class="brand-divider">/</span>
-      <span class="brand-tag">AI Gateway · Demo scripts</span>
+      <span class="brand-tag">Demo Scripts</span>
     </div>
     <div class="header-user"><span>playground-enterprise</span></div>
   </header>
 
   <div class="guide-wrap">
-    <section class="hero">
-      <h1>AI Gateway demo scripts</h1>
-      <p>Utilities for driving and observing AI traffic through KrakenD: generate load, then watch what the gateway records — token usage, latency, status and traces, attached to the endpoint and identity.</p>
-    </section>
-
-    <div class="preflight" id="preflight">
-      <span class="pill" id="pill-gw"><i class="fa-solid fa-circle"></i> gateway</span>
-      <span class="pill" id="pill-graf"><i class="fa-solid fa-circle"></i> dashboard</span>
-      <span class="quick-links">
-        <a href="http://localhost:4000/d/krl5rh5/krakend-ai-gateway" target="_blank"><i class="fa-solid fa-chart-line"></i> Grafana</a>
-        <a href="http://localhost:16686" target="_blank"><i class="fa-solid fa-diagram-project"></i> Jaeger</a>
-        <a href="http://localhost:9090" target="_blank"><i class="fa-solid fa-fire"></i> Prometheus</a>
-        <a href="http://localhost:8080/interactive-demo/" target="_blank"><i class="fa-solid fa-flask"></i> Interactive demos</a>
-        <a href="https://www.krakend.io/docs/enterprise/ai-gateway/" target="_blank"><i class="fa-solid fa-book"></i> Docs</a>
-      </span>
-    </div>
-
     <main id="guide">
       <section class="gcard">
         <h2><i class="fa-solid fa-chart-line" style="color:var(--accent-violet)"></i> Generate &amp; observe LLM traffic</h2>
@@ -170,13 +153,6 @@ ROUNDS_BURST=3 DELAY=1 ./scripts/demo-llm-traffic.sh</code></pre>
       });
     });
 
-    async function ping(url) { try { await fetch(url, { mode: "no-cors" }); return true; } catch (e) { return false; } }
-    (async () => {
-      const gw = await ping(GW + "/demo-scripts/");
-      document.getElementById("pill-gw").classList.add(gw ? "ok" : "down");
-      const graf = await ping("http://localhost:4000/");
-      document.getElementById("pill-graf").classList.add(graf ? "ok" : "down");
-    })();
   })();
   </script>
 </body>
