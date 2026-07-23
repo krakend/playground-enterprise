@@ -67,6 +67,24 @@
         }
     },
     {
+        "@comment": "Utility: Atlas Copco demo guide (static site, EE web server)",
+        "endpoint": "/demo-guide/*",
+        "output_encoding": "no-op",
+        "backend": [
+            {
+                "url_pattern": "/",
+                "extra_config": {
+                    "backend/static-filesystem": {
+                        "directory_listing": false,
+                        "path": "./demo-guide/"
+                    }
+                },
+                "host": ["http://localhost:8080"],
+                "encoding": "no-op"
+            }
+        ]
+    },
+    {
         "@comment": "Feature: Expose a GET REST endpoint from POST to SOAP service",
         "endpoint": "/capital-of/{country}",
         "backend": [
