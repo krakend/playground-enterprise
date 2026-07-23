@@ -62,12 +62,14 @@
 </head>
 <body>
   <header class="site-header">
-    <div class="header-brand">
-      <img src="https://www.krakend.io/images/logo-krakend.svg" alt="KrakenD">
-      <span class="brand-divider">/</span>
+    <a href="/demo/" class="header-brand">
+      <div class="brand-logo-block">
+        <img src="https://www.krakend.io/images/logo-krakend.svg" alt="KrakenD">
+        <span class="brand-eyebrow">EE Playground</span>
+      </div>
+      <span class="brand-divider">|</span>
       <span class="brand-tag">Demo Scripts</span>
-    </div>
-    <div class="header-user"><span>playground-enterprise</span></div>
+    </a>
   </header>
 
   <div class="guide-wrap">
@@ -97,6 +99,13 @@ ROUNDS_BURST=3 DELAY=1 ./scripts/demo-llm-traffic.sh</code></pre>
       </section>
     </main>
   </div>
+
+  <footer style="text-align: center; padding: 2rem; color: var(--text-muted); font-size: 0.8rem; border-top: 1px solid var(--border);">
+    <p>KrakenD Enterprise Playground &mdash;
+      <a href="https://www.krakend.io/" target="_blank" style="color: var(--accent-blue); text-decoration: none;">krakend.io</a> |
+      <a href="https://www.krakend.io/docs/enterprise/ai-gateway/" target="_blank" style="color: var(--accent-blue); text-decoration: none;">AI Gateway Docs</a>
+    </p>
+  </footer>
 
   <script>
   (function () {
