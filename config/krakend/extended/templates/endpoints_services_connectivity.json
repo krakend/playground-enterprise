@@ -67,8 +67,8 @@
         }
     },
     {
-        "@comment": "Utility: Atlas Copco demo guide (static site, EE web server)",
-        "endpoint": "/demo-guide/*",
+        "@comment": "Utility: Atlas Copco demo scripts (static site, EE web server)",
+        "endpoint": "/demo-scripts/*",
         "output_encoding": "no-op",
         "backend": [
             {
@@ -76,7 +76,7 @@
                 "extra_config": {
                     "backend/static-filesystem": {
                         "directory_listing": false,
-                        "path": "./demo-guide/"
+                        "path": "./demo-scripts/"
                     }
                 },
                 "host": ["http://localhost:8080"],

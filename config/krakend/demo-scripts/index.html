@@ -326,7 +326,7 @@ curl -s -X POST http://localhost:8080/llm-conditional \
 
   async function ping(url) { try { const r = await fetch(url, { mode: "no-cors" }); return true; } catch (e) { return false; } }
   (async () => {
-    const gw = await ping(GW + "/demo-guide/");
+    const gw = await ping(GW + "/demo-scripts/");
     document.getElementById("pill-gw").classList.add(gw ? "ok" : "down");
     const graf = await ping("http://localhost:4000/");
     document.getElementById("pill-graf").classList.add(graf ? "ok" : "down");
