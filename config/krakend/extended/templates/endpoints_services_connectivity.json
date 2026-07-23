@@ -67,7 +67,7 @@
         }
     },
     {
-        "@comment": "Utility: Atlas Copco demo scripts (static site, EE web server)",
+        "@comment": "Utility: AI Gateway demo scripts (static site, EE web server)",
         "endpoint": "/demo-scripts/*",
         "output_encoding": "no-op",
         "backend": [

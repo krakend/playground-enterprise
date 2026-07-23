@@ -24,8 +24,8 @@ ROUNDS_BURST="${ROUNDS_BURST:-1}"
 
 ENDPOINT="$BASE_URL/llm-routing"
 
-# Providers: X-Model header (empty = default Alibaba Qwen)
-PROVIDERS=("openai" "gemini" "anthropic" "")
+# Providers: X-Model header (empty = Anthropic, the routing fallback)
+PROVIDERS=("openai" "gemini" "")
 
 # Varied prompts so responses (and token counts) change
 PROMPTS=(
@@ -38,7 +38,7 @@ PROMPTS=(
 )
 
 # Counters (bash 3.2 compatible, no associative arrays)
-C_OPENAI=0; C_GEMINI=0; C_ANTHROPIC=0; C_ALIBABA=0
+C_OPENAI=0; C_GEMINI=0; C_ANTHROPIC=0
 TOTAL=0
 START=$(date +%s)
 
@@ -46,7 +46,7 @@ cleanup() {
   echo ""
   echo "──────────────────────────────────────────"
   echo "  Traffic stopped. Total: $TOTAL calls"
-  echo "    OpenAI:$C_OPENAI  Gemini:$C_GEMINI  Anthropic:$C_ANTHROPIC  Alibaba:$C_ALIBABA"
+  echo "    OpenAI:$C_OPENAI  Gemini:$C_GEMINI  Anthropic:$C_ANTHROPIC"
   echo "──────────────────────────────────────────"
   exit 0
 }
@@ -81,16 +81,15 @@ while true; do
       case "$p" in
         openai)    C_OPENAI=$((C_OPENAI + 1)) ;;
         gemini)    C_GEMINI=$((C_GEMINI + 1)) ;;
-        anthropic) C_ANTHROPIC=$((C_ANTHROPIC + 1)) ;;
-        *)         C_ALIBABA=$((C_ALIBABA + 1)) ;;
+        *)         C_ANTHROPIC=$((C_ANTHROPIC + 1)) ;;
       esac
       TOTAL=$((TOTAL + 1))
     done
   done
   wait
 
-  printf "\r  sent: %-4s | OpenAI:%s Gemini:%s Anthropic:%s Alibaba:%s   " \
-    "$TOTAL" "$C_OPENAI" "$C_GEMINI" "$C_ANTHROPIC" "$C_ALIBABA"
+  printf "\r  sent: %-4s | OpenAI:%s Gemini:%s Anthropic:%s   " \
+    "$TOTAL" "$C_OPENAI" "$C_GEMINI" "$C_ANTHROPIC"
 
   if [ "$DURATION" -gt 0 ]; then
     NOW=$(date +%s)
