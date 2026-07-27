@@ -4,7 +4,7 @@ go 1.25.0
 
 require (
 	github.com/krakend/playground-enterprise/images/grpc/genlib v0.0.0-20260319104503-87ce8de3868e
-	google.golang.org/grpc v1.79.3
+	google.golang.org/grpc v1.82.1
 	google.golang.org/protobuf v1.36.11
 )
 
