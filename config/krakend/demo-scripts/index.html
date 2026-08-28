@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>KrakenD AI Gateway · Demo scripts</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Source+Code+Pro:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" integrity="sha512-vswe+cgvic/XBoF1OcM/TeJ2FW0OofqAVdCZiEYkd6dwGXthvkSFWOoGGJgS2CW70VK5dQM5Oh+7ne47s74VTg==" crossorigin="anonymous" referrerpolicy="no-referrer">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js" integrity="sha512-7Z9J3l1+EYfeaPKcGXu3MS/7T+w19WtKQY/n+xzmw4hZhJ9tyYmcUS+4QqAlzhicE5LAfMQSF3iFTK9bQdTxXg==" crossorigin="anonymous" referrerpolicy="no-referrer" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-bash.min.js" integrity="sha512-whYhDwtTmlC/NpZlCr6PSsAaLOrfjVg/iXAnC4H/dtiHawpShhT2SlIMbpIhT/IL/NrpdMm+Hq2C13+VKpHTYw==" crossorigin="anonymous" referrerpolicy="no-referrer" defer></script>
+  <!-- Single source of styles: reuse the SPA's extracted stylesheet -->
+  <link rel="stylesheet" href="/interactive-demo/css/app.css">
+  <link rel="icon" type="image/png" href="https://www.krakend.io/favicon/favicon-96x96.png" sizes="96x96">
+  <style>
+    /* Page-specific layout only — palette/typography come from app.css */
+    .guide-wrap { max-width: 60rem; margin: 0 auto; padding: 1.5rem 1.25rem 4rem; }
+    .gcard { background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: 14px; padding: 1.4rem 1.5rem; margin: 1.1rem 0; }
+    .gcard h2 { font-size: 1.15rem; display: flex; align-items: center; gap: .6rem; }
+    .gcard .num { font-family: var(--font-mono); color: var(--accent-violet); }
+    .purpose { color: var(--text-secondary); margin: .5rem 0 .9rem; }
+    .actions { display: flex; flex-wrap: wrap; gap: .6rem; margin: .8rem 0; }
+    .btn { font-family: var(--font-display); font-weight: 600; font-size: .85rem;
+      color: var(--text-primary); border: none; border-radius: 8px; padding: .55rem 1rem; cursor: pointer;
+      background: var(--gradient-lavender); }
+    .btn:disabled { opacity: .5; cursor: progress; }
+    .out { display: none; margin-top: .8rem; background: var(--bg-input); border-radius: 8px;
+      border: 1px solid var(--border); padding: .8rem; font-family: var(--font-mono);
+      font-size: .78rem; white-space: pre-wrap; word-break: break-word; }
+    .out.show { display: block; }
+    .codeblock { position: relative; margin: .6rem 0; }
+    .codeblock pre { margin: 0; border-radius: 8px; max-height: 22rem; overflow: auto; }
+    .copybtn { position: absolute; top: .5rem; right: .5rem; font-size: .7rem;
+      background: var(--bg-secondary); color: var(--text-secondary);
+      border: 1px solid var(--border); border-radius: 6px; padding: .25rem .5rem; cursor: pointer; }
+    .linklist { list-style: none; padding: 0; margin: .4rem 0 0; }
+    .linklist li { padding: .5rem 0; border-top: 1px solid var(--border); display: flex;
+      gap: .8rem; align-items: baseline; flex-wrap: wrap; }
+    .linklist li:first-child { border-top: none; }
+    .linklist a { color: var(--accent-violet); text-decoration: none; font-weight: 600;
+      font-size: .9rem; min-width: 13rem; }
+    .linklist a:hover { text-decoration: underline; }
+    .linklist span { color: var(--text-secondary); font-size: .82rem; }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <a href="/demo/" class="header-brand">
+      <div class="brand-logo-block">
+        <img src="https://www.krakend.io/images/logo-krakend.svg" alt="KrakenD">
+        <span class="brand-eyebrow">EE Playground</span>
+      </div>
+      <span class="brand-divider">|</span>
+      <span class="brand-tag">Demo Scripts</span>
+    </a>
+  </header>
+
+  <div class="guide-wrap">
+    <main id="guide">
+      <section class="gcard">
+        <h2><i class="fa-solid fa-chart-line" style="color:var(--accent-violet)"></i> Generate &amp; observe LLM traffic</h2>
+        <p class="purpose">Fire real calls across every wired provider so the dashboards and traces have something to show. Use the button for a quick one-click burst, or the script for sustained, configurable load in a terminal — then open the surfaces below to watch token usage, latency, status and end-to-end traces.</p>
+        <div class="actions">
+          <button class="btn" data-action="traffic">Send a traffic burst (3 providers)</button>
+        </div>
+        <div class="out" id="out-traffic"></div>
+        <div class="codeblock">
+          <button class="copybtn" data-copy>Copy</button>
+          <pre><code class="language-bash"># Sustained traffic from a terminal (runs 60s and stops by default)
+./scripts/demo-llm-traffic.sh
+
+# Longer / heavier runs
+DURATION=120 ./scripts/demo-llm-traffic.sh
+ROUNDS_BURST=3 DELAY=1 ./scripts/demo-llm-traffic.sh</code></pre>
+        </div>
+        <ul class="linklist">
+          <li><a href="http://localhost:4000/d/krl5rh5/krakend-ai-gateway" target="_blank">Grafana · AI Gateway</a><span>Token usage per provider and model (in / out / total).</span></li>
+          <li><a href="http://localhost:4000/d/d7e631a4-afbc-4267-91e8-b9492bcd801b/krakend-opentelemetry-2b-prometheus" target="_blank">Grafana · OpenTelemetry + Prometheus</a><span>Throughput, latency percentiles, status codes per endpoint and backend.</span></li>
+          <li><a href="http://localhost:16686" target="_blank">Jaeger</a><span>Per-request traces: latency, backend/model, response status. Service “KrakenD”.</span></li>
+          <li><a href="http://localhost:9090" target="_blank">Prometheus</a><span>Raw metrics, e.g. <code>krakend_llm_tokens_total</code> by <code>provider</code> / <code>model</code>.</span></li>
+        </ul>
+      </section>
+    </main>
+  </div>
+
+  <footer style="text-align: center; padding: 2rem; color: var(--text-muted); font-size: 0.8rem; border-top: 1px solid var(--border);">
+    <p>KrakenD Enterprise Playground &mdash;
+      <a href="https://www.krakend.io/" target="_blank" style="color: var(--accent-blue); text-decoration: none;">krakend.io</a> |
+      <a href="https://www.krakend.io/docs/enterprise/ai-gateway/" target="_blank" style="color: var(--accent-blue); text-decoration: none;">AI Gateway Docs</a>
+    </p>
+  </footer>
+
+  <script>
+  (function () {
+    const GW = "http://localhost:8080";
+    const show = (id, text) => { const el = document.getElementById(id); el.textContent = text; el.classList.add("show"); };
+
+    async function llm(headers, body) {
+      const t0 = performance.now();
+      const res = await fetch(GW + "/llm-routing", {
+        method: "POST", headers: Object.assign({ "Content-Type": "application/json" }, headers),
+        body: JSON.stringify(body)
+      });
+      const ms = Math.round(performance.now() - t0);
+      const txt = await res.text();
+      let usage = "", answer = txt;
+      try { const j = JSON.parse(txt); usage = j.usage || ""; answer = (j.ai_gateway_response?.[0]?.contents || []).join("\n\n") || txt; } catch (e) {}
+      return { status: res.status, ms, usage, answer };
+    }
+
+    async function traffic(out) {
+      const models = [["openai", "OpenAI"], ["gemini", "Gemini"], ["", "Anthropic (fallback)"]];
+      show(out, "Sending 3 calls across providers…");
+      const lines = [];
+      for (const [m, label] of models) {
+        const h = m ? { "X-Model": m } : {};
+        try {
+          const r = await llm(h, { contents: "Give me a one-line API tip" });
+          lines.push(`${label}: HTTP ${r.status} · ${r.ms}ms · ${r.usage} tokens\n  ${r.answer}`);
+        } catch (e) { lines.push(`${label}: error ${e.message}`); }
+        show(out, lines.join("\n\n"));
+      }
+      show(out, lines.join("\n\n") + "\n\n→ Watch the Grafana AI Gateway dashboard and Jaeger update live.");
+    }
+
+    document.querySelectorAll("[data-action='traffic']").forEach(btn => {
+      btn.addEventListener("click", async () => {
+        btn.disabled = true;
+        try { await traffic("out-traffic"); }
+        catch (e) { show("out-traffic", "Request failed: " + e.message); }
+        finally { btn.disabled = false; }
+      });
+    });
+
+    document.querySelectorAll("[data-copy]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const codeEl = btn.parentElement.querySelector("code");
+        const code = codeEl.textContent;
+        const selectFallback = () => { const r = document.createRange(); r.selectNode(codeEl); getSelection().removeAllRanges(); getSelection().addRange(r); };
+        if (navigator.clipboard) {
+          navigator.clipboard.writeText(code)
+            .then(() => { btn.textContent = "Copied"; setTimeout(() => btn.textContent = "Copy", 1200); })
+            .catch(selectFallback);
+        } else { selectFallback(); }
+      });
+    });
+
+  })();
+  </script>
+</body>
+</html>

@@ -67,6 +67,24 @@
         }
     },
     {
+        "@comment": "Utility: AI Gateway demo scripts (static site, EE web server)",
+        "endpoint": "/demo-scripts/*",
+        "output_encoding": "no-op",
+        "backend": [
+            {
+                "url_pattern": "/",
+                "extra_config": {
+                    "backend/static-filesystem": {
+                        "directory_listing": false,
+                        "path": "./demo-scripts/"
+                    }
+                },
+                "host": ["http://localhost:8080"],
+                "encoding": "no-op"
+            }
+        ]
+    },
+    {
         "@comment": "Feature: Expose a GET REST endpoint from POST to SOAP service",
         "endpoint": "/capital-of/{country}",
         "backend": [
