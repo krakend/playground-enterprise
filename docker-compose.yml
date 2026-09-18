@@ -24,6 +24,7 @@ services:
     volumes:
       - "./config/telemetry-dashboards/grafana/datasources/prometheus-tempo.yml:/etc/grafana/provisioning/datasources/prometheus-tempo.yml"
       - "./config/telemetry-dashboards/grafana/krakend/for-prometheus.json:/var/lib/grafana/dashboards/krakend/for-prometheus.json"
+      - "./config/telemetry-dashboards/grafana/krakend/ai-llm.json:/var/lib/grafana/dashboards/krakend/ai-llm.json"
       - "./config/telemetry-dashboards/grafana/dashboards/all.yml:/etc/grafana/provisioning/dashboards/all.yml"
     environment:
       - GF_SECURITY_ADMIN_USER=krakend
